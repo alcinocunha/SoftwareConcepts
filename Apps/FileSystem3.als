@@ -37,7 +37,7 @@ pred syncing {
 one sig Syncing {}
 fun syncing : Syncing { { s : Syncing | syncing } } 
 
-// Syncronization rules
+// Synchronization rules
 
 /*
 when
