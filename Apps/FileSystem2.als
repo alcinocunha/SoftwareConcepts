@@ -32,7 +32,7 @@ check Clear {
 	}
 } for 2 but 7 Action
 
-// Syncronization rules
+// Synchronization rules
 
 
 /*
