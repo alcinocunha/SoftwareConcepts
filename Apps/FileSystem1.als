@@ -26,7 +26,6 @@ run Scenario {
 	eventually always not syncing
 } for 1 File, exactly 3 Color, 7 Action expect 1
 
-
 // When is the app syncing
 pred syncing {
 	sync_delete	
