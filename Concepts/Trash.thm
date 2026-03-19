@@ -14,17 +14,17 @@
    <type name="Int"/>
    <type name="Restore"/>
    <type name="String"/>
-   <type name="Trash"/>
+   <type name="TrashAction"/>
    <type name="univ"/>
    <type name="seq/Int"/>
 </node>
 
-<node color="Gray">
-   <type name="Action/Action"/>
+<node color="Black">
+   <set name="trashed" type="Item"/>
 </node>
 
-<node color="Red">
-   <set name="trashed" type="Item"/>
+<node color="Gray">
+   <type name="Action/Action"/>
 </node>
 
 <node color="White">
