@@ -6,4 +6,8 @@ The repository includes both formal models of the individual concepts and apps b
 
 # Index of Concepts
 
+| Concept | Used in |
++---------+---------+
+| [Trash](Concepts/Trash.als) | [FileSystem1](Apps/FileSystem1.als) |
+
 # Index of Apps
