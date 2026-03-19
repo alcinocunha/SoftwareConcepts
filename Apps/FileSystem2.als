@@ -22,7 +22,7 @@ check Invariant {
 // One file will all possible colors is deleted and the trash is emptied
 // Syncronization will clear all colors
 run Scenario {
-	eventually (some f : File | f.labels = Color and empty and always not restore[f])
+	eventually (some f : File | f.labels = Color and empty)
 	eventually always not syncing
 } for 1 File, exactly 3 Color, 7 Action expect 1
 
@@ -67,8 +67,7 @@ fact {
 when
 	empty
 where
-	f in trashed
-	some f.labels
+	f in trashed and some f.labels
 then
 	clear[f]
 */

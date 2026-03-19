@@ -7,11 +7,12 @@ open Concepts/Label[File,Color]
 
 sig File {}
 sig Color {}
-
 one sig Red extends Color {}
 
 // The app invariant
 
+// Colors can be assigned to both accessible and trashed files
+// and trashed files have the red color
 check Invariant {
 	always {
 		not syncing iff {
@@ -23,9 +24,12 @@ check Invariant {
 
 // Scenarios
 
+// One file will all possible colors is deleted and the trash is emptied
+// Syncronization will clear all colors
 run Scenario {
-	eventually (File in trashed and File.labels = Color and File = labels.Color and empty and after eventually not syncing)
-} for exactly 2 File, exactly 2 Color, 7 Action expect 1
+	eventually (some f : File | f.labels = Color and empty)
+	eventually always not syncing
+} for 1 File, exactly 3 Color, 7 Action expect 1
 
 // When is the app syncing
 
@@ -41,133 +45,125 @@ fun syncing : Syncing { { s : Syncing | syncing } }
 
 /*
 when
-	Label.affix(f,c)
-where
-	in Trash: f not in accessible+trashed
-then
-	error
+	affix[f,c]
+require
+	f in accessible+trashed
 */
 
 fact {
 	all f : File, c : Color | always {
-		affix[f,c] and f not in accessible+trashed implies error
+		affix[f,c] implies f in accessible+trashed
 	}
 }
 
 /*
 when
-	Label.affix(f,Red)
-where
-	in Trash: f in accessible
-then
-	error
+	affix[f,Red]
+require
+	f not in accessible
 */
 
 fact {
 	all f : File | always {
-		affix[f,Red] and f in accessible implies error
+		affix[f,Red] implies f not in accessible
 	}
 }
 
 
 /*
 when
-	Label.detach(f,c)
-where
-	in Trash: f not in accessible+trashed
-then
-	error
+	detach[f,c]
+require
+	f in accessible+trashed
 */
 
 fact {
 	all f : File, c : Color | always {
-		detach[f,c] and f not in accessible+trashed implies error
+		detach[f,c] implies f in accessible+trashed
 	}
 }
 
 /*
 when
-	Label.detach(f,Red)
-where
-	in Trash: f in rashed
-then
-	error
+	detach[f,Red]
+require
+	f not in trashed
 */
 
 fact {
 	all f : File | always {
-		detach[f,Red] and f in trashed implies error
+		detach[f,Red] implies f not in trashed
 	}
 }
 
 /*
 when
-	Label.clear(f)
-where
-	in Trash: f in rashed
-	in Label: Red in f.labels
-then
-	error
+	clear[f]
+require
+	f not in trashed or Red not in f.labels
 */
 
 fact {
 	all f : File | always {
-		clear[f] and f in trashed and Red in f.labels implies error
+		clear[f] implies (f not in trashed or Red not in f.labels)
 	}
 }
 
 /*
 when
-	Trash.empty
+	empty
 where
-	in Trash: f in trashed
-	in Label: some f.labels
+	f in trashed and some f.labels
 then
-	Label.clear(f)
+	clear[f]
 */
 
 pred sync_empty {
-	some f : File | before (not clear[f] since (empty and f in trashed and some f.labels))
+	some f : File | before {
+		not clear[f] since (empty and f in trashed and some f.labels)
+	}
 }
 
 
 /*
 when
-	Trash.create(f)
-when
-	in Labels: some f.labels
-then
-	error
+	create[f]
+require
+	no f.labels
 */
 
 fact {
 	all f : File | always {
-		create[f] and some f.labels implies error
+		create[f] implies no f.labels
 	}
 }
 
 /*
 when
-	Trash.delete(f)
+	delete[f]
 where
-	in Label: Red not in f.labels
+	Red not in f.labels
 then
-	Label.affix(f,Red) or Trash.empty or Trash.restore(f)
+	affix[f,Red] or empty or restore[f]
 */
 
 pred sync_delete {
-	some f : File | before ((not affix[f,Red] and not empty and not restore[f]) since (delete[f] and Red not in f.labels))
+	some f : File | before {
+		not (affix[f,Red] or empty or restore[f]) since (delete[f] and Red not in f.labels)
+	}
 }
 
 /*
 when
-	Trash.restore(f)
+	restore[f]
 where
-	in Label: Red in f.labels
+	Red in f.labels
 then
-	Label.detach(f,Red) or Trash.delete(f) or Label.clear(f)
+	detach[f,Red] or delete[f] or clear[f]
 */
 
 pred sync_restore {
-	some f : File | before ((not detach[f,Red] and not delete[f] and not clear[f]) since (restore[f] and Red in f.labels))
+	some f : File | before {
+		not (detach[f,Red] or delete[f] or clear[f]) since (restore[f] and Red in f.labels)
+	}
 }
