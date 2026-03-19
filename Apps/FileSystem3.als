@@ -1,10 +1,16 @@
-open Trash[File]
-open Label[File,Color]
+module Apps/FileSystem3
+
+// Composed concepts
+
+open Concepts/Trash[File]
+open Concepts/Label[File,Color]
 
 sig File {}
 sig Color {}
 
 one sig Red extends Color {}
+
+// The app invariant
 
 check Invariant {
 	always {
@@ -15,9 +21,23 @@ check Invariant {
 	}
 } for 2 but 7 Action
 
+// Scenarios
+
 run Scenario {
 	eventually (File in trashed and File.labels = Color and File = labels.Color and empty and after eventually not syncing)
 } for exactly 2 File, exactly 2 Color, 7 Action expect 1
+
+// When is the app syncing
+
+pred syncing {
+	sync_empty or sync_delete or sync_restore
+}
+
+// For visualization only
+one sig Syncing {}
+fun syncing : Syncing { { s : Syncing | syncing } } 
+
+// Synchronization rules
 
 /*
 when
@@ -151,11 +171,3 @@ then
 pred sync_restore {
 	some f : File | before ((not detach[f,Red] and not delete[f] and not clear[f]) since (restore[f] and Red in f.labels))
 }
-
-pred syncing {
-	sync_empty or sync_delete or sync_restore
-}
-
-// For visualization only
-one sig Syncing {}
-fun syncing : Syncing { { s : Syncing | syncing } } 
