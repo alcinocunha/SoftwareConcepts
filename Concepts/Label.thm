@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Affix"/>
+   <type name="Clear"/>
+   <type name="Detach"/>
+   <type name="Int"/>
+   <type name="Item"/>
+   <type name="Label"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+</node>
+
+<node color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Tag"/>
+</node>
+
+<node showlabel="no">
+   <set name="Item_" type="Item"/>
+</node>
+
+<edge visible="no" attribute="yes">
+   <relation name="i"> <type name="Action/Action"/> <type name="Item"/> </relation>
+   <relation name="l"> <type name="Affix"/> <type name="Tag"/> </relation>
+   <relation name="l"> <type name="Detach"/> <type name="Tag"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
