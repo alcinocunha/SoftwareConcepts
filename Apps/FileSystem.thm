@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="Label/Affix"/>
+   <type name="Label/Clear"/>
+   <type name="Label/Detach"/>
+   <type name="Label/LabelAction"/>
+   <type name="seq/Int"/>
+   <type name="Trash/Create"/>
+   <type name="Trash/Delete"/>
+   <type name="Trash/Empty"/>
+   <type name="Trash/Restore"/>
+   <type name="Trash/TrashAction"/>
+</node>
+
+<node color="Black">
+   <set name="trashed" type="File"/>
+</node>
+
+<node color="Gray">
+   <type name="Label/Action/Action"/>
+</node>
+
+<node color="White">
+   <type name="File"/>
+</node>
+
+<node color="Yellow">
+   <set name="accessible" type="File"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Color"/>
+</node>
+
+<node showlabel="no">
+   <set name="Item_" type="File"/>
+</node>
+
+<node visible="no" shape="Tpl Octagon" color="Red">
+   <type name="Syncing"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="$syncing" type="Syncing"/>
+</node>
+
+<edge style="inherit">
+   <relation name="labels"> <type name="File"/> <type name="Color"/> </relation>
+</edge>
+
+<edge style="inherit" visible="no" attribute="yes">
+   <relation name="i"> <type name="Label/LabelAction"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="l"> <type name="Label/Affix"/> <type name="Color"/> </relation>
+   <relation name="l"> <type name="Label/Detach"/> <type name="Color"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
