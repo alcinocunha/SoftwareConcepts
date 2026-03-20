@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Cancel"/>
+   <type name="Int"/>
+   <type name="Provide"/>
+   <type name="Reserve"/>
+   <type name="Resource"/>
+   <type name="Retract"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="Use"/>
+   <type name="User"/>
+   <type name="seq/Int"/>
+   <set name="available" type="Resource"/>
+</node>
+
+<node color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node showlabel="no">
+   <set name="User_" type="User"/>
+</node>
+
+<edge style="inherit">
+   <relation name="reservations"> <type name="User"/> <type name="Resource"/> </relation>
+</edge>
+
+<edge style="inherit" visible="no" attribute="yes">
+   <relation name="r"> <type name="Cancel"/> <type name="Resource"/> </relation>
+   <relation name="r"> <type name="Provide"/> <type name="Resource"/> </relation>
+   <relation name="r"> <type name="Reserve"/> <type name="Resource"/> </relation>
+   <relation name="r"> <type name="Retract"/> <type name="Resource"/> </relation>
+   <relation name="r"> <type name="Use"/> <type name="Resource"/> </relation>
+   <relation name="u"> <type name="Cancel"/> <type name="User"/> </relation>
+   <relation name="u"> <type name="Reserve"/> <type name="User"/> </relation>
+   <relation name="u"> <type name="Use"/> <type name="User"/> </relation>
+</edge>
+
+<edge visible="no">
+   <relation name="$Scenario_u"> <type name="Resource"/> <type name="User"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
