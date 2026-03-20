@@ -8,7 +8,7 @@ The repository includes both formal models of the individual concepts and apps b
 
 | Concept | Used in |
 |---------|---------|
-| [Label](Concepts/Label.als) | [FileSystem1](Apps/FileSystem1.als) [FileSystem2](Apps/FileSystem2.als) [FileSystem3](Apps/FileSystem3.als) |
+| [Label](Concepts/Label.als) | [FileSystem1](Apps/FileSystem1.als) [FileSystem2](Apps/FileSystem2.als) [FileSystem3](Apps/FileSystem3.als) [Restaurant](Apps/Restaurant.als) |
 | [Reservation](Concepts/Reservation.als) | [Restaurant](Apps/Restaurant.als) |
 | [Trash](Concepts/Trash.als) | [FileSystem1](Apps/FileSystem1.als) [FileSystem2](Apps/FileSystem2.als) [FileSystem3](Apps/FileSystem3.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) |
 
