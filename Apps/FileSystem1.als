@@ -1,9 +1,17 @@
 module Apps/FileSystem1
+open Action[User]
+open Reaction
 
 // Composed concepts
 
-open Concepts/Trash[File]
-open Concepts/Label[File,Color]
+open Concepts/Trash[User,File]
+open Concepts/Label[User,File,Color]
+
+// Single user app
+
+one sig User {}
+
+// Types
 
 sig File {}
 sig Color {}
@@ -13,78 +21,77 @@ sig Color {}
 // Only accessible files can have colors
 check Invariant {
 	always {
-		not syncing iff labels.Color in accessible
+		no Reaction iff labels.Color in accessible
 	}
-} for 2 but 7 Action
+} for 2 but 7 Action, 1 Reaction expect 0
 
 // Scenarios
 
-// One file will all possible colors is deleted and not restored
-// Syncronization will clear all colors
+// One files with all colors is deleted
+// Then a reaction will clear all colors of all files
 run Scenario {
-	eventually (some f : File | f.labels = Color and delete[f] and always not restore[f])
-	eventually always not syncing
-} for 1 File, exactly 3 Color, 7 Action expect 1
+	eventually (User.labels[File] = Color and delete[User,File])
+	eventually always no Reaction
+} for exactly 1 File, exactly 3 Color, 7 Action, 1 Reaction expect 1
 
-// When is the app syncing
-pred syncing {
-	sync_delete	
-}
-
-// For visualization only
-one sig Syncing {}
-fun syncing : Syncing { { s : Syncing | syncing } } 
-
-// Syncronization rules
+// Reactions
 
 /*
 when
-	affix[f,c]
-require
-	f in accessible
-*/
-
-fact {
-	all f : File, c : Color | always {
-		affix[f,c] implies f in accessible
-	}
-}
-
-/*
-when
-	delete[f]
+	delete[User,f]
 where
-	some f.labels
+	some User.labels[f]
 then
-	clear[f] or restore[f]
+	clear[User,f] or restore[User,f]
 */
 
-pred sync_delete {
-	some f : File | before ((not clear[f] and not restore[f]) since (delete[f] and some f.labels))
+var lone sig DeleteClearOrRestore extends Reaction { }
+
+fact {
+	always {
+		some DeleteClearOrRestore iff {
+			some f : File | before (not (clear[User,f] or restore[User,f]) since (delete[User,f] and some User.labels[f]))
+		}
+	}
 }
+
+// Preventions
 
 /*
 when
-	detach[f,l]
+	affix[User,f,c]
 require
-	f in acessible
+	f in User.accessible
 */
 
 fact {
 	all f : File, c : Color | always {
-		detach[f,c] implies f in accessible
+		affix[User,f,c] implies f in User.accessible
 	}
 }
 
 /*
 when
-	create[f]
+	detach[User,f,c]
 require
-	no f.labels
+	f in User.accessible
+*/
+
+fact {
+	all f : File, c : Color | always {
+		detach[User,f,c] implies f in User.accessible
+	}
+}
+
+/*
+when
+	create[User,f]
+require
+	no User.labels[f]
 */
 
 fact {
 	all f : File | always {
-		create[f] implies no f.labels
+		create[User,f] implies no User.labels[f]
 	}
 }

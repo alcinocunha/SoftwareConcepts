@@ -1,9 +1,17 @@
 module Apps/FileSystem2
+open Action[User]
+open Reaction
 
 // Composed concepts
 
-open Concepts/Trash[File]
-open Concepts/Label[File,Color]
+open Concepts/Trash[User,File]
+open Concepts/Label[User,File,Color]
+
+// Single user app
+
+one sig User {}
+
+// Types
 
 sig File {}
 sig Color {}
@@ -13,82 +21,80 @@ sig Color {}
 // Colors can be assigned to both accessible and trashed files
 check Invariant {
 	always {
-		not syncing iff labels.Color in accessible+trashed
+		no Reaction iff labels.Color in accessible+trashed
 	}
-} for 2 but 7 Action
+} for 2 but 7 Action, 1 Reaction expect 0
 
 // Scenarios
 
-// One file will all possible colors is deleted and the trash is emptied
-// Syncronization will clear all colors
+// Two files with colors are deleted and the trash is emptied
+// Then a reaction will clear all colors of all files
 run Scenario {
-	eventually (some f : File | f.labels = Color and empty)
-	eventually always not syncing
-} for 1 File, exactly 3 Color, 7 Action expect 1
+	eventually (File in User.trashed and User.labels.Color = File and empty[User])
+	eventually always no Reaction
+} for exactly 2 File, exactly 3 Color, 7 Action, 1 Reaction expect 1
 
-// When is the app syncing
-pred syncing {
-	sync_empty	
-}
-
-// For visualization only
-one sig Syncing {}
-fun syncing : Syncing { { s : Syncing | syncing } } 
-
-// Synchronization rules
+// Reactions
 
 /*
 when
-	affix[f,c]
-require
-	f in accessible+trashed
-*/
-
-fact {
-	all f : File, c : Color | always {
-		affix[f,c] implies f in accessible+trashed
-	}
-}
-
-/*
-when
-	detach[f,c]
-require
-	f in accessible+trashed
-*/
-
-fact {
-	all f : File, c : Color | always {
-		detach[f,c] implies f in accessible+trashed
-	}
-}
-
-/*
-when
-	empty
+	empty[User]
 where
-	f in trashed and some f.labels
+	f in User.trashed and some User.labels[f]
 then
-	clear[f]
+	clear[User,f]
 */
 
-pred sync_empty {
-	some f : File | before {
-		not clear[f] since (empty and f in trashed and some f.labels)
+var lone sig EmptyClear extends Reaction { }
+
+fact {
+	always {
+		some EmptyClear iff {
+			some f : File | before {
+				not clear[User,f] since (empty[User] and f in User.trashed and some User.labels[f])
+			}
+		}
 	}
 }
 
+// Preventions
 
 /*
 when
-	create[f]
+	affix[User,f,c]
 require
-	no f.labels
+	f in User.(accessible+trashed)
+*/
+
+fact {
+	all f : File, c : Color | always {
+		affix[User,f,c] implies f in User.(accessible+trashed)
+	}
+}
+
+/*
+when
+	detach[User,f,c]
+require
+	f in User.(accessible+trashed)
+*/
+
+fact {
+	all f : File, c : Color | always {
+		detach[User,f,c] implies f in User.(accessible+trashed)
+	}
+}
+
+/*
+when
+	create[User,f]
+require
+	no User.labels[f]
 */
 
 fact {
 	all f : File | always {
-		create[f] implies no f.labels
+		create[User,f] implies no User.labels[f]
 	}
 }
 

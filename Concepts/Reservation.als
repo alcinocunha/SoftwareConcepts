@@ -1,13 +1,15 @@
-module Reservation[User,Resource]
-open Action
+module Concepts/Reservation[User,Resource]
+open Action[User]
 
 // State
 
-var sig available in Resource {}
-sig User_ in User {
-	var reservations : set Resource
+one sig Reservation {
+	var available_ : User -> set Resource,
+	var reservations_ : User -> set Resource
 }
-fact { User_ = User }
+
+fun available : User -> set Resource { Reservation.available_ }
+fun reservations : User -> set Resource { Reservation.reservations_ }
 
 // Initial state
 
@@ -21,32 +23,34 @@ fact Init {
 var abstract sig ReservationAction extends Action { var r : Resource }
 
 var sig Provide extends ReservationAction { } {
-	r not in available + User.reservations
-	available' = available + r
+	r not in User.available
+	available' = available + u->r
 	reservations' = reservations
 }
 
 var sig Retract extends ReservationAction { } {
-	r in available
-	available' = available - r
+	r in u.available
+	r not in User.reservations
+	available' = available - u->r
 	reservations' = reservations
 }
 
-var sig Reserve extends ReservationAction { var u : User } {
-	r in available
-	available' = available - r
+var sig Reserve extends ReservationAction { } {
+	r in User.available
+	r not in User.reservations
+	available' = available
 	reservations' = reservations + u->r
 }
 
-var sig Cancel extends ReservationAction { var u : User } {
+var sig Cancel extends ReservationAction { } {
 	r in u.reservations
-	available' = available + r
+	available' = available
 	reservations' = reservations - u->r	
 }
 
-var sig Use extends ReservationAction { var u : User } {
+var sig Use extends ReservationAction { } {
 	r in u.reservations
-	available' = available + r
+	available' = available
 	reservations' = reservations - u->r	
 }
 
@@ -59,25 +63,26 @@ fact Stutter {
 	}
 }
 
-pred provide [ x : Resource ] { some Provide and Provide.r = x }
-pred retract [ x : Resource ] { some Retract and Retract.r = x }
-pred reserve [ x : User, y : Resource ] { some Reserve and Reserve.u = x and Reserve.r = y }
-pred cancel [ x : User, y : Resource ] { some Cancel and Cancel.u = x and Cancel.r = y }
-pred use [ x : User, y : Resource ] { some Use and Use.u = x and Use.r = y }
+pred provide [ v : User, x : Resource ] { some Provide and Provide.u = v and Provide.r = x }
+pred retract [ v : User, x : Resource ] { some Retract and Retract.u = v and Retract.r = x }
+pred reserve [ v : User, x : Resource ] { some Reserve and Reserve.u = v and Reserve.r = x }
+pred cancel [ v : User, x : Resource ] { some Cancel and Cancel.u = v and Cancel.r = x }
+pred use [ v : User, x : Resource ] { some Use and Use.u = v and Use.r = x }
 
 // Properties
 
 // Resources cannot but reserved and available
 check Invariant {
 	always {
-		no User.reservations & available
+		User.reservations in User.available
+		all r : Resource | lone available.r and lone reservations.r
 	}
-} for 3 but 5 Action
+} for 2 but 5 Action
 
 // A reserved resource was not retracted since it has been provided
 check Principle1 {
 	all u : User, r : Resource | always {
-		reserve[u,r] implies before (not retract[r] since provide[r])
+		reserve[u,r] implies before some v : User | (not retract[v,r] since provide[v,r])
 	}
 } for 2 but 5 Action
 
@@ -92,6 +97,6 @@ check Principle2 {
 
 // All resources are used by some user and then retracted
 run Scenario {
-	all r : Resource | some u : User | eventually use[u,r]
-	eventually always no available + User.reservations
-} for 1 User, exactly 2 Resource, 5 Action
+	some u : User | all r : Resource | eventually use[u,r]
+	eventually always no available
+} for exactly 2 User, exactly 2 Resource, 5 Action

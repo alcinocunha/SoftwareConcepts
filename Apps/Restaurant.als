@@ -1,11 +1,20 @@
 module Apps/Restaurant
+open Action[User]
+open Reaction
 
 // Composed concepts
 
-open Concepts/Reservation[Client,Table]
-open Concepts/Label[Table,Reserved]
+open Concepts/Reservation[User,Table]
+open Concepts/Label[User,Table,Reserved]
 
-sig Client {}
+// Multiple clients one restaurant
+
+abstract sig User {}
+sig Client extends User {}
+one sig Restaurant extends User {}
+
+// Types
+
 sig Table {}
 one sig Reserved {}
 
@@ -14,95 +23,42 @@ one sig Reserved {}
 // Reserved tables are labeled as Reserved
 check Invariant {
 	always {
-		not syncing iff {
-			Client.reservations = labels.Reserved
+		no Reaction iff {
+			available in Restaurant -> Table
+			reservations in Client -> Table
+			labels in Restaurant -> Table -> Reserved
+			Client.reservations = Restaurant.labels.Reserved
 		}
 	}
-} for 2 but 9 Action
+} for 2 Table, 2 Client, 9 Action, 3 Reaction expect 0
 
 // Scenarios
 
 // All tables are reserved and used by some client
-// Syncronization will add and later removed the reserved label 
+// Then a reaction will add and later remove the reserved sign
 run Scenario {
-	eventually always not syncing
+	eventually always no Reaction
 	all t : Table | some c : Client | eventually use[c,t]
-} for 1 Client, exactly 2 Table, 9 Action, 20 steps
+} for 1 Client, exactly 2 Table, 9 Action, 3 Reaction, 20 steps expect 1
 
-// When is the app syncing
-
-pred syncing {
-	sync_reserve or sync_cancel or sync_use
-}
-
-// For visualization only
-one sig Syncing {}
-fun syncing : Syncing { { s : Syncing | syncing } }
-
-// Synchronzation rules
-
-/*
-when
-	affix[t,Reserved]
-require
-	t in User.reservations
-*/
-
-fact {
-	all t : Table | always {
-		affix[t,Reserved] implies t in Client.reservations
-	}
-}
+// Reactions
 
 /*
 when
 	reserve[c,t]
 then
-	affix[t,Reserved] or cancel[c,t]
+	affix[Restaurant,Reserved] or cancel[c,t]
 */
 
-pred sync_reserve {
-	some c : Client, t : Table | before {
-		not (affix[t,Reserved] or cancel[c,t]) since reserve[c,t]
-	}
-}
-
-/*
-when
-	use[c,t]
-require
-	Reserved in t.labels
-*/
+var lone sig ReserveAffixOrCancel extends Reaction { }
 
 fact {
-	all c : Client, t : Table | always {
-		use[c,t] implies Reserved in t.labels
-	}
-}
-
-/*
-when
-	detach[t,Reserved]
-require
-	t not in Client.reservations
-*/
-
-fact {
-	all t : Table | always {
-		detach[t,Reserved] implies t not in Client.reservations
-	}
-}
-
-/*
-when
-	clear[t]
-require
-	false
-*/
-
-fact {
-	all t : Table | always {
-		clear[t] implies false
+	always {
+		some ReserveAffixOrCancel iff {
+			some c : Client, t : Table | before {
+				not (affix[Restaurant,t,Reserved] or cancel[c,t]) since reserve[c,t]
+			}
+		}
 	}
 }
 
@@ -110,14 +66,20 @@ fact {
 when
 	cancel[c,t]
 where
-	Reserved in t.labels
+	Reserved in Restaurant.labels[t]
 then
-	dettach[t,Reserved]
+	dettach[Restaurant,t,Reserved]
 */
 
-pred sync_cancel {
-	some c : Client, t : Table | before {
-		not detach[t,Reserved] since (cancel[c,t] and Reserved in t.labels)
+var lone sig CancelDetach extends Reaction { }
+
+fact {
+	always {
+		some CancelDetach iff {
+			some c : Client, t : Table | before {
+				not detach[Restaurant,t,Reserved] since (cancel[c,t] and Reserved in Restaurant.labels[t])
+			}
+		}
 	}
 }
 
@@ -125,24 +87,97 @@ pred sync_cancel {
 when
 	use[c,t]
 then
-	dettach[t,Reserved]
+	dettach[Restaurant,t,Reserved]
 */
 
-pred sync_use {
-	some c : Client, t : Table | before {
-		not detach[t,Reserved] since use[c,t]
+var lone sig UseDetach extends Reaction { }
+
+fact {
+	always {
+		some UseDetach iff {
+			some c : Client, t : Table | before {
+				not detach[Restaurant,t,Reserved] since use[c,t]
+			}
+		}
+	}
+}
+
+// Preventions
+
+/*
+when
+	affix[u,t,Reserved]
+require
+	u in Restaurant and t in User.reservations
+*/
+
+fact {
+	all u : User, t : Table | always {
+		affix[u,t,Reserved] implies u in Restaurant and t in Client.reservations
 	}
 }
 
 /*
 when
-	reserve[c,t]
+	detach[u,t,Reserved]
 require
-	Reserved not in t.labels
+	u in Restaurant and t not in Client.reservations
+*/
+
+fact {
+	all u : User, t : Table | always {
+		detach[u,t,Reserved] implies u in Restaurant and t not in Client.reservations
+	}
+}
+
+/*
+when
+	clear[u,t]
+require
+	false
+*/
+
+fact {
+	all u : User, t : Table | always {
+		clear[u,t] implies false
+	}
+}
+
+/*
+when
+	provide[u,t]
+require
+	u in Restaurant
+*/
+
+fact {
+	all u : User, t : Table | always {
+		provide[u,t] implies u in Restaurant
+	}
+}
+
+/*
+when
+	use[c,t]
+require
+	Reserved in Restaurant.labels[t]
 */
 
 fact {
 	all c : Client, t : Table | always {
-		reserve[c,t] implies Reserved not in t.labels
+		use[c,t] implies Reserved in Restaurant.labels[t]
+	}
+}
+
+/*
+when
+	reserve[u,t]
+require
+	u in Client and Reserved not in Restaurant.labels[t]
+*/
+
+fact {
+	all u : User, t : Table | always {
+		reserve[u,t] implies u in Client and Reserved not in Restaurant.labels[t]
 	}
 }

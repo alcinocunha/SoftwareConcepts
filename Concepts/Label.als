@@ -1,12 +1,13 @@
-module Label[Item,Tag]
-open Action
+module Concepts/Label[User,Item,Tag]
+open Action[User]
 
 // State
 
-sig Item_ in Item { // hack to add relation to parameter signature
-	var labels : set Tag
+one sig Label {
+	var labels_ : User -> Item -> Tag
 }
-fact { Item_ = Item }
+
+fun labels : User -> Item -> set Tag { Label.labels_ }
 
 // Initial state
 
@@ -18,19 +19,19 @@ fact Init {
 
 var abstract sig LabelAction extends Action { var i : Item }
 
-var sig Affix extends LabelAction { var l : Tag } {
-	i->l not in labels
-	labels' = labels + i->l
+var sig Affix extends LabelAction { var t : Tag } {
+	i->t not in u.labels
+	labels' = labels + u->i->t
 }
 
-var sig Detach extends LabelAction { var l : Tag } {
-	i->l in labels
-	labels' = labels - i->l
+var sig Detach extends LabelAction { var t : Tag } {
+	i->t in u.labels
+	labels' = labels - u->i->t
 }
 
 var sig Clear extends LabelAction { } {
-	some i.labels
-	labels' = labels - i->Tag
+	some u.labels[i]
+	labels' = labels - u->i->Tag
 }
 
 fact Stutter {
@@ -39,25 +40,25 @@ fact Stutter {
 	}
 }
 
-pred affix [x : Item, y : Tag] { some Affix and Affix.i = x and Affix.l = y }
-pred detach [x : Item, y : Tag] { some Detach and Detach.i = x and Detach.l = y }
-pred clear [x : Item] { some Clear and Clear.i = x }
+pred affix [v : User, x : Item, y : Tag] { some Affix and Affix.u = v and Affix.i = x and Affix.t = y }
+pred detach [v : User, x : Item, y : Tag] { some Detach and Detach.u = v and Detach.i = x and Detach.t = y }
+pred clear [v : User, x : Item] { some Clear and Clear.u = v and Clear.i = x }
 
 // Properties
 
 // If a tag is affixed it remains in the item labels until detached or all tags of the item are cleared
 check Principle {
-	all i : Item, l : Tag | always (affix[i,l] implies after ((detach[i,l] or clear[i]) releases l in i.labels))
-} for 3 but 3 Action
+	all i : Item, t : Tag | always (affix[User,i,t] implies after ((detach[User,i,t] or clear[User,i]) releases t in User.labels[i]))
+} for 3 but 3 Action, exactly 1 User expect 0
 
 // Scenarios
 
 // All tags affixed in one item and then cleared
 run Scenario1 {
-	eventually { Tag in Item.labels and clear[Item] }
-} for exactly 1 Item, exactly 3 Tag, 3 Action
+	eventually { Tag in User.labels[Item] and clear[User,Item] }
+} for exactly 1 Item, exactly 3 Tag, 3 Action, exactly 1 User expect 1
 
 // All tags affixed in one item and then detached
 run Scenario2 {
-	eventually { Tag in Item.labels and ((some l : Tag | detach[Item,l]) until no Item.labels) }
-} for exactly 1 Item, exactly 3 Tag, 3 Action
+	eventually { Tag in User.labels[Item] and ((some t : Tag | detach[User,Item,t]) until no User.labels[Item]) }
+} for exactly 1 Item, exactly 3 Tag, 3 Action, exactly 1 User expect 1
