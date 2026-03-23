@@ -15,14 +15,15 @@ one sig User {}
 
 sig File {}
 sig Token {}
+fun activeTokens [f : File] : set Token { f.tokens - revoked - accessed }
 
 // The app invariant
 
 // Files with active (not revoked or accessed) tokens must be accessible
 check Invariant {
-always {
-no Reaction iff tokens.(Token-revoked-accessed) in User.accessible
-}
+	always {
+		no Reaction iff all f : File | (some activeTokens[f]) implies f in User.accessible
+	}
 } for 2 but 7 Action, 1 Reaction expect 0
 
 // Scenarios
@@ -40,24 +41,24 @@ run Scenario {
 
 /*
 when
-f not in User.accessible and some f.tokens-revoked-accessed
+	f not in User.accessible and some activeTokens[f]
 then
-restore[User,f] or revoke[User,f,t] or access[User,t]
+	restore[User,f] or some t : activeTokens[f] | revoke[User,f,t] or access[User,t]
 */
 
 var lone sig InaccessibleFileWithActiveToken extends Reaction { }
 
 fact {
-always {
-some InaccessibleFileWithActiveToken iff {
-some f : File | before {
-not (
-restore[User,f]
-or some t : f.tokens-revoked-accessed | revoke[User,f,t] or access[User,t]
-) since (f not in User.accessible and some f.tokens-revoked-accessed)
-}
-}
-}
+	always {
+		some InaccessibleFileWithActiveToken iff {
+			some f : File | before {
+				not (
+					restore[User,f]
+					or some t : activeTokens[f] | revoke[User,f,t] or access[User,t]
+				) since (f not in User.accessible and some activeTokens[f])
+			}
+		}
+	}
 }
 
 // Preventions
