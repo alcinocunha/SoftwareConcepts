@@ -18,6 +18,11 @@ one sig Restaurant extends User {}
 sig Table {}
 one sig Reserved {}
 
+// Auxiliary functions for visualization
+
+fun available_tables : set Table { Restaurant.available }
+fun reserved : set Table { Restaurant.labels.Reserved }
+
 // The app invariant
 
 // Reserved tables are labeled as Reserved
