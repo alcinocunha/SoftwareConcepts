@@ -3,13 +3,13 @@ open Action[User]
 
 // State
 
-one sig Reservation {
+one sig State {
 	var available_ : User -> set Resource,
 	var reservations_ : User -> set Resource
 }
 
-fun available : User -> set Resource { Reservation.available_ }
-fun reservations : User -> set Resource { Reservation.reservations_ }
+fun available : User -> set Resource { State.available_ }
+fun reservations : User -> set Resource { State.reservations_ }
 
 // Initial state
 

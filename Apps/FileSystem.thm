@@ -10,8 +10,10 @@
 <defaultedge/>
 
 <node>
-   <type name="DeleteClearOrRestore"/>
+   <type name="DeleteAffixOrEmptyOrRestore"/>
+   <type name="EmptyClear"/>
    <type name="Int"/>
+   <type name="RestoreDetachOrDeleteOrClear"/>
    <type name="String"/>
    <type name="univ"/>
    <type name="User"/>
@@ -29,6 +31,10 @@
 
 <node color="Black" label="trashed">
    <set name="$trashed" type="File"/>
+</node>
+
+<node color="Red">
+   <type name="Red"/>
 </node>
 
 <node color="White">
@@ -56,22 +62,12 @@
 </node>
 
 <node visible="no">
-   <type name="Label/Label"/>
-   <type name="Trash/Trash"/>
+   <type name="Label/State"/>
+   <type name="Trash/State"/>
 </node>
-
-<edge label="accessible">
-   <relation name="$accessible"> <type name="User"/> <type name="File"/> </relation>
-</edge>
 
 <edge label="labels">
    <relation name="$labels"> <type name="File"/> <type name="Color"/> </relation>
-</edge>
-
-<edge style="inherit">
-   <relation name="accessible_"> <type name="Trash/Trash"/> <type name="User"/> <type name="File"/> </relation>
-   <relation name="labels_"> <type name="Label/Label"/> <type name="User"/> <type name="File"/> <type name="Color"/> </relation>
-   <relation name="trashed_"> <type name="Trash/Trash"/> <type name="User"/> <type name="File"/> </relation>
 </edge>
 
 <edge style="inherit" visible="no" attribute="yes">
@@ -79,12 +75,11 @@
    <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
    <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
    <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
-   <relation name="t"> <type name="Label/Affix"/> <type name="Color"/> </relation>
-   <relation name="t"> <type name="Label/Detach"/> <type name="Color"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
-   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="l"> <type name="Label/Affix"/> <type name="Color"/> </relation>
+   <relation name="l"> <type name="Label/Detach"/> <type name="Color"/> </relation>
 </edge>
 
 </view>

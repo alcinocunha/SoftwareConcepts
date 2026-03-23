@@ -3,31 +3,23 @@
 
 <view>
 
+<projection> <type name="User"/> </projection>
+
 <defaultnode/>
 
 <defaultedge/>
 
 <node>
-   <type name="CancelDetach"/>
-   <type name="Client"/>
+   <type name="Affix"/>
+   <type name="Clear"/>
+   <type name="Detach"/>
    <type name="Int"/>
-   <type name="ReserveAffixOrCancel"/>
-   <type name="Restaurant"/>
+   <type name="Item"/>
+   <type name="Label"/>
+   <type name="LabelAction"/>
    <type name="String"/>
-   <type name="Table"/>
    <type name="univ"/>
-   <type name="UseDetach"/>
    <type name="User"/>
-   <type name="Label/Affix"/>
-   <type name="Label/Clear"/>
-   <type name="Label/Detach"/>
-   <type name="Label/LabelAction"/>
-   <type name="Reservation/Cancel"/>
-   <type name="Reservation/Provide"/>
-   <type name="Reservation/ReservationAction"/>
-   <type name="Reservation/Reserve"/>
-   <type name="Reservation/Retract"/>
-   <type name="Reservation/Use"/>
    <type name="seq/Int"/>
 </node>
 
@@ -35,49 +27,23 @@
    <type name="Action/Action"/>
 </node>
 
-<node hideunconnected="yes">
-   <type name="Reserved"/>
-</node>
-
-<node shape="Dbl Octagon" color="Red">
-   <type name="Reaction/Reaction"/>
+<node showlabel="no">
+   <set name="u" type="Action/Action"/>
 </node>
 
 <node visible="no">
-   <type name="Label/Label"/>
-   <type name="Reservation/Reservation"/>
+   <type name="State"/>
 </node>
 
-<edge label="available">
-   <relation name="$available"> <type name="User"/> <type name="Table"/> </relation>
-</edge>
-
 <edge label="labels">
-   <relation name="$labels"> <type name="User"/> <type name="Table"/> <type name="Reserved"/> </relation>
-</edge>
-
-<edge label="reservations">
-   <relation name="$reservations"> <type name="User"/> <type name="Table"/> </relation>
-</edge>
-
-<edge style="inherit">
-   <relation name="available_"> <type name="Reservation/Reservation"/> <type name="User"/> <type name="Table"/> </relation>
-   <relation name="labels_"> <type name="Label/Label"/> <type name="User"/> <type name="Table"/> <type name="Reserved"/> </relation>
-   <relation name="reservations_"> <type name="Reservation/Reservation"/> <type name="User"/> <type name="Table"/> </relation>
-</edge>
-
-<edge style="inherit" visible="no" attribute="yes">
-   <relation name="i"> <type name="Label/LabelAction"/> <type name="Table"/> </relation>
-   <relation name="r"> <type name="Reservation/ReservationAction"/> <type name="Table"/> </relation>
-   <relation name="t"> <type name="Label/Affix"/> <type name="Reserved"/> </relation>
-   <relation name="t"> <type name="Label/Detach"/> <type name="Reserved"/> </relation>
-</edge>
-
-<edge visible="no">
-   <relation name="$Scenario_c"> <type name="Table"/> <type name="Client"/> </relation>
+   <relation name="$labels"> <type name="Item"/> <type name="Label"/> </relation>
+   <relation name="$labels"> <type name="User"/> <type name="Item"/> <type name="Label"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
+   <relation name="i"> <type name="Action/Action"/> <type name="Item"/> </relation>
+   <relation name="l"> <type name="Affix"/> <type name="Label"/> </relation>
+   <relation name="l"> <type name="Detach"/> <type name="Label"/> </relation>
    <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 

@@ -3,7 +3,7 @@
 
 <view>
 
-<projection> <type name="Trash"/> <type name="User"/> </projection>
+<projection> <type name="User"/> </projection>
 
 <defaultnode/>
 
@@ -16,7 +16,6 @@
    <type name="Int"/>
    <type name="Restore"/>
    <type name="String"/>
-   <type name="Trash"/>
    <type name="TrashAction"/>
    <type name="univ"/>
    <type name="User"/>
@@ -40,9 +39,11 @@
 </node>
 
 <node showlabel="no">
-   <set name="accessible_" type="Item"/>
-   <set name="trashed_" type="Item"/>
    <set name="u" type="Action/Action"/>
+</node>
+
+<node visible="no">
+   <type name="State"/>
 </node>
 
 <edge style="inherit" visible="no" attribute="yes">

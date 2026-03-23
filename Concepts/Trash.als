@@ -3,13 +3,13 @@ open Action[User]
 
 // State
 
-one sig Trash {
+one sig State {
 	var accessible_ : User -> Item,
 	var trashed_ : User -> Item
 }
 
-fun accessible : User -> set Item { Trash.accessible_ }
-fun trashed : User -> set Item { Trash.trashed_ }
+fun accessible : User -> set Item { State.accessible_ }
+fun trashed : User -> set Item { State.trashed_ }
 
 // Initial state
 
