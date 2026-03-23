@@ -7,84 +7,119 @@ open Reaction
 open Concepts/Trash[User,File]
 open Concepts/Token[User,File,Token]
 
-// Single user app
+// Multi user app
 
-one sig User {}
+sig User {}
 
 // Types
 
 sig File {}
 sig Token {}
-fun activeTokens [f : File] : set Token { f.tokens - revoked - accessed }
+fun activeTokens [u : User, f : File] : set Token { (u.tokens[f] - revoked) - accessed }
 
 // The app invariant
 
 // Files with active (not revoked or accessed) tokens must be accessible
 check Invariant {
 	always {
-		no Reaction iff all f : File | (some activeTokens[f]) implies f in User.accessible
+		no Reaction iff {
+			all u : User, f : File | some activeTokens[u,f] implies f in u.accessible
+		}
 	}
 } for 2 but 7 Action, 1 Reaction expect 0
 
 // Scenarios
 
-// A shared file is deleted
-// Then a reaction will either restore the file or disable its active token
-run Scenario {
-	some f : File, t : Token {
-		create[User,f];share[User,f,t];delete[User,f]
+// One user shares a file, then deletes it, then a reaction will revoke the token
+run Scenario1 {
+	some f : File, t : Token | eventually {
+		share[User,f,t]; delete[User,f]
 	}
 	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, 7 Action, 1 Reaction expect 1
+} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 1 Reaction expect 1
+
+// One user shares a file, then deletes it, then tries to access the token
+run Scenario2 {
+	some f : File, t : Token | {
+		eventually (share[User,f,t]; delete[User,f])
+		eventually access[User,t]
+	}
+} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 1 Reaction expect 0
 
 // Reactions
 
 /*
 when
-	f not in User.accessible and some activeTokens[f]
+	delete[u,f]
+where
+	t in activeTokens[u,f]
 then
-	restore[User,f] or some t : activeTokens[f] | revoke[User,f,t] or access[User,t]
+	revoke[u,f,t]
 */
 
-var lone sig InaccessibleFileWithActiveToken extends Reaction { }
+var lone sig DeleteRevoke extends Reaction { }
 
 fact {
 	always {
-		some InaccessibleFileWithActiveToken iff {
-			some f : File | before {
-				not (
-					restore[User,f]
-					or some t : activeTokens[f] | revoke[User,f,t] or access[User,t]
-				) since (f not in User.accessible and some activeTokens[f])
+		some DeleteRevoke iff {
+			some u : User, f : File, t : Token | before {
+				not revoke[u,f,t] since (delete[u,f] and t in activeTokens[u,f])
 			}
 		}
 	}
 }
 
+
 // Preventions
 
 /*
 when
-share[User,f,t]
+	share[u,f,t]
 require
-f in User.accessible
+	f in u.accessible
 */
 
 fact {
-all f : File, t : Token | always {
-share[User,f,t] implies f in User.accessible
-}
+	all u : User, f : File, t : Token | always {
+		share[u,f,t] implies f in u.accessible
+	}
 }
 
 /*
 when
-access[User,t]
+	restore[u,f]
 require
-some tokens.t & User.accessible
+	no activeTokens[u,f]
 */
 
 fact {
-all t : Token | always {
-access[User,t] implies some tokens.t & User.accessible
+	all u : User, f : File | always {
+		restore[u,f] implies no activeTokens[u,f]
+	}
 }
+
+/*
+when
+	access[u,t]
+require
+	some accessible & tokens.t
+*/
+
+fact {
+	all u : User, t : Token | always {
+		access[u,t] implies some accessible & tokens.t
+	}
+}
+
+/*
+when
+	create[u,f]
+require
+	no activeTokens[u,f]
+*/
+
+fact {
+	all u : User, f : File | always {
+		create[u,f] implies no activeTokens[u,f]
+	}
 }
