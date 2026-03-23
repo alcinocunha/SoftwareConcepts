@@ -4,12 +4,12 @@ open Action[User]
 // State
 
 one sig State {
-	var tokens_ : Resource -> set Token,
+	var tokens_ : User -> Resource -> set Token,
 	var revoked_ : set Token,
 	var accessed_ : set Token
 }
 
-fun tokens : Resource -> set Token { State.tokens_ }
+fun tokens : User -> Resource -> set Token { State.tokens_ }
 fun revoked : set Token { State.revoked_ }
 fun accessed : set Token { State.accessed_ }
 
@@ -26,14 +26,14 @@ fact Init {
 var abstract sig TokenAction extends Action { var t : Token }
 
 var sig Share extends TokenAction { var r : Resource } {
-	t not in Resource.tokens
-	tokens' = tokens + r->t
+	t not in User.tokens[Resource]
+	tokens' = tokens + u->r->t
 	revoked' = revoked
 	accessed' = accessed
 }
 
 var sig Revoke extends TokenAction { var r : Resource } {
-	t in r.tokens
+	t in u.tokens[r]
 	t not in revoked + accessed
 	tokens' = tokens
 	revoked' = revoked + t
@@ -66,10 +66,10 @@ pred access [ v : User, y : Token ] { some Access and Access.u = v and Access.t 
 
 check Invariant {
 	always {
-		revoked + accessed in Resource.tokens
+		revoked + accessed in User.tokens[Resource]
 		no revoked & accessed
 	}
-} for 3 but 1 User, 3 Action
+} for 3 but 2 User, 3 Action
 
 check Monotonicity {
 	always {
@@ -77,21 +77,28 @@ check Monotonicity {
 		revoked in revoked'
 		accessed in accessed'
 	}
-} for 3 but 1 User, 3 Action
+} for 3 but 2 User, 3 Action
 
 check Principle1 {
 	// access only possible after share
 	all t : Token {
-		(some r : Resource | share[User,r,t]) releases not access[User,t]
+		(some u : User, r : Resource | share[u,r,t]) releases not (some u : User | access[u,t])
 	}
-} for 3 but exactly 1 User, 3 Action
+} for 3 but 2 User, 3 Action
 
 check Principle2 {
-	// can only access once
+	// can only share token once
 	all t : Token | always {
-		access[User,t] implies after always not access[User,t]
+		(some u : User, r : Resource | share[u,r,t]) implies after always not (some u : User, r : Resource | share[u,r,t])
 	}
-} for 3 but exactly 1 User, 3 Action
+} for 3 but 2 User, 3 Action
+
+check Principle3 {
+	// can only access token once
+	all t : Token | always {
+		(some u : User | access[u,t]) implies after always not (some u : User | access[u,t])
+	}
+} for 3 but 2 User, 3 Action
 
 // Scenarios
 
