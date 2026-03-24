@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="User"/>
+   <type name="Action/Concept"/>
+   <type name="seq/Int"/>
+   <type name="Trash/Create"/>
+   <type name="Trash/Delete"/>
+   <type name="Trash/Empty"/>
+   <type name="Trash/Restore"/>
+   <type name="Trash/Trash"/>
+   <type name="Trash/TrashAction"/>
+</node>
+
+<node color="Yellow">
+   <type name="File"/>
+</node>
+
+<node numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node numberatoms="no" shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<edge visible="no" attribute="yes">
+   <relation name="c"> <type name="Action/Action"/> <type name="Action/Concept"/> </relation>
+   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

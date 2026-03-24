@@ -25,7 +25,7 @@ check Invariant {
 			no Secret & SharedTrash.trashed
 		} 
 	}
-} for 2 but 4 Action, 1 Reaction expect 1
+} for 2 but 4 Action, 1 Reaction expect 0
 
 // Scenarios
 

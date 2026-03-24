@@ -21,7 +21,7 @@ sig Secret extends File {}
 
 // Secret files cannot be in the trash
 // Accessible files were created or restored by a normal user
-// Trashed files were deleted by a normal user
+// Trashed non-secret files were deleted by a normal user
 check Invariant {
 	always {
 		no Reaction iff {
@@ -30,7 +30,7 @@ check Invariant {
 			all f : File - Secret | f in SharedTrash.trashed iff before (not (some u : User - System | SharedTrash.empty[u] or SharedTrash.restore[u,f]) since (some u : User - System | SharedTrash.delete[u,f]))
 		} 
 	}
-} for 2 but 4 Action, 5 Reaction expect 1
+} for 2 but 4 Action, 5 Reaction expect 0
 
 // Scenarios
 
@@ -58,11 +58,10 @@ run Scenario3 {
 
 
 // At some point a non-secret file is deleted when the system is already reacting to a previous secret file deletion
-run Scenario3 {
+run Scenario4 {
 	eventually (DeleteEmpty and some u : User, f : File-Secret | SharedTrash.delete[u,f])
 	eventually always no Reaction		
 } for exactly 3 File, 2 User, 4 Action, 3 Reaction expect 1
-
 
 // Reactions
 
