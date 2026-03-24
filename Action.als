@@ -1,3 +1,6 @@
 module Action[User]
 
-var lone abstract sig Action { var u : User }
+abstract sig Concept {}
+
+var lone abstract sig Action { var c : Concept, var u : User }
+

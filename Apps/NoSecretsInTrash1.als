@@ -2,16 +2,17 @@ module Apps/NoSecretsInTrash1
 open Action[User]
 open Reaction
 
-// Composed concepts
+// App configuration
+
+// Used concepts
 
 open Concepts/Trash[User,File]
 
-// Single user app
+// Several users sharing the same trash
+sig User {}
+one sig SharedTrash extends Trash {}
 
-one sig User {}
-
-// Types
-
+// Items are files and some of them are secrets
 sig File {}
 sig Secret extends File {}
 
@@ -21,7 +22,7 @@ sig Secret extends File {}
 check Invariant {
 	always {
 		no Reaction iff {
-			no Secret & User.trashed
+			no Secret & SharedTrash.trashed
 		} 
 	}
 } for 2 but 4 Action, 1 Reaction expect 1
@@ -32,37 +33,37 @@ check Invariant {
 // Then a reaction will empty the trash
 run Scenario1 {
 	Secret = File
-	eventually Secret in User.trashed
+	eventually Secret in SharedTrash.trashed
 	eventually always no Reaction		
-} for exactly 3 File, 4 Action, 1 Reaction expect 1	
+} for 2 User, exactly 3 File, 4 Action, 1 Reaction expect 1	
 
 // All files (including both secret and no secret) will be deleted
 // Then a reaction will empty the trash including the non secret files
 run Scenario2 {
 	some Secret
 	some File - Secret
-	eventually File in User.trashed
+	eventually File in SharedTrash.trashed
 	eventually always no Reaction		
-} for exactly 3 File, 4 Action, 1 Reaction expect 1
+} for 2 User, exactly 3 File, 4 Action, 1 Reaction expect 1
 
 // Reactions
 
 /*
 when
-	delete[User,f]
+	SharedTrash.delete[u,f]
 where
 	f in Secret
 then
-	empty[User]
+	some u : User | SharedTrash.empty[u]
 */
 
-var lone sig DeleteEmpty extends Reaction { }
+var lone sig DeleteEmpty extends Reaction {}
 
 fact {
 	always {
 		some DeleteEmpty iff {
-			some f : File | before {
-				not empty[User] since (delete[User,f] and f in Secret)
+			some u : User, f : File | before {
+				not (some u : User | SharedTrash.empty[u]) since (SharedTrash.delete[u,f] and f in Secret)
 			}
 		}
 	}
@@ -72,13 +73,13 @@ fact {
 
 /*
 when
-	restore[User,f]
+	SharedTrash.restore[u,f]
 require
 	f not in Secret
 */
 
 fact {
-	all f : File | always {
-		restore[User,f] implies f not in Secret
+	all u : User, f : File | always {
+		SharedTrash.restore[u,f] implies f not in Secret
 	}
 }

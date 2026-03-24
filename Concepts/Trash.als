@@ -3,13 +3,10 @@ open Action[User]
 
 // State
 
-one sig State {
-	var accessible_ : User -> Item,
-	var trashed_ : User -> Item
+abstract sig Trash extends Concept {
+	var accessible : set Item,
+	var trashed : set Item
 }
-
-fun accessible : User -> set Item { State.accessible_ }
-fun trashed : User -> set Item { State.trashed_ }
 
 // Initial state
 
@@ -20,29 +17,29 @@ fact Init {
 
 // Actions
 
-var abstract sig TrashAction extends Action {}
+var abstract sig TrashAction extends Action {} { c in Trash }
 
 var sig Create extends TrashAction { var i : Item } { 
-	i not in u.(accessible+trashed)
-	accessible' = accessible + u->i
+	i not in c.(accessible+trashed)
+	accessible' = accessible + c->i
 	trashed' = trashed
 }
 
 var sig Delete extends TrashAction { var i : Item } {
-	i in u.accessible
-	accessible' = accessible - u->i
-	trashed' = trashed + u->i
+	i in c.accessible
+	accessible' = accessible - c->i
+	trashed' = trashed + c->i
 }
 
 var sig Restore extends TrashAction { var i : Item } {
-	i in u.trashed
-	accessible' = accessible + u->i
-	trashed' = trashed - u->i
+	i in c.trashed
+	accessible' = accessible + c->i
+	trashed' = trashed - c->i
 }
 
 var sig Empty extends TrashAction { } {
-	some u.trashed
-	trashed' = trashed - u->Item
+	some c.trashed
+	trashed' = trashed - c->Item
 	accessible' = accessible
 }
 
@@ -55,37 +52,37 @@ fact Stutter {
 	}
 }
 
-pred create [a : User, x : Item] { some Create and Create.u = a and Create.i = x }
-pred delete [a : User, x : Item] { some Delete and Delete.u = a and Delete.i = x }
-pred restore [a : User, x : Item] { some Restore and Restore.u = a and Restore.i = x }
-pred empty [a : User] { some Empty and Empty.u = a }
+pred create [t : Trash, a : User, x : Item] { some Create and Create.c = t and Create.u = a and Create.i = x }
+pred delete [t : Trash, a : User, x : Item] { some Delete and Delete.c = t and Delete.u = a and Delete.i = x }
+pred restore [t : Trash, a : User, x : Item] { some Restore and Restore.c = t and Restore.u = a and Restore.i = x }
+pred empty [t : Trash, a : User] { some Empty and Empty.c = t and Empty.u = a }
 
 // Properties
 
 // Items cannot be simultaneously accessible and trashed
 check Invariant {
-	always no User.accessible & User.trashed
-} for 3 but 4 Action, exactly 1 User expect 0
+	all t : Trash | always no t.accessible & t.trashed
+} for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then restored it will be accessible
 check Principle1 {
-	all i : Item | always ((delete[User,i];restore[User,i]) implies i in User.accessible'')
-} for 3 but 4 Action, exactly 1 User expect 0
+	all t : Trash, i : Item, u,v : User | always ((t.delete[u,i];t.restore[v,i]) implies i in t.accessible'')
+} for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then the trash is emptied then the it is neither accessible nor trashed
 check Principle2 {
-	all i : Item | always ((delete[User,i];empty[User]) implies i not in User.(trashed+accessible)'')
-} for 3 but 4 Action, exactly 1 User expect 0
+	all t : Trash, i : Item, u,v : User | always ((t.delete[u,i];t.empty[v]) implies i not in t.(trashed+accessible)'')
+} for 3 but 4 Action, exactly 1 Trash expect 0
 
 // Scenarios
 
 // All items are deleted and then the thrash is emptied
 run Scenario1 {
-	eventually (Item in User.trashed and empty[User])
-} for exactly 3 Item, 4 Action, exactly 1 User expect 1
+	eventually (Item in Trash.trashed and Trash.empty[User])
+} for exactly 3 Item, 4 Action, exactly 1 User, exactly 1 Trash expect 1
 
 // All items are deleted and then restored
 run Scenario2 {
-	always not empty[User]
-	eventually (Item in User.trashed and eventually Item in User.accessible )
-} for exactly 2 Item, 4 Action, exactly 1 User expect 1
+	always not Trash.empty[User]
+	eventually (Item in Trash.trashed and eventually Item in Trash.accessible )
+} for exactly 2 Item, 4 Action, exactly 1 User, exactly 1 Trash expect 1
