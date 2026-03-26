@@ -1,21 +1,31 @@
 module Apps/FileSystem3
-open Action[User]
+open Action
 open Reaction
+
+// App configuration
 
 // Composed concepts
 
-open Concepts/Trash[User,File]
-open Concepts/Label[User,File,Color]
+open Concepts/Trash[File]
+open Concepts/Label[File,Color]
 
-// Single user app
+// Single user with a single trash and labels
 
-one sig User {}
+one sig U extends User {}
+one sig T extends Trash {}
+one sig L extends Label {}
 
 // Types
 
 sig File {}
 sig Color {}
 one sig Red extends Color {}
+
+// App specific relations
+
+fun accessible : set File { T.accessible }
+fun trashed : set File { T.trashed }
+fun colors : File -> set Color { L.labels }
 
 // The app invariant
 
@@ -24,8 +34,8 @@ one sig Red extends Color {}
 check Invariant {
 	always {
 		no Reaction iff {
-			labels.Color in accessible+trashed
-			labels.Red = trashed
+			colors.Color in accessible+trashed
+			colors.Red = trashed
 		}
 	}
 } for 2 but 7 Action, 3 Reaction expect 0
@@ -35,16 +45,16 @@ check Invariant {
 // One file will all possible colors is deleted and later the trash is emptied
 // Reactions will affix the red color to the trashed file and then clear all its colors
 run Scenario1 {
-	eventually (User.labels[File] = Color-Red and delete[User,File])
-	eventually (no Reaction and File in User.trashed and empty[User])
+	eventually (File.colors = Color-Red and T.delete[User,File])
+	eventually (no Reaction and File in trashed and T.empty[User])
 	eventually always no Reaction
 } for exactly 1 File, exactly 3 Color, 7 Action, 3 Reaction expect 1
 
 // One file will all possible colors is deleted and later restored
 // Reactions will affix the red color to the trashed file and then remove the red color
 run Scenario2 {
-	eventually (User.labels[File] = Color-Red and delete[User,File])
-	eventually (no Reaction and restore[User,File])
+	eventually (File.colors = Color-Red and T.delete[User,File])
+	eventually (no Reaction and T.restore[User,File])
 	eventually always no Reaction
 } for exactly 1 File, exactly 3 Color, 7 Action, 3 Reaction expect 1
 
@@ -53,11 +63,11 @@ run Scenario2 {
 
 /*
 when
-	empty[User]
+	T.empty[User]
 where
-	f in User.trashed and some User.labels[f]
+	f in trashed and some f.colors
 then
-	clear[User,f]
+	L.clear[User,f]
 */
 
 var lone sig EmptyClear extends Reaction { }
@@ -66,7 +76,7 @@ fact {
 	always {
 		some EmptyClear iff {
 			some f : File | before {
-				not clear[User,f] since (empty[User] and f in User.trashed and some User.labels[f])
+				not L.clear[User,f] since (T.empty[User] and f in trashed and some f.colors)
 			}
 		}
 	}
@@ -74,11 +84,11 @@ fact {
 
 /*
 when
-	delete[User,f]
+	T.delete[User,f]
 where
-	Red not in User.labels[f]
+	Red not in f.colors
 then
-	affix[User,f,Red] or empty[User] or restore[User,f]
+	L.affix[User,f,Red] or T.empty[User] or T.restore[User,f]
 */
 
 var lone sig DeleteAffixOrEmptyOrRestore extends Reaction { }
@@ -87,7 +97,7 @@ fact {
 	always {
 		some DeleteAffixOrEmptyOrRestore iff {
 			some f : File | before {
-				not (affix[User,f,Red] or empty[User] or restore[User,f]) since (delete[User,f] and Red not in User.labels[f])
+				not (L.affix[User,f,Red] or T.empty[User] or T.restore[User,f]) since (T.delete[User,f] and Red not in f.colors)
 			}
 		}
 	}
@@ -95,11 +105,11 @@ fact {
 
 /*
 when
-	restore[User,f]
+	T.restore[User,f]
 where
-	Red in User.labels[f]
+	Red in f.colors
 then
-	detach[User,f,Red] or delete[User,f] or clear[User,f]
+	L.detach[User,f,Red] or T.delete[User,f] or L.clear[User,f]
 */
 
 var lone sig RestoreDetachOrDeleteOrClear extends Reaction { }
@@ -108,7 +118,7 @@ fact {
 	always {
 		some RestoreDetachOrDeleteOrClear iff {
 			some f : File | before {
-				not (detach[User,f,Red] or delete[User,f] or clear[User,f]) since (restore[User,f] and Red in User.labels[f])
+				not (L.detach[User,f,Red] or T.delete[User,f] or L.clear[User,f]) since (T.restore[User,f] and Red in f.colors)
 			}
 		}
 	}
@@ -118,79 +128,79 @@ fact {
 
 /*
 when
-	affix[User,f,c]
+	L.affix[User,f,c]
 require
-	f in User.(accessible+trashed)
+	f in accessible+trashed
 */
 
 fact {
 	all f : File, c : Color | always {
-		affix[User,f,c] implies f in User.(accessible+trashed)
+		L.affix[User,f,c] implies f in accessible+trashed
 	}
 }
 
 /*
 when
-	affix[User,f,Red]
+	L.affix[User,f,Red]
 require
-	f not in User.accessible
+	f not in accessible
 */
 
 fact {
 	all f : File | always {
-		affix[User,f,Red] implies f not in User.accessible
+		L.affix[User,f,Red] implies f not in accessible
 	}
 }
 
 
 /*
 when
-	detach[User,f,c]
+	L.detach[User,f,c]
 require
-	f in User.(accessible+trashed)
+	f in accessible+trashed
 */
 
 fact {
 	all f : File, c : Color | always {
-		detach[User,f,c] implies f in User.(accessible+trashed)
+		L.detach[User,f,c] implies f in accessible+trashed
 	}
 }
 
 /*
 when
-	detach[User,f,Red]
+	L.detach[User,f,Red]
 require
-	f not in User.trashed
+	f not in trashed
 */
 
 fact {
 	all f : File | always {
-		detach[User,f,Red] implies f not in User.trashed
+		L.detach[User,f,Red] implies f not in trashed
 	}
 }
 
 /*
 when
-	clear[User,f]
+	L.clear[User,f]
 require
-	f not in User.trashed or Red not in User.labels[f]
+	f not in trashed or Red not in f.colors
 */
 
 fact {
 	all f : File | always {
-		clear[User,f] implies (f not in User.trashed or Red not in User.labels[f])
+		L.clear[User,f] implies (f not in trashed or Red not in f.colors)
 	}
 }
 
 /*
 when
-	create[User,f]
+	T.create[User,f]
 require
-	no User.labels[f]
+	no f.colors
 */
 
 fact {
 	all f : File | always {
-		create[User,f] implies no User.labels[f]
+		T.create[User,f] implies no f.colors
 	}
 }

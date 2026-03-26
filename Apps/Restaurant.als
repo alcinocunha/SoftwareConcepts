@@ -1,27 +1,32 @@
 module Apps/Restaurant
-open Action[User]
+open Action
 open Reaction
+
+// App configuration
 
 // Composed concepts
 
-open Concepts/Reservation[User,Table]
-open Concepts/Label[User,Table,Reserved]
+open Concepts/Reservation[Table]
+open Concepts/Label[Table,Reserved]
 
-// Multiple clients one restaurant
+// Multiple clients and one restaurant with a single reservation and label concepts
 
-abstract sig User {}
 sig Client extends User {}
 one sig Restaurant extends User {}
+
+one sig R extends Reservation {}
+one sig L extends Label {}
 
 // Types
 
 sig Table {}
 one sig Reserved {}
 
-// Auxiliary functions for visualization
+// App specific relations
 
-fun available_tables : set Table { Restaurant.available }
-fun reserved : set Table { Restaurant.labels.Reserved }
+fun tables : set Table { R.available }
+fun reservations : Client -> Table { R.reservations }
+fun reserved : set Table { L.labels.Reserved }
 
 // The app invariant
 
@@ -29,10 +34,8 @@ fun reserved : set Table { Restaurant.labels.Reserved }
 check Invariant {
 	always {
 		no Reaction iff {
-			available in Restaurant -> Table
 			reservations in Client -> Table
-			labels in Restaurant -> Table -> Reserved
-			Client.reservations = Restaurant.labels.Reserved
+			Client.reservations = reserved
 		}
 	}
 } for 2 Table, 2 Client, 9 Action, 3 Reaction expect 0
@@ -43,16 +46,16 @@ check Invariant {
 // Then a reaction will add and later remove the reserved sign
 run Scenario {
 	eventually always no Reaction
-	all t : Table | some c : Client | eventually use[c,t]
-} for 1 Client, exactly 2 Table, 9 Action, 3 Reaction, 20 steps expect 1
+	all t : Table | eventually R.use[Client,t]
+} for exactly 1 Client, exactly 2 Table, 9 Action, 3 Reaction, 20 steps expect 1
 
 // Reactions
 
 /*
 when
-	reserve[c,t]
+	R.reserve[c,t]
 then
-	affix[Restaurant,Reserved] or cancel[c,t]
+	L.affix[Restaurant,t,Reserved] or R.cancel[c,t]
 */
 
 var lone sig ReserveAffixOrCancel extends Reaction { }
@@ -61,7 +64,7 @@ fact {
 	always {
 		some ReserveAffixOrCancel iff {
 			some c : Client, t : Table | before {
-				not (affix[Restaurant,t,Reserved] or cancel[c,t]) since reserve[c,t]
+				not (L.affix[Restaurant,t,Reserved] or R.cancel[c,t]) since R.reserve[c,t]
 			}
 		}
 	}
@@ -69,11 +72,11 @@ fact {
 
 /*
 when
-	cancel[c,t]
+	R.cancel[c,t]
 where
-	Reserved in Restaurant.labels[t]
+	t in reserved
 then
-	dettach[Restaurant,t,Reserved]
+	L.detach[Restaurant,t,Reserved]
 */
 
 var lone sig CancelDetach extends Reaction { }
@@ -82,7 +85,7 @@ fact {
 	always {
 		some CancelDetach iff {
 			some c : Client, t : Table | before {
-				not detach[Restaurant,t,Reserved] since (cancel[c,t] and Reserved in Restaurant.labels[t])
+				not L.detach[Restaurant,t,Reserved] since (R.cancel[c,t] and t in reserved)
 			}
 		}
 	}
@@ -90,9 +93,9 @@ fact {
 
 /*
 when
-	use[c,t]
+	R.use[c,t]
 then
-	dettach[Restaurant,t,Reserved]
+	L.detach[Restaurant,t,Reserved]
 */
 
 var lone sig UseDetach extends Reaction { }
@@ -101,7 +104,7 @@ fact {
 	always {
 		some UseDetach iff {
 			some c : Client, t : Table | before {
-				not detach[Restaurant,t,Reserved] since use[c,t]
+				not L.detach[Restaurant,t,Reserved] since R.use[c,t]
 			}
 		}
 	}
@@ -111,78 +114,78 @@ fact {
 
 /*
 when
-	affix[u,t,Reserved]
+	L.affix[u,t,Reserved]
 require
-	u in Restaurant and t in User.reservations
+	u = Restaurant and t in Client.reservations
 */
 
 fact {
 	all u : User, t : Table | always {
-		affix[u,t,Reserved] implies u in Restaurant and t in Client.reservations
+		L.affix[u,t,Reserved] implies u = Restaurant and t in Client.reservations
 	}
 }
 
 /*
 when
-	detach[u,t,Reserved]
+	L.detach[u,t,Reserved]
 require
-	u in Restaurant and t not in Client.reservations
+	u = Restaurant and t not in Client.reservations
 */
 
 fact {
 	all u : User, t : Table | always {
-		detach[u,t,Reserved] implies u in Restaurant and t not in Client.reservations
+		L.detach[u,t,Reserved] implies u = Restaurant and t not in Client.reservations
 	}
 }
 
 /*
 when
-	clear[u,t]
+	L.clear[u,t]
 require
 	false
 */
 
 fact {
 	all u : User, t : Table | always {
-		clear[u,t] implies false
+		L.clear[u,t] implies false
 	}
 }
 
 /*
 when
-	provide[u,t]
+	R.use[c,t]
 require
-	u in Restaurant
-*/
-
-fact {
-	all u : User, t : Table | always {
-		provide[u,t] implies u in Restaurant
-	}
-}
-
-/*
-when
-	use[c,t]
-require
-	Reserved in Restaurant.labels[t]
+	t in reserved
 */
 
 fact {
 	all c : Client, t : Table | always {
-		use[c,t] implies Reserved in Restaurant.labels[t]
+		R.use[c,t] implies t in reserved
 	}
 }
 
 /*
 when
-	reserve[u,t]
+	R.reserve[c,t]
 require
-	u in Client and Reserved not in Restaurant.labels[t]
+	t not in reserved
 */
 
 fact {
-	all u : User, t : Table | always {
-		reserve[u,t] implies u in Client and Reserved not in Restaurant.labels[t]
+	all c : Client, t : Table | always {
+		R.reserve[c,t] implies t not in reserved
+	}
+}
+
+/*
+when
+	R.reserve[Restaurant,t]
+require
+	false
+*/
+
+fact {
+	all t : Table | always {
+		R.reserve[Restaurant,t] implies false
 	}
 }

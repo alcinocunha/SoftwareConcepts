@@ -1,125 +1,145 @@
 module Apps/FileSharing1
-open Action[User]
+open Action
 open Reaction
 
 // Composed concepts
 
-open Concepts/Trash[User,File]
-open Concepts/Token[User,File,Token]
+open Concepts/Trash[File]
+open Concepts/Permalink[File,Token]
 
-// Multi user app
+// All users share the same trash and token concepts
 
-sig User {}
+one sig T extends Trash {}
+one sig P extends Permalink {}
 
 // Types
 
 sig File {}
 sig Token {}
-fun activeTokens [u : User, f : File] : set Token { (u.tokens[f] - revoked) - accessed }
+
+// App specific relations
+
+fun uploaded : set File { T.accessible + T.trashed }
+fun trashed : set File { T.trashed }
+fun shared : File -> Token { P.urls :> (Token - P.revoked) }
 
 // The app invariant
 
-// Files with active (not revoked or accessed) tokens must be accessible
+// Shared files must be accessible
+// Shared tokens were not accessed
 check Invariant {
 	always {
 		no Reaction iff {
-			all u : User, f : File | some activeTokens[u,f] implies f in u.accessible
+			shared.Token in uploaded - trashed
+			all f : File, t : Token | t in f.shared implies before ((no u : User | T.delete[u,f] or P.access[u,t]) since (some u : User | P.share[u,f,t]))
 		}
 	}
-} for 2 but 7 Action, 1 Reaction expect 0
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Additional properties
+check AccessedAreAccessible {
+	all t : Token | always {
+		(some u : User | P.access[u,t]) implies shared.t in uploaded - trashed
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Tokens can only accessed once
+check SingleAccess {
+	all t : Token | always {
+		(some u : User | P.access[u,t]) implies after always (no u : User | P.access[u,t])
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
 
 // Scenarios
 
 // One user shares a file, then deletes it, then a reaction will revoke the token
 run Scenario1 {
 	some f : File, t : Token | eventually {
-		share[User,f,t]; delete[User,f]
+		P.share[User,f,t]; T.delete[User,f]
 	}
 	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 1 Reaction expect 1
+} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 1
 
 // One user shares a file, then deletes it, then tries to access the token
 run Scenario2 {
 	some f : File, t : Token | {
-		eventually (share[User,f,t]; delete[User,f])
-		eventually access[User,t]
+		eventually (P.share[User,f,t]; T.delete[User,f])
+		eventually P.access[User,t]
 	}
-} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 1 Reaction expect 0
+} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 0
 
 // Reactions
 
 /*
+reaction DeleteRevoke[t : Token]
 when
-	delete[u,f]
+	T.delete[u,f]
 where
-	t in activeTokens[u,f]
+	t in f.shared
 then
-	revoke[u,f,t]
+	some u : User | P.revoke[u,f,t]
 */
 
-var lone sig DeleteRevoke extends Reaction { }
+var lone sig DeleteRevoke extends Reaction { var t : Token }
+pred DeleteRevoke [ x : Token ] { some r : DeleteRevoke | r.t = x }
 
 fact {
-	always {
-		some DeleteRevoke iff {
-			some u : User, f : File, t : Token | before {
-				not revoke[u,f,t] since (delete[u,f] and t in activeTokens[u,f])
+	all t : Token | always {
+		DeleteRevoke[t] iff {
+			some u : User, f : File | before {
+				not (some u : User | P.revoke[u,f,t]) since (T.delete[u,f] and t in f.shared)
 			}
 		}
 	}
 }
 
+/*
+reaction AccessRevoke[t : Token]
+when
+	P.access[u,t]
+where
+	t in f.shared
+then
+	some u : User | P.revoke[u,f,t]
+*/
+
+var lone sig AccessRevoke extends Reaction { var t : Token }
+pred AccessRevoke [ x : Token ] { some r : AccessRevoke | r.t = x }
+
+fact {
+	all t : Token | always {
+		AccessRevoke[t] iff {
+			some u : User, f : File | before {
+				not (some u : User | P.revoke[u,f,t]) since (P.access[u,t] and t in f.shared)
+			}
+		}
+	}
+}
 
 // Preventions
 
 /*
 when
-	share[u,f,t]
+	P.share[u,f,t]
 require
-	f in u.accessible
+	f in uploaded - trashed
 */
 
 fact {
 	all u : User, f : File, t : Token | always {
-		share[u,f,t] implies f in u.accessible
+		P.share[u,f,t] implies f in uploaded - trashed
 	}
 }
 
 /*
 when
-	restore[u,f]
+	P.access[u,t]
 require
-	no activeTokens[u,f]
-*/
-
-fact {
-	all u : User, f : File | always {
-		restore[u,f] implies no activeTokens[u,f]
-	}
-}
-
-/*
-when
-	access[u,t]
-require
-	some accessible & tokens.t
+	not (AccessRevoke[t] or DeleteRevoke[t])
 */
 
 fact {
 	all u : User, t : Token | always {
-		access[u,t] implies some accessible & tokens.t
-	}
-}
-
-/*
-when
-	create[u,f]
-require
-	no activeTokens[u,f]
-*/
-
-fact {
-	all u : User, f : File | always {
-		create[u,f] implies no activeTokens[u,f]
+		P.access[u,t] implies not (AccessRevoke[t] or DeleteRevoke[t])
 	}
 }

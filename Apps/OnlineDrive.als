@@ -11,7 +11,7 @@ open Concepts/Trash[User,File]
 
 // Several users each with their own trash
 sig User {
-    trash : one Trash
+    trash : set Trash
 }
 fact { trash in User one -> one Trash }
 

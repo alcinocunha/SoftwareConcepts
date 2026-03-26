@@ -1,20 +1,23 @@
 module Apps/NoSecretsInTrash1
-open Action[User]
+open Action
 open Reaction
 
 // App configuration
 
 // Used concepts
 
-open Concepts/Trash[User,File]
+open Concepts/Trash[File]
 
 // Several users sharing the same trash
-sig User {}
-one sig SharedTrash extends Trash {}
+one sig T extends Trash {}
 
 // Items are files and some of them are secrets
 sig File {}
 sig Secret extends File {}
+
+// App specific relations
+fun accessible : set File { T.accessible }
+fun trashed : set File { T.trashed }
 
 // The app invariant
 
@@ -22,7 +25,7 @@ sig Secret extends File {}
 check Invariant {
 	always {
 		no Reaction iff {
-			no Secret & SharedTrash.trashed
+			no Secret & trashed
 		} 
 	}
 } for 2 but 4 Action, 1 Reaction expect 0
@@ -33,7 +36,7 @@ check Invariant {
 // Then a reaction will empty the trash
 run Scenario1 {
 	Secret = File
-	eventually Secret in SharedTrash.trashed
+	eventually Secret in trashed
 	eventually always no Reaction		
 } for 2 User, exactly 3 File, 4 Action, 1 Reaction expect 1	
 
@@ -42,7 +45,7 @@ run Scenario1 {
 run Scenario2 {
 	some Secret
 	some File - Secret
-	eventually File in SharedTrash.trashed
+	eventually File in trashed
 	eventually always no Reaction		
 } for 2 User, exactly 3 File, 4 Action, 1 Reaction expect 1
 
@@ -50,11 +53,11 @@ run Scenario2 {
 
 /*
 when
-	SharedTrash.delete[u,f]
+	T.delete[u,f]
 where
 	f in Secret
 then
-	some u : User | SharedTrash.empty[u]
+	some u : User | T.empty[u]
 */
 
 var lone sig DeleteEmpty extends Reaction {}
@@ -63,7 +66,7 @@ fact {
 	always {
 		some DeleteEmpty iff {
 			some u : User, f : File | before {
-				not (some u : User | SharedTrash.empty[u]) since (SharedTrash.delete[u,f] and f in Secret)
+				not (some u : User | T.empty[u]) since (T.delete[u,f] and f in Secret)
 			}
 		}
 	}
@@ -73,13 +76,13 @@ fact {
 
 /*
 when
-	SharedTrash.restore[u,f]
+	T.restore[u,f]
 require
 	f not in Secret
 */
 
 fact {
 	all u : User, f : File | always {
-		SharedTrash.restore[u,f] implies f not in Secret
+		T.restore[u,f] implies f not in Secret
 	}
 }

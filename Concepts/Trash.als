@@ -1,5 +1,5 @@
-module Concepts/Trash[User,Item]
-open Action[User]
+module Concepts/Trash[Item]
+open Action
 
 // State
 
@@ -61,17 +61,17 @@ pred empty [t : Trash, a : User] { some Empty and Empty.c = t and Empty.u = a }
 
 // Items cannot be simultaneously accessible and trashed
 check Invariant {
-	all t : Trash | always no t.accessible & t.trashed
+	always no Trash.accessible & Trash.trashed
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then restored it will be accessible
 check Principle1 {
-	all t : Trash, i : Item, u,v : User | always ((t.delete[u,i];t.restore[v,i]) implies i in t.accessible'')
+	all i : Item, u,v : User | always ((Trash.delete[u,i];Trash.restore[v,i]) implies i in Trash.accessible'')
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then the trash is emptied then the it is neither accessible nor trashed
 check Principle2 {
-	all t : Trash, i : Item, u,v : User | always ((t.delete[u,i];t.empty[v]) implies i not in t.(trashed+accessible)'')
+	all i : Item, u,v : User | always ((Trash.delete[u,i];Trash.empty[v]) implies i not in Trash.(trashed+accessible)'')
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // Scenarios
