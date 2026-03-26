@@ -3,7 +3,7 @@
 
 <view>
 
-<projection> <type name="User"/> </projection>
+<projection> <type name="User"/> <type name="Action/Concept"/> </projection>
 
 <defaultnode/>
 
@@ -20,6 +20,7 @@
    <type name="String"/>
    <type name="univ"/>
    <type name="User"/>
+   <type name="Action/Concept"/>
    <type name="seq/Int"/>
 </node>
 
@@ -27,24 +28,19 @@
    <type name="Action/Action"/>
 </node>
 
+<node shape="Ellipse">
+   <type name="Tag"/>
+</node>
+
 <node showlabel="no">
+   <set name="c" type="Action/Action"/>
    <set name="u" type="Action/Action"/>
 </node>
 
-<node visible="no">
-   <type name="State"/>
-</node>
-
-<edge label="labels">
-   <relation name="$labels"> <type name="Item"/> <type name="Label"/> </relation>
-   <relation name="$labels"> <type name="User"/> <type name="Item"/> <type name="Label"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
    <relation name="i"> <type name="Action/Action"/> <type name="Item"/> </relation>
-   <relation name="l"> <type name="Affix"/> <type name="Label"/> </relation>
-   <relation name="l"> <type name="Detach"/> <type name="Label"/> </relation>
-   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="t"> <type name="Affix"/> <type name="Tag"/> </relation>
+   <relation name="t"> <type name="Detach"/> <type name="Tag"/> </relation>
 </edge>
 
 </view>

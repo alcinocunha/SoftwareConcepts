@@ -1,32 +1,40 @@
 module Apps/NoSecretsInTrash2
-open Action[User]
+open Action
 open Reaction
 
-// Composed concepts
+// App configuration
 
-open Concepts/Trash[User,File]
+// User concepts
+open Concepts/Trash[File]
 
-// Single user app
+// Several users sharing the same trash, special user System will empty the trash when secrets are deleted
+sig Normal extends User {}
+one sig System extends User {}
 
-one sig User {}
+one sig T extends Trash {}
 
-// Types
-
+// Items are files and some of them are secrets
 sig File {}
 sig Secret extends File {}
+
+// App specific relations
+fun accessible : set File { T.accessible }
+fun trashed : set File { T.trashed }
 
 // The app invariant
 
 // Secret files cannot be in the trash
-// Non secret files are in the trash iff they were deleted by the user and not restored or emptied by the user since then
+// Accessible files were created or restored by a normal user
+// Trashed non-secret files were deleted by a normal user
 check Invariant {
 	always {
 		no Reaction iff {
-			no Secret & User.trashed
-			all f : File-Secret | f in User.trashed iff before ((not request[empty[User]] and not request[restore[User,f]]) since request[delete[User,f]])
+			no Secret & trashed
+			all f : File | f in accessible iff before (not (some u : User - System | T.delete[u,f]) since (some u : User - System | T.create[u,f] or T.restore[u,f]))
+			all f : File - Secret | f in trashed iff before (not (some u : User - System | T.empty[u] or T.restore[u,f]) since (some u : User - System | T.delete[u,f]))
 		} 
 	}
-} for 2 but 4 Action, 3 Reaction expect 1
+} for 2 but 4 Action, 5 Reaction expect 0
 
 // Scenarios
 
@@ -34,76 +42,95 @@ check Invariant {
 // Then a reaction will empty the trash
 run Scenario1 {
 	Secret = File
-	eventually Secret in User.trashed
+	eventually Secret in trashed
 	eventually always no Reaction		
-} for exactly 3 File, 4 Action, 3 Reaction expect 1
+} for exactly 3 File, 2 User, 4 Action, 1 Reaction expect 1
 
-// All files (including both secret and no secret) will be deleted
+// At some point a secret file is deleted when some non secret fine is in the trash
 // Then a reaction will first restore the non secret files, empty the trash, and finally delete again the restored files
 run Scenario2 {
-	some Secret
-	some File - Secret
-	eventually File in User.trashed
+	eventually (some trashed - Secret and some u : User, s : Secret | T.delete[u,s])
 	eventually always no Reaction		
-} for exactly 3 File, 4 Action, 3 Reaction expect 1
+} for exactly 3 File, 2 User, 4 Action, 3 Reaction expect 1
+
+
+// At some point a secret file is deleted when the system is already reacting to a previous secret file deletion
+run Scenario3 {
+	eventually (DeleteEmpty and some u : User, f : Secret | T.delete[u,f])
+	eventually always no Reaction		
+} for exactly 3 File, 2 User, 4 Action, 3 Reaction expect 1
+
+
+// At some point a non-secret file is deleted when the system is already reacting to a previous secret file deletion
+run Scenario4 {
+	eventually (DeleteEmpty and some u : User, f : File-Secret | T.delete[u,f])
+	eventually always no Reaction		
+} for exactly 3 File, 2 User, 4 Action, 3 Reaction expect 1
 
 // Reactions
 
 /*
+reaction DeleteEmpty
 when
-	delete[User,f]
+	T.delete[u,f]
 where
-	f in Secret
+	u not in System and f in Secret
 then
-	empty[User]
+	T.empty[System]
 */
 
-var lone sig DeleteEmpty extends Reaction { }
+var lone sig DeleteEmpty extends Reaction {}
+pred DeleteEmpty { some DeleteEmpty }
 fact {
 	always {
 		some DeleteEmpty iff {
-			some f : File | before {
-				not empty[User] since (delete[User,f] and f in Secret)
+			some u : User, f : File | before {
+				not T.empty[System] since (T.delete[u,f] and u not in System and f in Secret)
 			}
 		}
 	}
 }
 
 /*
+reaction DeleteRestore[g : File]
 when
-	delete[User,f]
+	T.delete[u,f]
 where
-	f in Secret and g in User.trashed - Secret
+	u not in System and f in Secret and g in trashed - Secret
 then
-	restore[User,g]
+	T.restore[System,g]
 */
 
-var lone sig DeleteRestore extends Reaction { }
+var sig DeleteRestore extends Reaction { var g : File }
+pred DeleteRestore [x : File] { some d : DeleteRestore | d.g = x }
 fact {
-	always {
-		some DeleteRestore iff {
-			some f, g : File | before {
-				not restore[User,g] since (delete[User,f] and f in Secret and g in User.trashed - Secret)
+	all g : File | always {
+		DeleteRestore[g] iff {
+			some u : User, f : File | before {
+				not T.restore[System,g] since (T.delete[u,f] and u not in System and f in Secret and g in trashed - Secret)
 			}
 		}
 	}
 }
 
 /*
+reaction DeleteDelete[g : File]
 when
-	delete[User,f]
+	T.delete[u,f]
 where
-	f in Secret and g in User.trashed - Secret
+	u not in System and f not in Secret and g in trashed - Secret
 then
-	delete[User,g]
+	T.delete[System,g]
 */
 
-var lone sig DeleteDelete extends Reaction { }
+var sig DeleteDelete extends Reaction { var g : File }
+pred DeleteDelete [x : File] { some d : DeleteDelete | d.g = x }
+
 fact {
-	always {
-		some DeleteDelete iff {
-			some f, g : File | before {
-				not delete[User,g] since (delete[User,f] and f in Secret and g in User.trashed - Secret)
+	all g : File | always {
+		DeleteDelete[g] iff {
+			some u : User, f : File | before {
+				not T.delete[System,g] since (T.delete[u,f] and f in Secret and g in trashed - Secret)
 			}
 		}
 	}
@@ -113,39 +140,91 @@ fact {
 
 /*
 when
-	delete[User,f]
+	T.create[System,f]
 require
-	f not in Secret implies no Secret & User.trashed
+	false
 */
 
 fact {
 	all f : File | always {
-		delete[User,f] implies (f not in Secret implies no Secret & User.trashed)
+		T.create[System,f] implies false
 	}
 }
 
 /*
 when
-	restore[User,f]
+	T.delete[System,f]
 require
-	f not in Secret
+	DeleteDelete[f]
 */
 
 fact {
 	all f : File | always {
-		restore[User,f] implies f not in Secret
+		T.delete[System,f] implies DeleteDelete[f]
 	}
 }
 
 /*
 when
-	empty[User]
+	T.restore[System,f]
 require
-	no User.trashed & Secret or no User.trashed - Secret
+	DeleteRestore[f] 
+*/
+
+fact {
+	all f : File | always {
+		T.restore[System,f] implies DeleteRestore[f]
+	}
+}
+
+/*
+when
+	T.empty[System]
+require
+	trashed in Secret
 */
 
 fact {
 	always {
-		empty[User] implies (no User.trashed & Secret or no User.trashed - Secret)
+		T.empty[System] implies trashed in Secret
+	}
+}
+
+/*
+when
+	T.delete[u,f]
+require
+	u not in System implies not DeleteDelete[f]
+*/
+
+fact {
+	all u : User, f : File | always {
+		T.delete[u,f] implies (u not in System implies not DeleteDelete[f])
+	}
+}
+
+/*
+when
+	T.restore[u,f]
+require
+	u not in System implies f not in Secret and not DeleteRestore[f]
+*/
+
+fact {
+	all u : User, f : File | always {
+		T.restore[u,f] implies (u not in System implies f not in Secret and not DeleteRestore[f])
+	}
+}
+
+/*
+when
+	T.empty[u]
+require
+	u not in System implies no Secret & trashed
+*/
+
+fact {
+	all u : User | always {
+		T.empty[u] implies (u not in System implies no Secret & trashed)
 	}
 }

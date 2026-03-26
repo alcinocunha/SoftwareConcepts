@@ -8,11 +8,11 @@
 <defaultedge/>
 
 <node>
-   <type name="DeleteEmpty"/>
    <type name="Int"/>
    <type name="String"/>
-   <type name="T"/>
    <type name="univ"/>
+   <type name="User"/>
+   <type name="Action/Concept"/>
    <type name="seq/Int"/>
    <type name="Trash/Create"/>
    <type name="Trash/Delete"/>
@@ -22,16 +22,8 @@
    <type name="Trash/TrashAction"/>
 </node>
 
-<node color="Black" label="trashed">
-   <set name="$trashed" type="File"/>
-</node>
-
-<node color="White">
+<node color="Yellow">
    <type name="File"/>
-</node>
-
-<node color="Yellow" label="accessible">
-   <set name="$accessible" type="File"/>
 </node>
 
 <node numberatoms="no" color="Gray">
@@ -42,20 +34,12 @@
    <type name="Reaction/Reaction"/>
 </node>
 
-<node shape="Trapezoid">
-   <type name="Secret"/>
-</node>
-
-<node visible="no">
-   <type name="Action/Concept"/>
-   <type name="Action/User"/>
-</node>
-
 <edge visible="no" attribute="yes">
+   <relation name="c"> <type name="Action/Action"/> <type name="Action/Concept"/> </relation>
    <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
    <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
    <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
-   <relation name="u"> <type name="Action/Action"/> <type name="Action/User"/> </relation>
+   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 
 </view>
