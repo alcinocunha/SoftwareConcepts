@@ -6,12 +6,12 @@ The repository includes both formal models of the individual concepts and apps b
 
 # Index of Concepts
 
-| Concept | Used in |
-|---------|---------|
-| [Label](Concepts/Label.als) | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
-| [Permalink](Concepts/Permalink.als) | [FileSharing1](Apps/FileSharing1.als) |
-| [Reservation](Concepts/Reservation.als) | [Restaurant](Apps/Restaurant.als) |
-| [Trash](Concepts/Trash.als) | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
+| Concept | Types | Used in |
+|---------|------------|---------|
+| [Label](Concepts/Label.als) | `Item` `Tag` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
+| [Permalink](Concepts/Permalink.als) | `Resource` `URL` | [FileSharing1](Apps/FileSharing1.als) |
+| [Reservation](Concepts/Reservation.als) | [`User`] `Resource` | [Restaurant](Apps/Restaurant.als) |
+| [Trash](Concepts/Trash.als) | `Item` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
 
 # Index of Apps
 
