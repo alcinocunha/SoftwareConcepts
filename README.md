@@ -13,7 +13,7 @@ The repository includes both formal models of the individual concepts and apps b
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls ⊆ Resource × URL` `revoked ⊆ URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) |
 | [Reservation](Concepts/Reservation.als) | `User` `Resource` | `available ⊆ Resource` `reservations ⊆ User × Resource` | `provide` `retract` `reserve` `cancel` `use` | [Restaurant](Apps/Restaurant.als) |
 | [Trash](Concepts/Trash.als) | `Item` | `accessible ⊆ Item` `trashed ⊆ Item` | `create` `delete` `restore` `empty` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
-| [WebApp](Concepts/WebApp.als) | `User` | `registered ⊆ User` `loggedin ⊆ User` | `register` `login` `logout` |  [OnlineDrive](Apps/OnlineDrive.als) |
+| [WebApp](Concepts/WebApp.als) | `User` | `registered ⊆ User` `loggedin ⊆ User` | `register` `login` `logout` `delete` |  [OnlineDrive](Apps/OnlineDrive.als) |
 
 # Index of Apps
 
