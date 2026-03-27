@@ -7,7 +7,7 @@ The repository includes both formal models of the individual concepts and apps b
 # Index of Concepts
 
 | Concept | Types | State | Actions | Used in |
-|---------|------------|----|-----|------|
+|---------|-------|-------------|-----|------|
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels : Item -> Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls : Resource -> URL` `revoked : set URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) |
 | [Reservation](Concepts/Reservation.als) | `Resource` | `available : set Resource` `reservations : User -> Resource` | `provide` `retract` `reserve` `cancel` `use` | [Restaurant](Apps/Restaurant.als) |
