@@ -10,7 +10,7 @@ The repository includes both formal models of the individual concepts and apps b
 |---------|-------|-------------|-----|------|
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels : Item -> Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls : Resource -> URL` `revoked : set URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) |
-| [Reservation](Concepts/Reservation.als) | `Resource` | `available : set Resource` `reservations : User -> Resource` | `provide` `retract` `reserve` `cancel` `use` | [Restaurant](Apps/Restaurant.als) |
+| [Reservation](Concepts/Reservation.als) | `Resource` | `available : set Resource` `reservations : User → Resource` | `provide` `retract` `reserve` `cancel` `use` | [Restaurant](Apps/Restaurant.als) |
 | [Trash](Concepts/Trash.als) | `Item` | `accessible : set Item` `trashed : set Item` | `create` `delete` `restore` `empty` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
 
 # Index of Apps
