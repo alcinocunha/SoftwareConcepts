@@ -52,10 +52,10 @@ fact Stutter {
 	}
 }
 
-pred create [t : Trash, a : User, x : Item] { some Create and Create.c = t and Create.u = a and Create.i = x }
-pred delete [t : Trash, a : User, x : Item] { some Delete and Delete.c = t and Delete.u = a and Delete.i = x }
-pred restore [t : Trash, a : User, x : Item] { some Restore and Restore.c = t and Restore.u = a and Restore.i = x }
-pred empty [t : Trash, a : User] { some Empty and Empty.c = t and Empty.u = a }
+pred create [t : Trash, x : Item] { some Create and Create.c = t and Create.i = x }
+pred delete [t : Trash, x : Item] { some Delete and Delete.c = t and Delete.i = x }
+pred restore [t : Trash, x : Item] { some Restore and Restore.c = t and Restore.i = x }
+pred empty [t : Trash] { some Empty and Empty.c = t }
 
 // Properties
 
@@ -66,23 +66,23 @@ check Invariant {
 
 // If an item is deleted and then restored it will be accessible
 check Principle1 {
-	all i : Item, u,v : User | always ((Trash.delete[u,i];Trash.restore[v,i]) implies i in Trash.accessible'')
+	all i : Item | always ((Trash.delete[i];Trash.restore[i]) implies i in Trash.accessible'')
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then the trash is emptied then the it is neither accessible nor trashed
 check Principle2 {
-	all i : Item, u,v : User | always ((Trash.delete[u,i];Trash.empty[v]) implies i not in Trash.(trashed+accessible)'')
+	all i : Item | always ((Trash.delete[i];Trash.empty[]) implies i not in Trash.(trashed+accessible)'')
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // Scenarios
 
 // All items are deleted and then the thrash is emptied
 run Scenario1 {
-	eventually (Item in Trash.trashed and Trash.empty[User])
-} for exactly 3 Item, 4 Action, exactly 1 User, exactly 1 Trash expect 1
+	eventually (Item in Trash.trashed and Trash.empty[])
+} for exactly 3 Item, 4 Action, exactly 1 Trash expect 1
 
 // All items are deleted and then restored
 run Scenario2 {
-	always not Trash.empty[User]
+	always not Trash.empty[]
 	eventually (Item in Trash.trashed and eventually Item in Trash.accessible )
-} for exactly 2 Item, 4 Action, exactly 1 User, exactly 1 Trash expect 1
+} for exactly 2 Item, 4 Action, exactly 1 Trash expect 1

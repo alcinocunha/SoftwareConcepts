@@ -1,4 +1,4 @@
-module Concepts/Reservation[Resource]
+module Concepts/Reservation[User,Resource]
 open Action
 
 // State
@@ -17,7 +17,7 @@ fact Init {
 
 // Actions
 
-var abstract sig ReservationAction extends Action { var r : Resource } { c in Reservation }
+var abstract sig ReservationAction extends Action { var u : User,var r : Resource } { c in Reservation }
 
 var sig Provide extends ReservationAction { } {
 	r not in c.available

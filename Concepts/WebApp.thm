@@ -10,40 +10,42 @@
 <defaultedge/>
 
 <node>
-   <type name="Cancel"/>
+   <type name="Account"/>
+   <type name="AccountAction"/>
+   <type name="Delete"/>
    <type name="Int"/>
-   <type name="Provide"/>
-   <type name="Reservation"/>
-   <type name="ReservationAction"/>
-   <type name="Reserve"/>
-   <type name="Retract"/>
+   <type name="Login"/>
+   <type name="Logout"/>
+   <type name="Register"/>
    <type name="String"/>
    <type name="univ"/>
-   <type name="Use"/>
-   <type name="User"/>
    <type name="Action/Concept"/>
    <type name="seq/Int"/>
+   <set name="$Scenario1_u" type="User"/>
+   <set name="$Scenario1_v" type="User"/>
 </node>
 
-<node color="Gray">
-   <type name="Action/Action"/>
+<node color="White">
+   <type name="User"/>
 </node>
 
 <node color="Yellow">
-   <set name="available" type="Resource"/>
+   <set name="registered" type="User"/>
 </node>
 
-<node shape="Ellipse" color="White">
-   <type name="Resource"/>
+<node numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node shape="Hexagon" color="Yellow">
+   <set name="loggedin" type="User"/>
 </node>
 
 <node showlabel="no">
-   <set name="$Scenario_u" type="User"/>
    <set name="c" type="Action/Action"/>
 </node>
 
 <edge visible="no" attribute="yes">
-   <relation name="r"> <type name="Action/Action"/> <type name="Resource"/> </relation>
    <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 

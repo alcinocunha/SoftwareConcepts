@@ -8,7 +8,6 @@ open Reaction
 
 open Concepts/Trash[File]
 
-// Several users sharing the same trash
 one sig T extends Trash {}
 
 // Items are files and some of them are secrets
@@ -38,7 +37,7 @@ run Scenario1 {
 	Secret = File
 	eventually Secret in trashed
 	eventually always no Reaction		
-} for 2 User, exactly 3 File, 4 Action, 1 Reaction expect 1	
+} for exactly 3 File, 4 Action, 1 Reaction expect 1	
 
 // All files (including both secret and no secret) will be deleted
 // Then a reaction will empty the trash including the non secret files
@@ -47,17 +46,17 @@ run Scenario2 {
 	some File - Secret
 	eventually File in trashed
 	eventually always no Reaction		
-} for 2 User, exactly 3 File, 4 Action, 1 Reaction expect 1
+} for exactly 3 File, 4 Action, 1 Reaction expect 1
 
 // Reactions
 
 /*
 when
-	T.delete[u,f]
+	T.delete[f]
 where
 	f in Secret
 then
-	some u : User | T.empty[u]
+	T.empty[]
 */
 
 var lone sig DeleteEmpty extends Reaction {}
@@ -65,8 +64,8 @@ var lone sig DeleteEmpty extends Reaction {}
 fact {
 	always {
 		some DeleteEmpty iff {
-			some u : User, f : File | before {
-				not (some u : User | T.empty[u]) since (T.delete[u,f] and f in Secret)
+			some f : File | before {
+				not T.empty[] since (T.delete[f] and f in Secret)
 			}
 		}
 	}
@@ -76,13 +75,13 @@ fact {
 
 /*
 when
-	T.restore[u,f]
+	T.restore[f]
 require
 	f not in Secret
 */
 
 fact {
-	all u : User, f : File | always {
-		T.restore[u,f] implies f not in Secret
+	all f : File | always {
+		T.restore[f] implies f not in Secret
 	}
 }

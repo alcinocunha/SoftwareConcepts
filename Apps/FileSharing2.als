@@ -7,8 +7,6 @@ open Reaction
 open Concepts/Trash[File]
 open Concepts/Permalink[File,Token]
 
-// All users share the same trash and token concepts
-
 one sig T extends Trash {}
 one sig P extends Permalink {}
 
@@ -31,7 +29,7 @@ check Invariant {
 	always {
 		no Reaction iff {
 			shared.Token in uploaded
-			all f : File, t : Token | t in f.shared implies before ((no u : User | P.access[u,t]) since (some u : User | P.share[u,f,t]))
+			all f : File, t : Token | t in f.shared implies before (not P.access[t] since P.share[f,t])
 		}
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
@@ -41,7 +39,7 @@ check Invariant {
 // Tokens can only accessed once
 check SingleAccess {
 	all t : Token | always {
-		(some u : User | P.access[u,t]) implies after always (no u : User | P.access[u,t])
+		P.access[t] implies after always not P.access[t]
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
@@ -50,37 +48,37 @@ check SingleAccess {
 // One user shares a file, then deletes it, then empties the trash, then a reaction will revoke the token
 run Scenario1 {
 	some f : File, t : Token {
-		T.create[User,f]; P.share[User,f,t]; T.delete[User,f]; T.empty[User]
+		T.create[f]; P.share[f,t]; T.delete[f]; T.empty[]
 	}
 	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 1
+} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 1
 
 // One user shares a file, then deletes it, then tries to access the token
 run Scenario2 {
 	some f : File, t : Token {
-		T.create[User,f]; P.share[User,f,t]; T.delete[User,f]; T.restore[User,f]; P.access[User,t]
+		T.create[f]; P.share[f,t]; T.delete[f]; T.restore[f]; P.access[t]
 	}
 	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 1
+} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 1
 
 // One user shares a file, then tries to revoke the token
 run Scenario3 {
 	some f : File, t : Token {
-		T.create[User,f]; P.share[User,f,t]; P.revoke[User,f,t]
+		T.create[f]; P.share[f,t]; P.revoke[f,t]
 	}
 	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 0
+} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
 
 // Reactions
 
 /*
 reaction EmptyRevoke[t]
 when
-	T.empty[u]
+	T.empty[]
 where
 	f in trashed and t in f.shared
 then
-	some u : User | P.revoke[u,f,t]
+	P.revoke[f,t]
 */
 
 var lone sig EmptyRevoke extends Reaction { var t : Token }
@@ -89,8 +87,8 @@ pred EmptyRevoke[ x : Token ] { some r : EmptyRevoke | r.t = x }
 fact {
 	all t : Token | always {
 		EmptyRevoke[t] iff {
-			some u : User, f : File | before {
-				not (some u : User | P.revoke[u,f,t]) since (T.empty[u] and f in trashed and t in f.shared)
+			some f : File | before {
+				not P.revoke[f,t] since (T.empty[] and f in trashed and t in f.shared)
 			}
 		}
 	}
@@ -99,11 +97,11 @@ fact {
 /*
 reaction AccessRevoke[t : Token]
 when
-	P.access[u,t]
+	P.access[t]
 where
 	t in f.shared
 then
-	some u : User | P.revoke[u,f,t]
+	P.revoke[f,t]
 */
 
 var lone sig AccessRevoke extends Reaction { var t : Token }
@@ -112,8 +110,8 @@ pred AccessRevoke [ x : Token ] { some r : AccessRevoke | r.t = x }
 fact {
 	all t : Token | always {
 		AccessRevoke[t] iff {
-			some u : User, f : File | before {
-				not (some u : User | P.revoke[u,f,t]) since (P.access[u,t] and t in f.shared)
+			some f : File | before {
+				not P.revoke[f,t] since (P.access[t] and t in f.shared)
 			}
 		}
 	}
@@ -123,40 +121,40 @@ fact {
 
 /*
 when
-	P.share[u,f,t]
+	P.share[f,t]
 require
 	f in uploaded
 */
 
 fact {
-	all u : User, f : File, t : Token | always {
-		P.share[u,f,t] implies f in uploaded
+	all f : File, t : Token | always {
+		P.share[f,t] implies f in uploaded
 	}
 }
 
 /*
 when
-	P.access[u,t]
+	P.access[t]
 require
 	not (AccessRevoke[t] or EmptyRevoke[t])
 */
 
 fact {
-	all u : User, t : Token | always {
-		P.access[u,t] implies not (AccessRevoke[t] or EmptyRevoke[t])
+	all t : Token | always {
+		P.access[t] implies not (AccessRevoke[t] or EmptyRevoke[t])
 	}
 }
 
 /*
 when
-	T.create[u,f]
+	T.create[f]
 require
 	no f.shared
 */
 
 fact {
-	all u : User, f : File | always {
-		T.create[u,f] implies no f.shared
+	all f : File | always {
+		T.create[f] implies no f.shared
 	}
 }
 
@@ -164,39 +162,39 @@ fact {
 
 /*
 when
-	P.access[u,t]
+	P.access[t]
 require
 	shared.t in uploaded - trashed
 */
 
 fact {
-	all u : User, t : Token | always {
-		P.access[u,t] implies shared.t not in trashed
+	all t : Token | always {
+		P.access[t] implies shared.t not in trashed
 	}
 }
 
 /*
 when
-	P.share[u,f,t]
+	P.share[f,t]
 require
 	f not in trashed
 */
 
 fact {
-	all u : User, f : File, t : Token | always {
-		P.share[u,f,t] implies f not in trashed
+	all f : File, t : Token | always {
+		P.share[f,t] implies f not in trashed
 	}
 }
 
 /*
 when
-	P.revoke[u,f,t]
+	P.revoke[f,t]
 require
 	AccessRevoke[t] or DeleteRevoke[t]
 */
 
 fact {
-	all u : User, f : File, t : Token | always {
-		P.revoke[u,f,t] implies (AccessRevoke[t] or EmptyRevoke[t])
+	all f : File, t : Token | always {
+		P.revoke[f,t] implies (AccessRevoke[t] or EmptyRevoke[t])
 	}
 }

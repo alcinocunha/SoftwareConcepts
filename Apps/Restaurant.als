@@ -6,18 +6,15 @@ open Reaction
 
 // Composed concepts
 
-open Concepts/Reservation[Table]
+open Concepts/Reservation[Client,Table]
 open Concepts/Label[Table,Reserved]
-
-// Multiple clients and one restaurant with a single reservation and label concepts
-
-sig Client extends User {}
-one sig Restaurant extends User {}
 
 one sig R extends Reservation {}
 one sig L extends Label {}
 
 // Types
+
+sig Client {}
 
 sig Table {}
 one sig Reserved {}
@@ -34,7 +31,6 @@ fun reserved : set Table { L.labels.Reserved }
 check Invariant {
 	always {
 		no Reaction iff {
-			reservations in Client -> Table
 			Client.reservations = reserved
 		}
 	}
@@ -47,7 +43,7 @@ check Invariant {
 run Scenario {
 	eventually always no Reaction
 	all t : Table | eventually R.use[Client,t]
-} for exactly 1 Client, exactly 2 Table, 8 Action, 3 Reaction, 20 steps expect 1
+} for exactly 1 Client, exactly 2 Table, 8 Action, 3 Reaction, 11 steps expect 1
 
 // Reactions
 
@@ -55,7 +51,7 @@ run Scenario {
 when
 	R.reserve[c,t]
 then
-	L.affix[Restaurant,t,Reserved] or R.cancel[c,t]
+	L.affix[t,Reserved] or R.cancel[c,t]
 */
 
 var lone sig ReserveAffixOrCancel extends Reaction { }
@@ -64,7 +60,7 @@ fact {
 	always {
 		some ReserveAffixOrCancel iff {
 			some c : Client, t : Table | before {
-				not (L.affix[Restaurant,t,Reserved] or R.cancel[c,t]) since R.reserve[c,t]
+				not (L.affix[t,Reserved] or R.cancel[c,t]) since R.reserve[c,t]
 			}
 		}
 	}
@@ -76,7 +72,7 @@ when
 where
 	t in reserved
 then
-	L.detach[Restaurant,t,Reserved]
+	L.detach[t,Reserved]
 */
 
 var lone sig CancelDetach extends Reaction { }
@@ -85,7 +81,7 @@ fact {
 	always {
 		some CancelDetach iff {
 			some c : Client, t : Table | before {
-				not L.detach[Restaurant,t,Reserved] since (R.cancel[c,t] and t in reserved)
+				not L.detach[t,Reserved] since (R.cancel[c,t] and t in reserved)
 			}
 		}
 	}
@@ -95,7 +91,7 @@ fact {
 when
 	R.use[c,t]
 then
-	L.detach[Restaurant,t,Reserved]
+	L.detach[t,Reserved]
 */
 
 var lone sig UseDetach extends Reaction { }
@@ -104,7 +100,7 @@ fact {
 	always {
 		some UseDetach iff {
 			some c : Client, t : Table | before {
-				not L.detach[Restaurant,t,Reserved] since R.use[c,t]
+				not L.detach[t,Reserved] since R.use[c,t]
 			}
 		}
 	}
@@ -114,40 +110,40 @@ fact {
 
 /*
 when
-	L.affix[u,t,Reserved]
+	L.affix[t,Reserved]
 require
-	u = Restaurant and t in Client.reservations
+	t in Client.reservations
 */
 
 fact {
-	all u : User, t : Table | always {
-		L.affix[u,t,Reserved] implies u = Restaurant and t in Client.reservations
+	all t : Table | always {
+		L.affix[t,Reserved] implies t in Client.reservations
 	}
 }
 
 /*
 when
-	L.detach[u,t,Reserved]
+	L.detach[t,Reserved]
 require
-	u = Restaurant and t not in Client.reservations
+	t not in Client.reservations
 */
 
 fact {
-	all u : User, t : Table | always {
-		L.detach[u,t,Reserved] implies u = Restaurant and t not in Client.reservations
+	all t : Table | always {
+		L.detach[t,Reserved] implies t not in Client.reservations
 	}
 }
 
 /*
 when
-	L.clear[u,t]
+	L.clear[t]
 require
 	false
 */
 
 fact {
-	all u : User, t : Table | always {
-		L.clear[u,t] implies false
+	all t : Table | always {
+		L.clear[t] implies false
 	}
 }
 
@@ -174,18 +170,5 @@ require
 fact {
 	all c : Client, t : Table | always {
 		R.reserve[c,t] implies t not in reserved
-	}
-}
-
-/*
-when
-	R.reserve[Restaurant,t]
-require
-	false
-*/
-
-fact {
-	all t : Table | always {
-		R.reserve[Restaurant,t] implies false
 	}
 }
