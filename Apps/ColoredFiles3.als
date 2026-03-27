@@ -20,7 +20,7 @@ sig File {}
 sig Color {}
 one sig Red extends Color {}
 
-// App specific relations
+// Projections of the state of the concepts to simplify the specification and visualization
 
 fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }

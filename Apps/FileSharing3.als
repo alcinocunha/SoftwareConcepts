@@ -15,7 +15,7 @@ one sig P extends Permalink {}
 sig File {}
 sig Token {}
 
-// App specific relations
+// App specific views of the state of the concepts to simplify the specification and visualization
 
 fun uploaded : set File { T.accessible + T.trashed }
 fun trashed : set File { T.trashed }

@@ -21,7 +21,7 @@ one sig O extends Owning {}
 sig User {}
 sig File {}
 
-// App specific relations
+// Projections of the state of the concepts to simplify the specification and visualization
 
 fun registered : set User { A.registered }
 fun loggedin : set User { A.loggedin }

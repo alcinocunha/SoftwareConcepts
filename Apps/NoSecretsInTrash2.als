@@ -13,7 +13,8 @@ one sig T extends Trash {}
 sig File {}
 sig Secret extends File {}
 
-// App specific relations
+// Projections of the state of the concepts to simplify the specification and visualization
+
 fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }
 

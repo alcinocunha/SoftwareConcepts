@@ -19,7 +19,7 @@ sig Client {}
 sig Table {}
 one sig Reserved {}
 
-// App specific relations
+// App specific views of the state of the concepts to simplify the specification and visualization
 
 fun tables : set Table { R.available }
 fun reservations : Client -> Table { R.reservations }
