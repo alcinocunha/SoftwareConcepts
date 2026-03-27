@@ -26,7 +26,7 @@ fun shared : File -> Token { P.urls :> (Token - P.revoked) }
 // The app invariant
 
 // Shared files must be accessible
-// Shared tokens were not accessed
+// Accessible tokens were not accessed before nor the respective file has been deleted
 check Invariant {
 	always {
 		no Reaction iff {
@@ -36,7 +36,9 @@ check Invariant {
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
-// Additional properties
+// Additional redundant properties
+
+// Accessed files must be uploaded and not trashed
 check AccessedAreAccessible {
 	all t : Token | always {
 		(some u : User | P.access[u,t]) implies shared.t in uploaded - trashed
@@ -54,18 +56,26 @@ check SingleAccess {
 
 // One user shares a file, then deletes it, then a reaction will revoke the token
 run Scenario1 {
-	some f : File, t : Token | eventually {
-		P.share[User,f,t]; T.delete[User,f]
+	some f : File, t : Token {
+		T.create[User,f]; P.share[User,f,t]; T.delete[User,f]
 	}
 	eventually always no Reaction
 } for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 1
 
 // One user shares a file, then deletes it, then tries to access the token
 run Scenario2 {
-	some f : File, t : Token | {
-		eventually (P.share[User,f,t]; T.delete[User,f])
-		eventually P.access[User,t]
+	some f : File, t : Token {
+		T.create[User,f]; P.share[User,f,t]; T.delete[User,f]; T.restore[User,f]; P.access[User,t]
 	}
+	eventually always no Reaction
+} for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 0
+
+// One user shares a file, then tries to revoke the token
+run Scenario3 {
+	some f : File, t : Token {
+		T.create[User,f]; P.share[User,f,t]; P.revoke[User,f,t]
+	}
+	eventually always no Reaction
 } for exactly 1 File, exactly 1 Token, exactly 1 User, 7 Action, 2 Reaction expect 0
 
 // Reactions
@@ -116,7 +126,7 @@ fact {
 	}
 }
 
-// Preventions
+// Preventions needed to ensure the app invariant
 
 /*
 when
@@ -141,5 +151,20 @@ require
 fact {
 	all u : User, t : Token | always {
 		P.access[u,t] implies not (AccessRevoke[t] or DeleteRevoke[t])
+	}
+}
+
+// Additional preventions
+
+/*
+when
+	P.revoke[u,f,t]
+require
+	AccessRevoke[t] or DeleteRevoke[t]
+*/
+
+fact {
+	all u : User, f : File, t : Token | always {
+		P.revoke[u,f,t] implies (AccessRevoke[t] or DeleteRevoke[t])
 	}
 }

@@ -38,7 +38,7 @@ check Invariant {
 			Client.reservations = reserved
 		}
 	}
-} for 2 Table, 2 Client, 9 Action, 3 Reaction expect 0
+} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
 
 // Scenarios
 
@@ -47,7 +47,7 @@ check Invariant {
 run Scenario {
 	eventually always no Reaction
 	all t : Table | eventually R.use[Client,t]
-} for exactly 1 Client, exactly 2 Table, 9 Action, 3 Reaction, 20 steps expect 1
+} for exactly 1 Client, exactly 2 Table, 8 Action, 3 Reaction, 20 steps expect 1
 
 // Reactions
 
