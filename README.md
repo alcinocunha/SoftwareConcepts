@@ -6,12 +6,12 @@ The repository includes both formal models of the individual concepts and apps b
 
 # Index of Concepts
 
-| Concept | Types | State | Used in |
-|---------|------------|----|--------|
-| [Label](Concepts/Label.als) | `Item` `Tag` | `labels : Item -> Tag` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
-| [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls : Resource -> URL` `revoked : set URL` | [FileSharing1](Apps/FileSharing1.als) |
-| [Reservation](Concepts/Reservation.als) | `Resource` | `available : set Resource` `reservations : User -> Resource` | [Restaurant](Apps/Restaurant.als) |
-| [Trash](Concepts/Trash.als) | `Item` | `accessible : set Item` `trashed : set Item` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
+| Concept | Types | State | Actions | Used in |
+|---------|------------|----|-----|------|
+| [Label](Concepts/Label.als) | `Item` `Tag` | `labels : Item -> Tag` | `affix[u : User, i : Item, t : Tag]` `detach[u : User, i : Item, t : Tag]` `clear [u : User, i : Item]` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
+| [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls : Resource -> URL` `revoked : set URL` | `share [u : User, r : Resource, p : URL]` | [FileSharing1](Apps/FileSharing1.als) |
+| [Reservation](Concepts/Reservation.als) | `Resource` | `available : set Resource` `reservations : User -> Resource` | `reserve[u : User, r : Resource]` | [Restaurant](Apps/Restaurant.als) |
+| [Trash](Concepts/Trash.als) | `Item` | `accessible : set Item` `trashed : set Item` | `delete [u : User,i : Item]` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
 
 # Index of Apps
 
