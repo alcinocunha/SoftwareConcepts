@@ -8,8 +8,8 @@
 <defaultedge/>
 
 <node>
-   <type name="AccessRevoke"/>
    <type name="DeleteRevoke"/>
+   <type name="DownloadRevoke"/>
    <type name="Int"/>
    <type name="P"/>
    <type name="String"/>
@@ -26,18 +26,11 @@
    <type name="Trash/Restore"/>
    <type name="Trash/Trash"/>
    <type name="Trash/TrashAction"/>
-</node>
-
-<node color="Black">
-   <set name="$trashed" type="File"/>
+   <set name="$DownloadedAreAccessible_t" type="Token"/>
 </node>
 
 <node color="White">
    <type name="File"/>
-</node>
-
-<node color="Yellow">
-   <set name="$uploaded" type="File"/>
 </node>
 
 <node numberatoms="no" color="Gray">
@@ -52,9 +45,12 @@
    <type name="Token"/>
 </node>
 
-<node showlabel="no">
-   <set name="$Scenario1_f" type="File"/>
-   <set name="$Scenario1_t" type="Token"/>
+<node showlabel="no" color="Black">
+   <set name="$trashed" type="File"/>
+</node>
+
+<node showlabel="no" color="Yellow">
+   <set name="$uploaded" type="File"/>
 </node>
 
 <node visible="no">
@@ -62,17 +58,20 @@
    <type name="Permalink/Permalink"/>
 </node>
 
+<edge label="shared">
+   <relation name="$shared"> <type name="File"/> <type name="Token"/> </relation>
+</edge>
+
 <edge style="inherit" visible="no" attribute="yes">
    <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
    <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
    <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="t"> <type name="DownloadRevoke"/> <type name="Token"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
    <relation name="l"> <type name="Permalink/PermalinkAction"/> <type name="Token"/> </relation>
-   <relation name="r"> <type name="Permalink/Revoke"/> <type name="File"/> </relation>
    <relation name="r"> <type name="Permalink/Share"/> <type name="File"/> </relation>
-   <relation name="t"> <type name="AccessRevoke"/> <type name="Token"/> </relation>
    <relation name="t"> <type name="DeleteRevoke"/> <type name="Token"/> </relation>
 </edge>
 

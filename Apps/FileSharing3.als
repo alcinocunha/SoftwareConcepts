@@ -21,158 +21,224 @@ fun uploaded : set File { T.accessible + T.trashed }
 fun trashed : set File { T.trashed }
 fun shared : File -> Token { P.urls :> (Token - P.revoked) }
 
-// The app invariant
+// App specific action names
 
-// Shared files must be uploaded
-// Accessible tokens were not accessed before nor the respective file has been deleted
-check Invariant {
+pred upload[f : File] { T.create[f] }
+pred download[t : Token] { P.access[t] }
+
+// The design goal
+
+// The shared tokens are those that were created for uploaded files and not downloaded afterwards
+// The uploaded files are those that are still shared
+// There are no trashed files
+check Design {
 	always {
 		no Reaction iff {
-			shared.Token = uploaded - trashed
-			no File & trashed
-			all f : File, t : Token | t in f.shared implies before (not P.access[t] since P.share[f,t])
+			all f : File | f in shared.Token iff before {
+				not (some t : Token | t in f.shared and download[t] or P.share[f,t] and some f.shared) since upload[f]
+			}
+			uploaded = shared.Token
+			trashed = none
 		}
 	}
-} for 2 but 7 Action, 6 Reaction expect 0
+} for 2 but 7 Action, 4 Reaction expect 0
 
-// Additional (redundant) properties
+// Additional properties
 
-// Tokens can only accessed once
+// Some invariants
+check Invariants {
+	always {
+		no Reaction implies {
+			P.revoked = P.accessed
+			shared in File -> lone Token
+		}
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Expected revoked value
+check Revoked {
+	always {
+		no Reaction implies {
+			all t : Token | t in P.revoked iff before {
+				once download[t]
+			}
+		}
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Downloaded files must be uploaded and not trashed
+check DowloadedAreAccessible {
+	all t : Token | always {
+		no Reaction implies {
+			download[t] implies shared.t in uploaded - trashed
+		}
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Tokens can only be accessed once
 check SingleAccess {
 	all t : Token | always {
-		P.access[t] implies after always not P.access[t]
+		no Reaction implies {
+			download[t] implies before historically not download[t]
+		}
 	}
-} for 2 but 7 Action, 6 Reaction expect 0
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Revokes only possible in reactions
+check NoRevokes {
+	all t : Token | always {
+		no Reaction implies not P.revoke[t]
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Shares only possible in reactions
+check NoShares {
+	all f : File, t : Token | always {
+		no Reaction implies not P.share[f,t]
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Empty only possible in reactions
+check NoEmpties {
+	always {
+		no Reaction implies not T.empty[]
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Deletes only possible in reactions
+check NoDeletes {
+	all f : File | always {
+		no Reaction implies not T.delete[f]
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Restores only posssible during reactions
+check NoRestores {
+	all f : File | always {
+		no Reaction implies not T.restore[f]
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
 
 // Scenarios
 
-// One user creates a file, which will be automatically shared. Then accesses the token and the file will be deleted and the trash emptied.
+// A file is uploaded, which will be automatically shared. 
+// Then it is dowloaded and the file will be deleted and the trash emptied.
 run Scenario1 {
 	some f : File, t : Token {
-		T.create[f]
-		eventually (t in f.shared and P.access[t])
+		upload[f]
+		eventually (t in f.shared and download[t])
 	}
 	eventually always no Reaction
 } for exactly 1 File, exactly 1 Token, 7 Action, 4 Reaction expect 1
 
-// One user shares a file, then deletes it, then tries to access the token
+// A file is uploaded and deleted, which should not be possible
 run Scenario2 {
-	some f : File, t : Token {
-		T.create[f]; P.share[f,t]; T.delete[f]
+	some f : File {
+		upload[f]; T.delete[f]
 	}
-	eventually always no Reaction
 } for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
 
-// One user shares a file, then tries to revoke the token
-run Scenario3 {
-	some f : File, t : Token {
-		T.create[f]; P.share[f,t]; P.revoke[f,t]
-	}
-	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
 
 // Reactions
 
 /*
-reaction CreateShare[f : File]
+reaction UploadShare[f : File]
 when
-	T.create[f]
+	upload[f]
 then
 	some t : Token | P.share[f,t]
 */
 
-var lone sig CreateShare extends Reaction { var f : File }
-pred CreateShare[x : File] { some r : CreateShare | r.f = x }
+var sig UploadShare extends Reaction { var f : File }
+pred UploadShare[x : File] { some r : UploadShare | r.f = x }
 
 fact {
 	all f : File | always {
-		CreateShare[f] iff {
-			before (not (some t : Token | P.share[f,t]) since T.create[f])
+		UploadShare[f] iff {
+			before (not (some t : Token | P.share[f,t]) since upload[f])
 		}
 	}
 }
 
 /*
-reaction AccessRevoke[t : Token]
+reaction DownloadRevoke[t : Token]
 when
-	P.access[t]
-where
-	t in f.shared
+	download[t]
 then
-	P.revoke[f,t]
+	P.revoke[t]
 */
 
-var lone sig AccessRevoke extends Reaction { var t : Token }
-pred AccessRevoke [ x : Token ] { some r : AccessRevoke | r.t = x }
+var sig DownloadRevoke extends Reaction { var t : Token }
+pred DownloadRevoke [ x : Token ] { some r : DownloadRevoke | r.t = x }
 
 fact {
 	all t : Token | always {
-		AccessRevoke[t] iff {
-			some f : File | before {
-				not P.revoke[f,t] since (P.access[t] and t in f.shared)
+		DownloadRevoke[t] iff {
+			before {
+				not P.revoke[t] since download[t]
 			}
 		}
 	}
 }
 
 /*
-reaction AccessDelete[f : File]
+reaction DownloadDelete[f : File]
 when
-	P.access[t]
+	download[t]
 where
-	t in f.shared
+	t in f.shared and f in uploaded - trashed
 then
 	T.delete[f]
 */
 	
-var lone sig AccessDelete extends Reaction { var f : File }
-pred AccessDelete [ x : File ] { some r : AccessDelete | r.f = x }
+var sig DownloadDelete extends Reaction { var f : File }
+pred DownloadDelete [ x : File ] { some r : DownloadDelete | r.f = x }
 
 fact {
 	all f : File | always {
-		AccessDelete[f] iff {
+		DownloadDelete[f] iff {
 			some t : Token | before {
-				not T.delete[f] since (P.access[t] and t in f.shared)
+				not T.delete[f] since (download[t] and t in f.shared and f in uploaded - trashed)
 			}
 		}
 	}
 }
 
 /*
-reaction AccessEmpty[f : File]
+reaction DownloadEmpty[f : File]
 when
-	P.access[t]
+	download[t]
 where
-	t in f.shared
+	t in f.shared and f in uploaded - trashed
 then
 	T.empty[]
 */
 	
-var lone sig AccessEmpty extends Reaction { var f : File }
-pred AccessEmpty [ x : File ] { some r : AccessEmpty | r.f = x }
+var sig DownloadEmpty extends Reaction { var f : File }
+pred DownloadEmpty [ x : File ] { some r : DownloadEmpty | r.f = x }
 
 fact {
 	all f : File | always {
-		AccessEmpty[f] iff {
+		DownloadEmpty[f] iff {
 			some t : Token | before {
-				not T.empty[] since (P.access[t] and t in f.shared)
+				not T.empty[] since (download[t] and t in f.shared and f in uploaded - trashed)
 			}
 		}
 	}
 }
 
-// Preventions needed to ensure the invariant
+// Preventions 
 
 /*
 when
 	P.share[f,t]
 require
-	CreateShare[f]
+	f in uploaded - trashed and no f.shared
 */
 
 fact {
 	all f : File, t : Token | always {
-		P.share[f,t] implies CreateShare[f]
+		P.share[f,t] implies f in uploaded - trashed and no f.shared
 	}
 }
 
@@ -180,52 +246,38 @@ fact {
 when
 	T.delete[f]
 require
-	AccessDelete[f]
+	some f.shared and f.shared in P.accessed 
 */
 
 fact {
 	all f : File | always {
-		T.delete[f] implies AccessDelete[f]
+		T.delete[f] implies some f.shared and f.shared in P.accessed  
 	}
 }
 
 /*
 when
-	P.revoke[f,t]
+	P.revoke[t]
 require
-	AccessRevoke[t]
-*/
-
-fact {
-	all f : File, t : Token | always {
-		P.revoke[f,t] implies AccessRevoke[t]
-	}
-}
-
-/*
-when
-	P.access[t]
-require
-	not AccessRevoke[t]
+	t in P.accessed  
 */
 
 fact {
 	all t : Token | always {
-		P.access[t] implies not AccessRevoke[t]
+		P.revoke[t] implies t in P.accessed  
 	}
 }
 
 /*
 when
-	T.restore[f]
+	upload[f]
 require
-	false
+	no f.shared
 */
 
 fact {
 	all f : File | always {
-		T.restore[f] implies false
+		upload[f] implies no f.shared
 	}
 }
 
-// Additional preventions

@@ -64,6 +64,24 @@ check Invariant {
 	always no Trash.accessible & Trash.trashed
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
+// Expected value of accessible
+check Accessible {
+	all i : Item | always {
+		i in Trash.accessible iff before {
+			not Trash.delete[i] since (Trash.create[i] or Trash.restore[i])
+		}
+	}
+} for 3 but 4 Action, exactly 1 Trash expect 0
+
+// Expected value of trashed
+check Trashed {
+	all i : Item | always {
+		i in Trash.trashed iff before {
+			not (Trash.empty or Trash.restore[i]) since Trash.delete[i]
+		}
+	}
+} for 3 but 4 Action, exactly 1 Trash expect 0
+
 // If an item is deleted and then restored it will be accessible
 check Principle1 {
 	all i : Item | always ((Trash.delete[i];Trash.restore[i]) implies i in Trash.accessible'')

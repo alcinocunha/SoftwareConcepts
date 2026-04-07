@@ -21,59 +21,101 @@ fun uploaded : set File { T.accessible + T.trashed }
 fun trashed : set File { T.trashed }
 fun shared : File -> Token { P.urls :> (Token - P.revoked) }
 
-// The app invariant
+// App specific action names
 
-// Shared files must be accessible
-// Accessible tokens were not accessed before nor the respective file has been deleted
-check Invariant {
+pred upload[f : File] { T.create[f] }
+pred delete[f : File] { T.delete[f] }
+pred restore[f : File] { T.restore[f] }
+pred empty { T.empty }
+pred share[f : File, t : Token] { P.share[f,t] }
+pred download[t : Token] { P.access[t] }
+
+// The design goal
+
+// The shared tokes are those that have been shared while the respective file was accessible
+// and not deleted nor downloaded afterwards
+check Design {
 	always {
 		no Reaction iff {
-			shared.Token in uploaded - trashed
-			all f : File, t : Token | t in f.shared implies before (not (T.delete[f] or P.access[t]) since P.share[f,t])
+			all f : File, t : Token | f->t in shared iff before {
+				not (delete[f] or download[t]) since (share[f,t] and f in uploaded - trashed)
+			}
 		}
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
-// Additional redundant properties
+// Additional properties
 
-// Accessed files must be uploaded and not trashed
-check AccessedAreAccessible {
-	all t : Token | always {
-		P.access[t] implies shared.t in uploaded - trashed
+// Some invariants
+check Invariants {
+	always {
+		no Reaction implies {
+			shared.Token in uploaded - trashed
+			accessed in revoked			
+		}
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
-// Tokens can only accessed once
+// Expected revoked value
+check Revoked {
+	always {
+		no Reaction implies {
+			all t : Token | t in P.revoked iff before {
+				once (download[t] or some f : File | t in f.shared and delete[f])
+			}
+		}
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Downloaded files must be uploaded and not trashed
+check DownloadedAreAccessible {
+	all t : Token | always {
+		no Reaction implies {
+			download[t] implies shared.t in uploaded - trashed
+		}
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Tokens can only be accessed once
 check SingleAccess {
 	all t : Token | always {
-		P.access[t] implies after always not P.access[t]
+		no Reaction implies {
+			download[t] implies before historically not download[t]
+		}
+	}
+} for 2 but 7 Action, 4 Reaction expect 0
+
+// Revokes only possible in reactions
+check NoRevokes {
+	all t : Token | always {
+		no Reaction implies not P.revoke[t]
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
 // Scenarios
 
-// One user shares a file, then deletes it, then a reaction will revoke the token
+// A file is uploaded, shared twice, accessed, and deleted. Then reactions should revoke all tokens.
 run Scenario1 {
-	some f : File, t : Token {
-		T.create[f]; P.share[f,t]; T.delete[f]
+	some f : File, t,u : Token {
+		upload[f]; share[f,t]; share[f,u]; download[u]; T.delete[f]
 	}
 	eventually always no Reaction
-} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 1
+} for exactly 1 File, 2 Token, 7 Action, 3 Reaction expect 1
 
-// One user shares a file, then deletes it, then tries to access the token
+// A file is uploaded, shared, and deleted. 
+// Then, when the reactions are finished one tries to access the token, which should not be possible.
 run Scenario2 {
 	some f : File, t : Token {
-		T.create[f]; P.share[f,t]; T.delete[f]; T.restore[f]; P.access[t]
+		upload[f]; share[f,t]; delete[f]; eventually (no Reaction and download[t])
 	}
-	eventually always no Reaction
 } for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
 
-// One user shares a file, then tries to revoke the token
+// A file is uploaded and shared.
+// Then one tries to revoke the token, which should not be possible.
 run Scenario3 {
 	some f : File, t : Token {
-		T.create[f]; P.share[f,t]; P.revoke[f,t]
+		upload[f]; share[f,t]; P.revoke[t]
 	}
-	eventually always no Reaction
 } for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
 
 // Reactions
@@ -81,88 +123,71 @@ run Scenario3 {
 /*
 reaction DeleteRevoke[t : Token]
 when
-	T.delete[f]
+	delete[f]
 where
 	t in f.shared
 then
-	P.revoke[f,t]
+	P.revoke[t]
 */
 
-var lone sig DeleteRevoke extends Reaction { var t : Token }
+var sig DeleteRevoke extends Reaction { var t : Token }
 pred DeleteRevoke [ x : Token ] { some r : DeleteRevoke | r.t = x }
 
 fact {
 	all t : Token | always {
 		DeleteRevoke[t] iff {
 			some f : File | before {
-				not P.revoke[f,t] since (T.delete[f] and t in f.shared)
+				not P.revoke[t] since (delete[f] and t in f.shared)
 			}
 		}
 	}
 }
 
 /*
-reaction AccessRevoke[t : Token]
+reaction DownloadRevoke[t : Token]
 when
-	P.access[t]
-where
-	t in f.shared
+	download[t]
 then
-	P.revoke[f,t]
+	P.revoke[t]
 */
 
-var lone sig AccessRevoke extends Reaction { var t : Token }
-pred AccessRevoke [ x : Token ] { some r : AccessRevoke | r.t = x }
+var sig DownloadRevoke extends Reaction { var t : Token }
+pred DownloadRevoke [ x : Token ] { some r : DownloadRevoke | r.t = x }
 
 fact {
 	all t : Token | always {
-		AccessRevoke[t] iff {
-			some f : File | before {
-				not P.revoke[f,t] since (P.access[t] and t in f.shared)
+		DownloadRevoke[t] iff {
+			before {
+				not P.revoke[t] since download[t]
 			}
 		}
 	}
 }
 
-// Preventions needed to ensure the app invariant
+// Preventions
 
 /*
 when
-	P.share[f,t]
+	share[f,t]
 require
 	f in uploaded - trashed
 */
 
 fact {
 	all f : File, t : Token | always {
-		P.share[f,t] implies f in uploaded - trashed
+		share[f,t] implies f in uploaded - trashed
 	}
 }
 
 /*
 when
-	P.access[t]
+	P.revoke[t]
 require
-	not (AccessRevoke[t] or DeleteRevoke[t])
+	t in accessed or shared.t in trashed
 */
 
 fact {
 	all t : Token | always {
-		P.access[t] implies not (AccessRevoke[t] or DeleteRevoke[t])
-	}
-}
-
-// Additional preventions
-
-/*
-when
-	P.revoke[f,t]
-require
-	AccessRevoke[t] or DeleteRevoke[t]
-*/
-
-fact {
-	all f : File, t : Token | always {
-		P.revoke[f,t] implies (AccessRevoke[t] or DeleteRevoke[t])
+		P.revoke[t] implies t in P.accessed or shared.t in trashed
 	}
 }
