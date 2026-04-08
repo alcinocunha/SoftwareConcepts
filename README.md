@@ -8,6 +8,7 @@ The repository includes both formal models of the individual concepts and apps b
 
 | Concept | Parameters |      State      | Actions | Used in |
 |---------|-------|-------------|-----|------|
+| [Email](Concepts/Email.als) | `User` `Message` | `sent ⊆ User × Message` `read ⊆ User × Message` | `send` `read` `delete` | |
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels ⊆ Item × Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant](Apps/Restaurant.als) |
 | [Owning](Concepts/Owning.als) | `User` `Thing` | `owns ⊆ User × Thing` | `acquire` `release` | [OnlineDrive](Apps/OnlineDrive.als) |
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls ⊆ Resource × URL` `revoked ⊆ URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) |
