@@ -83,12 +83,12 @@ check Trashed {
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then restored it will be accessible
-check Principle1 {
+check OP1 {
 	all i : Item | always ((Trash.delete[i];Trash.restore[i]) implies i in Trash.accessible'')
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
 // If an item is deleted and then the trash is emptied then the it is neither accessible nor trashed
-check Principle2 {
+check OP2 {
 	all i : Item | always ((Trash.delete[i];Trash.empty[]) implies i not in Trash.(trashed+accessible)'')
 } for 3 but 4 Action, exactly 1 Trash expect 0
 
