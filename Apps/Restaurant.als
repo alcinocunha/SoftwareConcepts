@@ -27,12 +27,35 @@ fun reserved : set Table { L.labels.Reserved }
 
 // The app invariant
 
-// Reserved tables are labeled as Reserved
+// The tables labeled as Reserved are exactly those that are reserved by some client
 check Invariant {
 	always {
 		no Reaction iff {
-			Client.reservations = reserved
+			reserved = Client.reservations
 		}
+	}
+} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
+
+// Other properties
+
+// Affix is only possible in reactions
+check AffixOnlyInReactions {
+	all t : Table | always {
+		L.affix[t,Reserved] implies some Reaction
+	}
+} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
+
+// Detach is only possible in reactions
+check DetachOnlyInReactions {
+	all t : Table | always {
+		L.detach[t,Reserved] implies some Reaction
+	}
+} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
+
+// Clear is only possible in reactions
+check ClearOnlyInReactions {
+	all t : Table | always {
+		L.clear[t] implies some Reaction
 	}
 } for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
 
@@ -50,8 +73,10 @@ run Scenario {
 /*
 when
 	R.reserve[c,t]
+where
+	t not in reserved
 then
-	L.affix[t,Reserved] or R.cancel[c,t]
+	L.affix[t,Reserved] or R.cancel[c,t] or R.use[c,t]
 */
 
 var lone sig ReserveAffixOrCancel extends Reaction { }
@@ -60,7 +85,7 @@ fact {
 	always {
 		some ReserveAffixOrCancel iff {
 			some c : Client, t : Table | before {
-				not (L.affix[t,Reserved] or R.cancel[c,t]) since R.reserve[c,t]
+				not (L.affix[t,Reserved] or R.cancel[c,t] or R.use[c,t]) since (R.reserve[c,t] and t not in reserved)
 			}
 		}
 	}
@@ -72,7 +97,7 @@ when
 where
 	t in reserved
 then
-	L.detach[t,Reserved]
+	L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]
 */
 
 var lone sig CancelDetach extends Reaction { }
@@ -81,7 +106,7 @@ fact {
 	always {
 		some CancelDetach iff {
 			some c : Client, t : Table | before {
-				not L.detach[t,Reserved] since (R.cancel[c,t] and t in reserved)
+				not (L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]) since (R.cancel[c,t] and t in reserved)
 			}
 		}
 	}
@@ -90,8 +115,10 @@ fact {
 /*
 when
 	R.use[c,t]
+where
+	t in reserved
 then
-	L.detach[t,Reserved]
+	L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]
 */
 
 var lone sig UseDetach extends Reaction { }
@@ -100,7 +127,7 @@ fact {
 	always {
 		some UseDetach iff {
 			some c : Client, t : Table | before {
-				not L.detach[t,Reserved] since R.use[c,t]
+				not (L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]) since (R.use[c,t] and t in reserved)
 			}
 		}
 	}
@@ -138,37 +165,11 @@ fact {
 when
 	L.clear[t]
 require
-	false
+	t not in Client.reservations
 */
 
 fact {
 	all t : Table | always {
-		L.clear[t] implies false
-	}
-}
-
-/*
-when
-	R.use[c,t]
-require
-	t in reserved
-*/
-
-fact {
-	all c : Client, t : Table | always {
-		R.use[c,t] implies t in reserved
-	}
-}
-
-/*
-when
-	R.reserve[c,t]
-require
-	t not in reserved
-*/
-
-fact {
-	all c : Client, t : Table | always {
-		R.reserve[c,t] implies t not in reserved
+		L.clear[t] implies t not in Client.reservations
 	}
 }

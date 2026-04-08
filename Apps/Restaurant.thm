@@ -17,7 +17,6 @@
    <type name="String"/>
    <type name="univ"/>
    <type name="UseDetach"/>
-   <type name="Action/User"/>
    <type name="Label/Affix"/>
    <type name="Label/Clear"/>
    <type name="Label/Detach"/>
@@ -58,7 +57,6 @@
 </node>
 
 <node visible="no">
-   <type name="Restaurant"/>
    <type name="Action/Concept"/>
 </node>
 
@@ -78,7 +76,9 @@
 <edge visible="no" attribute="yes">
    <relation name="t"> <type name="Label/Affix"/> <type name="Reserved"/> </relation>
    <relation name="t"> <type name="Label/Detach"/> <type name="Reserved"/> </relation>
-   <relation name="u"> <type name="Action/Action"/> <type name="Action/User"/> </relation>
+   <relation name="u"> <type name="Reservation/Cancel"/> <type name="Client"/> </relation>
+   <relation name="u"> <type name="Reservation/Reserve"/> <type name="Client"/> </relation>
+   <relation name="u"> <type name="Reservation/Use"/> <type name="Client"/> </relation>
 </edge>
 
 </view>

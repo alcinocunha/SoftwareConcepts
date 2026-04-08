@@ -44,7 +44,9 @@
 
 <edge visible="no" attribute="yes">
    <relation name="r"> <type name="Action/Action"/> <type name="Resource"/> </relation>
-   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="u"> <type name="Cancel"/> <type name="User"/> </relation>
+   <relation name="u"> <type name="Reserve"/> <type name="User"/> </relation>
+   <relation name="u"> <type name="Use"/> <type name="User"/> </relation>
 </edge>
 
 </view>
