@@ -9,7 +9,7 @@ The repository includes both formal models of the individual concepts and apps b
 | Concept | Parameters |      State      | Actions | Used in |
 |---------|-------|-------------|-----|------|
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels ⊆ Item × Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant1](Apps/Restaurant1.als) |
-| [Messaging](Concepts/Messaging.als) | `User` `Message` | `inbox ⊆ User × Message` `read ⊆ User × Message` | `send` `read` `delete` | [Restaurant2](Apps/Restaurant2.als) |
+| [Messaging](Concepts/Messaging.als) | `User` `Message` | `inbox ⊆ User × User × Message` `read ⊆ User × User × Message` | `send` `read` `delete` | [Restaurant2](Apps/Restaurant2.als) |
 | [Owning](Concepts/Owning.als) | `User` `Thing` | `owns ⊆ User × Thing` | `acquire` `release` | [OnlineDrive](Apps/OnlineDrive.als) |
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls ⊆ Resource × URL` `revoked ⊆ URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) |
 | [Reservation](Concepts/Reservation.als) | `User` `Resource` | `available ⊆ Resource` `reservations ⊆ User × Resource` | `provide` `retract` `reserve` `cancel` `use` | [Restaurant1](Apps/Restaurant1.als) [Restaurant2](Apps/Restaurant2.als) |
@@ -30,5 +30,5 @@ The repository includes both formal models of the individual concepts and apps b
 | [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) | [Trash](Concepts/Trash.als) | Secret files cannot be in the trash. When a secret file is deleted the non-secret files are temporarily restored before the trash is emptied. |
 | [OnlineDrive](Apps/OnlineDrive.als) | [Owning](Concepts/Owning.als) [Trash](Concepts/Trash.als) [WebApp](Concepts/WebApp.als) | A simple online drive with trash functionality. |
 | [Restaurant1](Apps/Restaurant1.als) | [Label](Concepts/Label.als) [Reservation](Concepts/Reservation.als) | A restaurant where reserved tables are automatically assigned a Reserved label. |
-| [Restaurant2](Apps/Restaurant2.als) | [Messaging](Concepts/Messaging.als) [Reservation](Concepts/Reservation.als) | A restaurant that confirms reservations via messages. An example of a system where the need for a reaction is not driven by an invariant. |
+| [Restaurant2](Apps/Restaurant2.als) | [Messaging](Concepts/Messaging.als) [Reservation](Concepts/Reservation.als) | A restaurant that confirms reservations via messages. An example of an app where the need for a reaction cannot be explained solely by an invariant. |
 
