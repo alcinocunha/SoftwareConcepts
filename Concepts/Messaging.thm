@@ -41,14 +41,15 @@
    <relation name="m"> <type name="Action/Action"/> <type name="Message"/> </relation>
 </edge>
 
-<edge visible="no">
+<edge visible="no" attribute="no">
    <relation name="$Scenario1_m"> <type name="User"/> <type name="Message"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
    <relation name="content"> <type name="Message"/> <type name="Content"/> </relation>
-   <relation name="f"> <type name="Action/Action"/> <type name="User"/> </relation>
-   <relation name="t"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
+   <relation name="to"> <type name="Message"/> <type name="User"/> </relation>
+   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 
 </view>

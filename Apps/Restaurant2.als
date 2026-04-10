@@ -26,23 +26,21 @@ sig Table {}
 fun tables : set Table { R.available }
 // Active reservations are those that have been reserved but not yet used
 fun reservations : Client -> Table { R.reservations :> R.available }
-fun inbox : User -> User -> set Message { M.inbox }
-fun read : User -> User -> set Message { M.read }
+fun inbox : User -> set Message { M.inbox }
+fun read : User -> set Message { M.read }
 
 // In this case it is not possible to determine exactly if there should be a reaction just by looking at the state of the concepts
-// Requiring that the inbox of a client has a confirmation if before it was not deleted since they
-// reserved a table will not work, because the inbox may still have previous confirmations and the
-// restaurant will send a confirmation anyway
-// Of course we could restrict the reaction and only send if there is no confirmation in the inbox
-// but seems rather artificial
+// Determining what should be the state of client's inboxes seems to require counting events, which is not possible in temporal logic
 
-// The need for the reaction is thus not driven by an invariant, hence the implies instead of iff
+// The need for the reaction is thus not driven by an invariant, hence the implies instead of a iff
 
 check Invariant {
     always {
         no Reaction implies {
 			// Restaurant will not send messages to itself
-            no Restaurant.inbox[Restaurant]
+            no Restaurant.inbox.from & Restaurant
+            // The following is the best we can say about client's inboxes?
+            all c : Client, m : Message | m in c.inbox and m.from = Restaurant implies before (not M.delete[c,m] since R.reserve[c,m.content])
         }
     }
 } for 2 but 8 Action, 4 Reaction expect 0
@@ -57,35 +55,37 @@ run Scenario {
 // Reactions
 
 /*
-reaction SendConfirmation[t]
+reaction SendConfirmation[c,t]
 when
     R.reserve[c,t]
 then
-    some m : Message | M.send[Restaurant,c,m] and m.content.table = t
+    some m : Message | M.send[Restaurant,m] and m.to = c and m.content.table = t
 */
 
-var sig SendConfirmation extends Reaction { var t : Table }
-pred SendConfirmation [ x : Table ] { some d : SendConfirmation | d.t = x }
+var sig SendConfirmation extends Reaction { var c : Client, var t : Table }
+pred SendConfirmation [ x : Client, y : Table ] { some d : SendConfirmation | d.c = x and d.t = y }
 
 fact {
-    all t : Table | always {
-        SendConfirmation[t] iff some c : Client | before {
-            not (some m : Message | M.send[Restaurant,c,m] and m.content = t) since R.reserve[c,t]
+    all c : Client, t : Table | always {
+        SendConfirmation[c,t] iff before {
+            not (some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t) since R.reserve[c,t]
         }
     }
 }
 
 /* Preventions
 
+// Not sure how to express the condition without referring to the reaction, which is not ideal
+
 /*
 when
-	R.send[Restaurant,t,m]
+	R.send[Restaurant,m]
 require
-	t in Client
+	SendConfirmation[m.to,m.content]
 */
 
 fact {
-    all t : User, m : Message | always {
-        M.send[Restaurant,t,m] implies t in Client
+    all m : Message | always {
+        M.send[Restaurant,m] implies SendConfirmation[m.to,m.content]
     }
 }
