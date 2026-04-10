@@ -11,16 +11,17 @@
 
 <node>
    <type name="Delete"/>
-   <type name="Email"/>
-   <type name="EmailAction"/>
    <type name="Int"/>
+   <type name="Messaging"/>
+   <type name="MessagingAction"/>
    <type name="Read"/>
    <type name="Send"/>
    <type name="String"/>
    <type name="univ"/>
    <type name="User"/>
+   <type name="Action/Concept"/>
    <type name="seq/Int"/>
-   <set name="$Scenario1_u" type="User"/>
+   <set name="$Scenario1_t" type="User"/>
 </node>
 
 <node hideunconnected="yes">
@@ -36,18 +37,8 @@
    <set name="c" type="Action/Action"/>
 </node>
 
-<node visible="no">
-   <type name="Action/Concept"/>
-</node>
-
 <edge style="inherit">
-   <relation name="inbox"> <type name="Action/Concept"/> <type name="User"/> <type name="Message"/> </relation>
    <relation name="m"> <type name="Action/Action"/> <type name="Message"/> </relation>
-   <relation name="read"> <type name="Action/Concept"/> <type name="User"/> <type name="Message"/> </relation>
-</edge>
-
-<edge style="inherit" visible="no" attribute="yes">
-   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 
 <edge visible="no">
@@ -56,8 +47,8 @@
 
 <edge visible="no" attribute="yes">
    <relation name="content"> <type name="Message"/> <type name="Content"/> </relation>
-   <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
-   <relation name="to"> <type name="Message"/> <type name="User"/> </relation>
+   <relation name="f"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="t"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 
 </view>

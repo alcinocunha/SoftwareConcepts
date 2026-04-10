@@ -22,7 +22,8 @@ one sig Reserved {}
 // App specific views of the state of the concepts to simplify the specification and visualization
 
 fun tables : set Table { R.available }
-fun reservations : Client -> Table { R.reservations }
+// Active reservations are those that have been reserved but not yet used
+fun reservations : Client -> Table { R.reservations :> R.available }
 fun reserved : set Table { L.labels.Reserved }
 
 // The app invariant
@@ -66,7 +67,7 @@ check ClearOnlyInReactions {
 run Scenario {
 	eventually always no Reaction
 	all t : Table | eventually R.use[Client,t]
-} for exactly 1 Client, exactly 2 Table, 8 Action, 3 Reaction, 11 steps expect 1
+} for exactly 1 Client, exactly 2 Table, 8 Action, 3 Reaction expect 1
 
 // Reactions
 
@@ -79,11 +80,11 @@ then
 	L.affix[t,Reserved] or R.cancel[c,t] or R.use[c,t]
 */
 
-var lone sig ReserveAffixOrCancel extends Reaction { }
+var lone sig ReserveReaction extends Reaction { }
 
 fact {
 	always {
-		some ReserveAffixOrCancel iff {
+		some ReserveReaction iff {
 			some c : Client, t : Table | before {
 				not (L.affix[t,Reserved] or R.cancel[c,t] or R.use[c,t]) since (R.reserve[c,t] and t not in reserved)
 			}
@@ -100,11 +101,11 @@ then
 	L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]
 */
 
-var lone sig CancelDetach extends Reaction { }
+var lone sig CancelReaction extends Reaction { }
 
 fact {
 	always {
-		some CancelDetach iff {
+		some CancelReaction iff {
 			some c : Client, t : Table | before {
 				not (L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]) since (R.cancel[c,t] and t in reserved)
 			}
@@ -121,11 +122,11 @@ then
 	L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]
 */
 
-var lone sig UseDetach extends Reaction { }
+var lone sig UseReaction extends Reaction { }
 
 fact {
 	always {
-		some UseDetach iff {
+		some UseReaction iff {
 			some c : Client, t : Table | before {
 				not (L.detach[t,Reserved] or L.clear[t] or some d : Client | R.reserve[d,t]) since (R.use[c,t] and t in reserved)
 			}

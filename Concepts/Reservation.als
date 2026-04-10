@@ -22,7 +22,7 @@ var abstract sig ReservationAction extends Action { var r : Resource } { c in Re
 var sig Provide extends ReservationAction { } {
 	r not in c.available
 	available' = available + c->r
-	reservations' = reservations
+	reservations' = reservations - c->User->r
 }
 
 var sig Retract extends ReservationAction { } {
@@ -47,8 +47,8 @@ var sig Cancel extends ReservationAction { var u : User } {
 
 var sig Use extends ReservationAction { var u : User } {
 	r in c.reservations[u]
-	available' = available
-	reservations' = reservations - c->u->r	
+	available' = available - c->r
+	reservations' = reservations
 }
 
 fact Stutter {
@@ -71,7 +71,7 @@ pred use [ s : Reservation, v : User, x : Resource ] { some Use and Use.c = s an
 // Resources cannot but reserved and available
 check Invariant {
 	always {
-		Reservation.reservations[User] in Reservation.available
+		Reservation.reservations in User lone -> Resource
 	}
 } for 2 but 5 Action, exactly 1 Reservation expect 0
 
@@ -93,7 +93,7 @@ check OP2 {
 check Available {
 	all r : Resource | always {
 		r in Reservation.available iff before {
-			not Reservation.retract[r] since Reservation.provide[r]
+			not (Reservation.retract[r] or some u : User | Reservation.use[u,r]) since Reservation.provide[r]
 		}
 	}
 } for 2 but 5 Action, exactly 1 Reservation expect 0
@@ -102,7 +102,7 @@ check Available {
 check Reservations {
 	all u : User, r : Resource | always {
 		u->r in Reservation.reservations iff before {
-			not (Reservation.cancel[u,r] or Reservation.use[u,r]) since Reservation.reserve[u,r]
+			not (Reservation.cancel[u,r] or Reservation.provide[r]) since Reservation.reserve[u,r]
 		}
 	}
 } for 2 but 5 Action, exactly 1 Reservation expect 0
