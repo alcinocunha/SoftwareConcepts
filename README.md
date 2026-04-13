@@ -9,6 +9,7 @@ The repository includes both formal models of the individual concepts and apps b
 | Concept | Parameters |      State      | Actions | Used in |
 |---------|-------|-------------|-----|------|
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels ⊆ Item × Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant1](Apps/Restaurant1.als) |
+| [Meeting](Concepts/Meeting.als) | `User` `Id` | `host ⊆ Id × User` `participants ⊆ Id × User` `started ⊆ Id` | `create` `start` `join` `leave` `end` |  |
 | [Messaging](Concepts/Messaging.als) | `User` `Content` | `inbox ⊆ User × Message` `read ⊆ User × Message` `sent ⊆ Message` | `send` `read` `delete` | [Restaurant2](Apps/Restaurant2.als) |
 | [Owning](Concepts/Owning.als) | `User` `Thing` | `owns ⊆ User × Thing` | `acquire` `release` | [OnlineDrive](Apps/OnlineDrive.als) |
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls ⊆ Resource × URL` `revoked ⊆ URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) |

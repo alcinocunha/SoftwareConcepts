@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="Action/Concept"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Create"/>
+   <type name="End"/>
+   <type name="Int"/>
+   <type name="Join"/>
+   <type name="Leave"/>
+   <type name="Meeting"/>
+   <type name="MeetingAction"/>
+   <type name="Start"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="User"/>
+   <type name="Action/Concept"/>
+   <type name="seq/Int"/>
+   <set name="ended" type="Id"/>
+</node>
+
+<node color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node color="Green">
+   <set name="started" type="Id"/>
+</node>
+
+<node hideunconnected="yes">
+   <type name="Id"/>
+</node>
+
+<node showlabel="no">
+   <set name="$Scenario1_h" type="User"/>
+   <set name="$Scenario1_i" type="Id"/>
+   <set name="$Scenario1_u" type="User"/>
+   <set name="c" type="Action/Action"/>
+</node>
+
+<edge visible="no" attribute="yes">
+   <relation name="m"> <type name="Action/Action"/> <type name="Id"/> </relation>
+   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
