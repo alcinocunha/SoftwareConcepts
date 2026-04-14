@@ -36,7 +36,7 @@ check Invariant {
             no (Chat - Meeting.chat).read
         }
     }
-} for 2 but 11 Action, 6 Reaction, 1 Meeting, 2 Chat expect 0
+} for 2 but 11 Action, 6 Reaction, 1 Meeting, 1 Chat, 14 steps expect 0
 
 // Scenarios
 
@@ -47,7 +47,7 @@ run Scenario {
         eventually (chat.c).end[u]
     }
     eventually always no Reaction
-} for 2 but 11 Action, 6 Reaction, 1 Meeting, 1 Chat expect 1
+} for 2 but 11 Action, 6 Reaction, 1 Meeting, 1 Chat, 11 steps expect 1
 
 // Reactions
 
@@ -237,12 +237,12 @@ fact {
 when
     OC.acquire[m,c]
 require
-    some m.host and no m.chat
+    some m.host and no m.chat and no c.joined and no c.messages
 */
 
 fact {
     all m : Meeting, c : Chat | always {
-        OC.acquire[m,c] implies some m.host and no m.chat
+        OC.acquire[m,c] implies some m.host and no m.chat and no c.joined and no c.messages
     }
 }
 
