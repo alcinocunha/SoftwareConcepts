@@ -69,6 +69,7 @@ var sig Delete extends ChatAction { var m : Message } {
 var sig Read extends ChatAction { var m : Message } {
     u in c.joined.Time
     m in c.messages
+    m not in c.read[u]
     gte[m.when, c.joined[u]]
     read' = read + c->u->m
     joined' = joined

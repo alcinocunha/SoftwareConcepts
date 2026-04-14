@@ -8,11 +8,11 @@ The repository includes both formal models of the individual concepts and apps b
 
 | Concept | Parameters |      State      | Actions | Used in |
 |---------|-------|-------------|-----|------|
-| [Chat](Concepts/Chat.als) | `User` `Content` | `joined ⊆ User × Time` `messages ⊆ Message` `read ⊆ User × Message` | `join` `leave` `send` `delete` `read`|  |
+| [Chat](Concepts/Chat.als) | `User` `Content` | `joined ⊆ User × Time` `messages ⊆ Message` `read ⊆ User × Message` | `join` `leave` `send` `delete` `read`| [Zoomy](Apps/Zoomy.als) |
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels ⊆ Item × Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant1](Apps/Restaurant1.als) |
-| [Meeting](Concepts/Meeting.als) | `User` | `host ⊆ User` `participants ⊆ User` | `start` `join` `leave` `end` |  |
+| [Meeting](Concepts/Meeting.als) | `User` | `host ⊆ User` `participants ⊆ User` | `start` `join` `leave` `end` | [Zoomy](Apps/Zoomy.als) |
 | [Messaging](Concepts/Messaging.als) | `User` `Content` | `inbox ⊆ User × Message` `read ⊆ User × Message` `sent ⊆ Message` | `send` `read` `delete` | [Restaurant2](Apps/Restaurant2.als) |
-| [Owning](Concepts/Owning.als) | `User` `Thing` | `owns ⊆ User × Thing` | `acquire` `release` | [OnlineDrive](Apps/OnlineDrive.als) |
+| [Owning](Concepts/Owning.als) | `User` `Thing` | `owns ⊆ User × Thing` | `acquire` `release` | [OnlineDrive](Apps/OnlineDrive.als) [Zoomy](Apps/Zoomy.als) |
 | [Permalink](Concepts/Permalink.als) | `Resource` `URL` | `urls ⊆ Resource × URL` `revoked ⊆ URL` | `share` `revoke` `access` | [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) |
 | [Reservation](Concepts/Reservation.als) | `User` `Resource` | `available ⊆ Resource` `reservations ⊆ User × Resource` | `provide` `retract` `reserve` `cancel` `use` | [Restaurant1](Apps/Restaurant1.als) [Restaurant2](Apps/Restaurant2.als) |
 | [Trash](Concepts/Trash.als) | `Item` | `accessible ⊆ Item` `trashed ⊆ Item` | `create` `delete` `restore` `empty` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [FileSharing1](Apps/FileSharing1.als) [FileSharing2](Apps/FileSharing2.als) [FileSharing3](Apps/FileSharing3.als) [NoSecretsInTrash1](Apps/NoSecretsInTrash1.als) [NoSecretsInTrash2](Apps/NoSecretsInTrash2.als) [OnlineDrive](Apps/OnlineDrive.als) |
@@ -33,4 +33,5 @@ The repository includes both formal models of the individual concepts and apps b
 | [OnlineDrive](Apps/OnlineDrive.als) | [Owning](Concepts/Owning.als) [Trash](Concepts/Trash.als) [WebApp](Concepts/WebApp.als) | A simple online drive with trash functionality. |
 | [Restaurant1](Apps/Restaurant1.als) | [Label](Concepts/Label.als) [Reservation](Concepts/Reservation.als) | A restaurant where reserved tables are automatically assigned a Reserved label. |
 | [Restaurant2](Apps/Restaurant2.als) | [Messaging](Concepts/Messaging.als) [Reservation](Concepts/Reservation.als) | A restaurant that confirms reservations via messages. An example of an app where the need for a reaction cannot be explained solely by an invariant. |
+| [Zoomy](Apps/Zoomy.als) | [Chat](Concepts/Chat.als) [Meeting](Concepts/Meeting.als) [Owning](Concepts/Owning.als) | A simple video conferencing app where when a chat is created when a meeting starts. The owning concept is used in two different ways, for hosts to schedule meetings, and for meetings to acquire chats. Currently it has a potential deadlock issue, since there is no order enforced between the reactions that make users leave the chat and that delete the chat messages when a meeting ends. |
 
