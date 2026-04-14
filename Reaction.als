@@ -7,7 +7,7 @@ pred false {
     some none
 }
 
-pred NoConcurrentRequests {
+pred PriorityToReactions {
     always {
         some Reaction and some Action implies {
             some r : Reaction | r not in Reaction'

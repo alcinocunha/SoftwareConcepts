@@ -10,12 +10,6 @@ open Concepts/Trash[File]
 
 one sig T extends Trash {}
 
-// No concurrent requests allowed
-
-fact {
-	NoConcurrentRequests
-}
-
 // Items are files and some of them are secrets
 sig File {}
 sig Secret extends File {}
@@ -24,6 +18,12 @@ sig Secret extends File {}
 
 fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }
+
+// Priority of reactions over requests
+
+fact {
+	PriorityToReactions
+}
 
 // The app invariant
 

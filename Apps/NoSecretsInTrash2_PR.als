@@ -13,10 +13,10 @@ one sig T extends Trash {}
 sig File {}
 sig Secret extends File {}
 
-// No concurrent requests allowed
+// Priority of reactions over requests
 
 fact {
-	NoConcurrentRequests
+	PriorityToReactions
 }
 
 // Projections of the state of the concepts to simplify the specification and visualization
