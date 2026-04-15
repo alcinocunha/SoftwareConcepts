@@ -26,6 +26,12 @@ fun shared : File -> Token { P.urls :> (Token - P.revoked) }
 pred upload[f : File] { T.create[f] }
 pred download[t : Token] { P.access[t] }
 
+// Priority of reactions over requests
+
+fact {
+	PriorityToReactions
+}
+
 // The design goal
 
 // The shared tokens are those that were created for uploaded files and not downloaded afterwards
@@ -62,21 +68,19 @@ check Revoked {
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
+// Note that the following two properties are always true, unlike in the version without priority to reactions.
+
 // Downloaded files must be uploaded and not trashed
 check DowloadedAreAccessible {
 	all t : Token | always {
-		no Reaction implies {
-			download[t] implies shared.t in uploaded - trashed
-		}
+		download[t] implies shared.t in uploaded - trashed
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
 // Tokens can only be accessed once
 check SingleAccess {
 	all t : Token | always {
-		no Reaction implies {
-			download[t] implies before historically not download[t]
-		}
+		download[t] implies before historically not download[t]
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
@@ -118,7 +122,7 @@ check NoRestores {
 // Scenarios
 
 // A file is uploaded, which will be automatically shared. 
-// Then it is dowloaded and the file will be deleted and the trash emptied.
+// Then it is downloaded and the file will be deleted and the trash emptied.
 run Scenario1 {
 	some f : File, t : Token {
 		upload[f]
@@ -146,6 +150,11 @@ then
 */
 
 var sig UploadShare extends Reaction { var f : File }
+fact { 
+	always all r : UploadShare {
+		all d : UploadShare' | d.f' = r.f implies d = r
+	}
+}
 pred UploadShare[x : File] { some r : UploadShare | r.f = x }
 
 fact {
@@ -165,6 +174,11 @@ then
 */
 
 var sig DownloadRevoke extends Reaction { var t : Token }
+fact { 
+	always all r : DownloadRevoke {
+		all d : DownloadRevoke' | d.t' = r.t implies d = r
+	}
+}
 pred DownloadRevoke [ x : Token ] { some r : DownloadRevoke | r.t = x }
 
 fact {
@@ -188,6 +202,11 @@ then
 */
 	
 var sig DownloadDelete extends Reaction { var f : File }
+fact { 
+	always all r : DownloadDelete {
+		all d : DownloadDelete' | d.f' = r.f implies d = r
+	}
+}
 pred DownloadDelete [ x : File ] { some r : DownloadDelete | r.f = x }
 
 fact {
@@ -211,6 +230,11 @@ then
 */
 	
 var sig DownloadEmpty extends Reaction { var f : File }
+fact { 
+	always all r : DownloadEmpty {
+		all d : DownloadEmpty' | d.f' = r.f implies d = r
+	}
+}
 pred DownloadEmpty [ x : File ] { some r : DownloadEmpty | r.f = x }
 
 fact {
@@ -229,12 +253,12 @@ fact {
 when
 	P.share[f,t]
 require
-	f in uploaded - trashed and no f.shared
+	f in uploaded and no f.shared
 */
 
 fact {
 	all f : File, t : Token | always {
-		P.share[f,t] implies f in uploaded - trashed and no f.shared
+		P.share[f,t] implies f in uploaded and no f.shared
 	}
 }
 
@@ -261,19 +285,6 @@ require
 fact {
 	all t : Token | always {
 		P.revoke[t] implies t in P.accessed  
-	}
-}
-
-/*
-when
-	upload[f]
-require
-	no f.shared
-*/
-
-fact {
-	all f : File | always {
-		upload[f] implies no f.shared
 	}
 }
 

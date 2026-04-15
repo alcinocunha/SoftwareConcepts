@@ -39,12 +39,8 @@ pred download[t : Token] { P.access[t] }
 check Design {
 	always {
 		no Reaction iff {
-			all f : File, t : Token | f->t in shared iff before {
-				not (f in trashed and empty[] or download[t]) since (share[f,t] and f in uploaded)
-			}
-			all t : Token | t in downloaded iff before {
-				once (download[t] and shared.t not in trashed)
-			}
+			shared = { f : File, t : Token | before (not (f in trashed and empty[] or download[t]) since (share[f,t] and f in uploaded)) }
+			downloaded = { t : Token | before once (download[t] and shared.t not in trashed) }
 		}
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
@@ -65,9 +61,7 @@ check Invariants {
 check Revoked {
 	always {
 		no Reaction implies {
-			all t : Token | t in P.revoked iff before {
-				once (download[t] or some f : File | t in f.shared and f in trashed and empty[])
-			}
+			P.revoked = { t : Token | before once (download[t] or some f : File | t in f.shared and f in trashed and empty[]) }
 		}
 	}
 } for 2 but 7 Action, 4 Reaction expect 0

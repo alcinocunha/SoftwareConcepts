@@ -30,6 +30,12 @@ pred empty { T.empty }
 pred share[f : File, t : Token] { P.share[f,t] }
 pred download[t : Token] { P.access[t] }
 
+// Priority of reactions over requests
+
+fact {
+	PriorityToReactions
+}
+
 // The design goal
 
 // The shared tokes are those that have been shared while the respective file was accessible
@@ -63,21 +69,19 @@ check Revoked {
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
+// Note that the following two properties are always true, unlike in the version without priority to reactions.
+
 // Downloaded files must be uploaded and not trashed
 check DownloadedAreAccessible {
 	all t : Token | always {
-		no Reaction implies {
-			download[t] implies shared.t in uploaded - trashed
-		}
+		download[t] implies shared.t in uploaded - trashed
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
 // Tokens can only be accessed once
 check SingleAccess {
 	all t : Token | always {
-		no Reaction implies {
-			download[t] implies before historically not download[t]
-		}
+		download[t] implies before historically not download[t]
 	}
 } for 2 but 7 Action, 4 Reaction expect 0
 
@@ -90,19 +94,19 @@ check NoRevokes {
 
 // Scenarios
 
-// A file is uploaded, shared twice, accessed, and deleted. Then reactions should revoke all tokens.
+// A file is uploaded, shared twice, accessed, and deleted. Reactions should revoke all tokens.
 run Scenario1 {
 	some f : File, t,u : Token {
-		upload[f]; share[f,t]; share[f,u]; download[u]; T.delete[f]
+		upload[f]; share[f,t]; share[f,u]; download[u]; some Reaction; delete[f]
 	}
 	eventually always no Reaction
-} for exactly 1 File, 2 Token, 7 Action, 3 Reaction expect 1
+} for exactly 1 File, 2 Token, 7 Action, 2 Reaction expect 1
 
 // A file is uploaded, shared, and deleted. 
 // Then, when the reactions are finished one tries to access the token, which should not be possible.
 run Scenario2 {
 	some f : File, t : Token {
-		upload[f]; share[f,t]; delete[f]; eventually (no Reaction and download[t])
+		upload[f]; share[f,t]; delete[f]; eventually download[t]
 	}
 } for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
 
@@ -127,6 +131,11 @@ then
 */
 
 var sig DeleteRevoke extends Reaction { var t : Token }
+fact { 
+	always all r : DeleteRevoke {
+		all d : DeleteRevoke' | d.t' = r.t implies d = r
+	}
+}
 pred DeleteRevoke [ x : Token ] { some r : DeleteRevoke | r.t = x }
 
 fact {
@@ -148,6 +157,11 @@ then
 */
 
 var sig DownloadRevoke extends Reaction { var t : Token }
+fact { 
+	always all r : DownloadRevoke {
+		all d : DownloadRevoke' | d.t' = r.t implies d = r
+	}
+}
 pred DownloadRevoke [ x : Token ] { some r : DownloadRevoke | r.t = x }
 
 fact {
