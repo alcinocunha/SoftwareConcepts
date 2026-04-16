@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="File"/>
+   <type name="Int"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="Action/Concept"/>
+   <type name="seq/Int"/>
+   <type name="Trash/Create"/>
+   <type name="Trash/Delete"/>
+   <type name="Trash/Empty"/>
+   <type name="Trash/Restore"/>
+   <type name="Trash/TrashAction"/>
+   <type name="WebApp/Delete"/>
+   <type name="WebApp/Login"/>
+   <type name="WebApp/Logout"/>
+   <type name="WebApp/Register"/>
+   <type name="WebApp/WebApp"/>
+   <type name="WebApp/WebAppAction"/>
+</node>
+
+<node color="Gray" label="Trash">
+   <type name="Trash/Trash"/>
+</node>
+
+<node color="White">
+   <type name="User"/>
+</node>
+
+<node color="Yellow" label="registered">
+   <set name="$registered" type="User"/>
+</node>
+
+<node numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node shape="Hexagon" color="Yellow" label="loggedin">
+   <set name="$loggedin" type="User"/>
+</node>
+
+<node visible="no">
+   <type name="App"/>
+</node>
+
+<edge style="inherit">
+   <relation name="accessible"> <type name="Trash/Trash"/> <type name="File"/> </relation>
+   <relation name="loggedin"> <type name="WebApp/WebApp"/> <type name="User"/> </relation>
+   <relation name="registered"> <type name="WebApp/WebApp"/> <type name="User"/> </relation>
+   <relation name="trashed"> <type name="Trash/Trash"/> <type name="File"/> </relation>
+</edge>
+
+<edge style="inherit" visible="no" attribute="yes">
+   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="u"> <type name="WebApp/WebAppAction"/> <type name="User"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="c"> <type name="Action/Action"/> <type name="Action/Concept"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

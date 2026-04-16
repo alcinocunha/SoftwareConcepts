@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="DeleteAffixOrEmptyOrRestore"/>
+   <type name="EmptyClear"/>
+   <type name="Int"/>
+   <type name="L"/>
+   <type name="RestoreDetachOrDeleteOrClear"/>
+   <type name="String"/>
+   <type name="T"/>
+   <type name="U"/>
+   <type name="univ"/>
+   <type name="Label/Affix"/>
+   <type name="Label/Clear"/>
+   <type name="Label/Detach"/>
+   <type name="Label/Label"/>
+   <type name="Label/LabelAction"/>
+   <type name="seq/Int"/>
+   <type name="Trash/Create"/>
+   <type name="Trash/Delete"/>
+   <type name="Trash/Empty"/>
+   <type name="Trash/Restore"/>
+   <type name="Trash/Trash"/>
+   <type name="Trash/TrashAction"/>
+</node>
+
+<node color="Black" label="trashed">
+   <set name="$trashed" type="File"/>
+</node>
+
+<node color="Red">
+   <type name="Red"/>
+</node>
+
+<node color="White">
+   <type name="File"/>
+</node>
+
+<node color="Yellow" label="accessible">
+   <set name="$accessible" type="File"/>
+</node>
+
+<node numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node numberatoms="no" shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Color"/>
+</node>
+
+<node visible="no">
+   <type name="Action/Concept"/>
+   <type name="Action/User"/>
+</node>
+
+<edge label="colors">
+   <relation name="$colors"> <type name="File"/> <type name="Color"/> </relation>
+</edge>
+
+<edge visible="no">
+   <relation name="u"> <type name="Action/Action"/> <type name="Action/User"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="i"> <type name="Label/LabelAction"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="t"> <type name="Label/Affix"/> <type name="Color"/> </relation>
+   <relation name="t"> <type name="Label/Detach"/> <type name="Color"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
