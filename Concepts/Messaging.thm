@@ -20,8 +20,8 @@
    <type name="univ"/>
    <type name="User"/>
    <type name="Action/Concept"/>
+   <type name="ordering/Ord"/>
    <type name="seq/Int"/>
-   <set name="$Scenario1_t" type="User"/>
 </node>
 
 <node hideunconnected="yes">
@@ -34,15 +34,21 @@
 </node>
 
 <node showlabel="no">
+   <set name="$first" type="Time"/>
+   <set name="$last" type="Time"/>
    <set name="c" type="Action/Action"/>
+</node>
+
+<node visible="no">
+   <type name="Time"/>
+</node>
+
+<node visible="yes">
+   <set name="time" type="Time"/>
 </node>
 
 <edge style="inherit">
    <relation name="m"> <type name="Action/Action"/> <type name="Message"/> </relation>
-</edge>
-
-<edge visible="no" attribute="no">
-   <relation name="$Scenario1_m"> <type name="User"/> <type name="Message"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
@@ -50,6 +56,7 @@
    <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
    <relation name="to"> <type name="Message"/> <type name="User"/> </relation>
    <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="when"> <type name="Message"/> <type name="Time"/> </relation>
 </edge>
 
 </view>

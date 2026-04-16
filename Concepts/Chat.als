@@ -53,7 +53,7 @@ var sig Send extends ChatAction { var m : Message } {
     messages' = messages + c->m
     joined' = joined
     read' = read + c->u->m
-    time' = time ++ c->c.time.next
+    time' = time - (c -> Time) + (c -> c.time.next)
 }
 
 var sig Delete extends ChatAction { var m : Message } {

@@ -20,6 +20,10 @@ one sig Restaurant extends User {}
 
 sig Table {}
 
+// Only the restaurant can send messages
+fact {
+    Message.from = Restaurant
+}
 
 // Views of the state of the concepts to simplify the specification and visualization
 
@@ -28,47 +32,81 @@ fun tables : set Table { R.available }
 fun reservations : Client -> Table { R.reservations :> R.available }
 fun inbox : User -> set Message { M.inbox }
 fun read : User -> set Message { M.read }
+fun outbox : User -> set Message { M.outbox }
 
-// In this case it is not possible to determine exactly if there should be a reaction just by looking at the state of the concepts
-// Determining what should be the state of client's inboxes seems to require counting events, which is not possible in temporal logic
-
-// The need for the reaction is thus not driven by an invariant, hence the implies instead of a iff
-
+// The outbox of the restaurant contains one message per active reservation
 check Invariant {
     always {
-        no Reaction implies {
-			// Restaurant will not send messages to itself
-            no Restaurant.inbox.from & Restaurant
-            // The following is the best we can say about client's inboxes?
-            all c : Client, m : Message | m in c.inbox and m.from = Restaurant implies before (not M.delete[c,m] since R.reserve[c,m.content])
+        no Reaction iff {
+            reservations = { c : Client, t : Table | some m : Message | m in Restaurant.outbox and m.content = t and m.to = c }
         }
     }
-} for 2 but 8 Action, 4 Reaction expect 0
+} for 2 Client, 2 Table, 3 Time, 3 Message, 9 Action, 4 Reaction expect 0
 
 // Scenario
 
 run Scenario {
-    some c : Client | all t : Table | eventually R.reserve[c,t]
+    some c : Client | all t : Table | eventually R.use[c,t]
     eventually always no Reaction
-} for 2 but exactly 3 Table, 3 Message, 8 Action, 3 Reaction expect 1
+} for 3 but exactly 3 Table, 9 Action, 2 Reaction, 16 steps expect 1
 
 // Reactions
 
 /*
-reaction SendConfirmation[c,t]
+reaction SendConfirmation[t]
 when
     R.reserve[c,t]
 then
-    some m : Message | M.send[Restaurant,m] and m.to = c and m.content.table = t
+    (some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t) or R.cancel[c,t]
 */
 
-var sig SendConfirmation extends Reaction { var c : Client, var t : Table }
-pred SendConfirmation [ x : Client, y : Table ] { some d : SendConfirmation | d.c = x and d.t = y }
+var sig SendConfirmation extends Reaction { var t : Table }
+pred SendConfirmation [ y : Table ] { some d : SendConfirmation | d.t = y }
 
 fact {
-    all c : Client, t : Table | always {
-        SendConfirmation[c,t] iff before {
-            not (some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t) since R.reserve[c,t]
+    all t : Table | always {
+        SendConfirmation[t] iff some c : Client | before {
+            not ((some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t) or R.cancel[c,t]) since R.reserve[c,t]
+        }
+    }
+}
+
+/*
+reaction UseDelete[t]
+when
+    R.use[c,t]
+then
+    some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
+*/
+
+var sig UseDelete extends Reaction { var t : Table }
+pred UseDelete [ y : Table ] { some d : UseDelete | d.t = y }
+
+fact {
+    all t : Table | always {
+        UseDelete[t] iff some c : Client | before {
+            not (some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t) since R.use[c,t]
+        }
+    }
+}
+
+/*
+reaction CancelDeleteFromOutbox[t]
+when
+    R.cancel[c,t]
+where
+    t in Restaurant.outbox.content
+then
+    some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
+*/
+
+var sig CancelDeleteFromOutbox extends Reaction { var t : Table }
+pred CancelDeleteFromOutbox [ y : Table ] { some d : CancelDeleteFromOutbox | d.t = y }
+
+fact {
+    all t : Table | always {
+        CancelDeleteFromOutbox[t] iff some c : Client | before {
+            not (some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t) since (R.cancel[c,t] and t in Restaurant.outbox.content)
         }
     }
 }
@@ -79,13 +117,52 @@ fact {
 
 /*
 when
-	R.send[Restaurant,m]
+	M.send[Restaurant,m]
 require
-	SendConfirmation[m.to,m.content]
+	m.content in m.to.reservations and m.content not in Restaurant.outbox.content
 */
 
 fact {
     all m : Message | always {
-        M.send[Restaurant,m] implies SendConfirmation[m.to,m.content]
+    	M.send[Restaurant,m] implies m.content in m.to.reservations and m.content not in Restaurant.outbox.content
+    }
+}
+
+/*
+when
+    M.deleteFromOutbox[Restaurant,m]
+require
+    m.content not in m.to.reservations
+*/
+
+fact {
+    all m : Message | always {
+        M.deleteFromOutbox[Restaurant,m] implies m.content not in m.to.reservations
+    }
+}
+
+/*
+when
+    R.reserve[u,t]
+require
+    t not in Restaurant.outbox.content
+*/
+
+fact {
+    all u : User, t : Table | always {
+        R.reserve[u,t] implies t not in Restaurant.outbox.content
+    }
+}
+
+/*
+when
+    R.use[u,t]
+require
+    t in Restaurant.outbox.content
+*/
+
+fact {
+    all u : User, t : Table | always {
+        R.use[u,t] implies t in Restaurant.outbox.content
     }
 }

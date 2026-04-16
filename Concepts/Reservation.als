@@ -40,12 +40,14 @@ var sig Reserve extends ReservationAction { var u : User } {
 }
 
 var sig Cancel extends ReservationAction { var u : User } {
+	r in c.available
 	r in c.reservations[u]
 	available' = available
 	reservations' = reservations - c->u->r	
 }
 
 var sig Use extends ReservationAction { var u : User } {
+	r in c.available
 	r in c.reservations[u]
 	available' = available - c->r
 	reservations' = reservations
@@ -75,17 +77,24 @@ check Invariant {
 	}
 } for 2 but 5 Action, exactly 1 Reservation expect 0
 
-// A reserved resource was not retracted since it has been provided
+// A reserved resource was not retracted or reserved since it has been provided
 check OP1 {
 	all u : User, r : Resource | always {
 		Reservation.reserve[u,r] implies before (not Reservation.retract[r] since Reservation.provide[r])
 	}
 } for 2 but 5 Action, exactly 1 Reservation expect 0
 
-// A used resource was previously reserved and the reservation was not cancelled in the meantime
+// A used resource was previously reserved and the reservation was not cancelled or used in the meantime
 check OP2 {
 	all u : User, r : Resource | always {
-		Reservation.use[u,r] implies before (not Reservation.cancel[u,r] since Reservation.reserve[u,r])
+		Reservation.use[u,r] implies before (not (Reservation.cancel[u,r] or Reservation.use[u,r]) since Reservation.reserve[u,r])
+	}
+} for 2 but 5 Action, exactly 1 Reservation expect 0
+
+// A reservation can only be cancelled if it was previously made and not cancelled or used in the meantime
+check OP3 {
+	all u : User, r : Resource | always {
+		Reservation.cancel[u,r] implies before (not (Reservation.cancel[u,r] or Reservation.use[u,r]) since Reservation.reserve[u,r])
 	}
 } for 2 but 5 Action, exactly 1 Reservation expect 0
 
@@ -113,4 +122,4 @@ check Reservations {
 run Scenario {
 	some u : User | all r : Resource | eventually Reservation.use[u,r]
 	eventually always no Reservation.available
-} for exactly 2 User, exactly 2 Resource, 5 Action, exactly 1 Reservation expect 1
+} for exactly 2 User, exactly 2 Resource, 5 Action, exactly 4 Reservation expect 1

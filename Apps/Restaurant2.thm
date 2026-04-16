@@ -30,13 +30,14 @@
    <type name="Reservation/Retract"/>
    <type name="Reservation/Use"/>
    <type name="seq/Int"/>
+   <type name="Messaging/ordering/Ord"/>
 </node>
 
 <node color="Green" label="tables">
    <set name="$tables" type="Table"/>
 </node>
 
-<node hideunconnected="yes">
+<node hideunconnected="yes" label="Message">
    <type name="Messaging/Message"/>
 </node>
 
@@ -52,8 +53,21 @@
    <type name="Table"/>
 </node>
 
+<node showlabel="no">
+   <set name="$first" type="Messaging/Time"/>
+   <set name="$last" type="Messaging/Time"/>
+</node>
+
 <node visible="no">
    <type name="Action/Concept"/>
+</node>
+
+<node visible="no" label="Time">
+   <type name="Messaging/Time"/>
+</node>
+
+<node visible="yes" label="time">
+   <set name="$time" type="Messaging/Time"/>
 </node>
 
 <edge attribute="no">
@@ -82,6 +96,7 @@
    <relation name="u"> <type name="Reservation/Cancel"/> <type name="Client"/> </relation>
    <relation name="u"> <type name="Reservation/Reserve"/> <type name="Client"/> </relation>
    <relation name="u"> <type name="Reservation/Use"/> <type name="Client"/> </relation>
+   <relation name="when"> <type name="Messaging/Message"/> <type name="Messaging/Time"/> </relation>
 </edge>
 
 </view>
