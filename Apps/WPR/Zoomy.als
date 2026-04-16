@@ -1,4 +1,4 @@
-module Apps/WOPR/Zoomy
+module Apps/WPR/Zoomy
 
 open Action
 open Reaction
@@ -23,6 +23,12 @@ sig Content {}
 fun scheduled : User -> Meeting { OM.owns }
 fun chat : Meeting -> Chat { OC.owns }
 
+// Priority of reactions over requests
+
+fact {
+    PriorityToReactions
+}
+
 // The app invariant
 
 check Invariant {
@@ -44,15 +50,15 @@ check AcquireNoMessage {
 
 check AcquireNoJoined {
     always {
-        no Reaction implies all m : Meeting, c : Chat | OC.acquire[m,c] implies no c.joined
+        all m : Meeting, c : Chat | OC.acquire[m,c] implies no c.joined
     }
 } for 1 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
 
 check SendSafe {
     always {
-        no Reaction implies all c : Chat, u : User, m : Message | c.send[u,m] implies u in (chat.c).participants
+        all c : Chat, u : User, m : Message | c.send[u,m] implies u in (chat.c).participants
     }
-} for 1 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 14 steps expect 0
+} for 1 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
 
 // Scenarios
 
@@ -63,7 +69,7 @@ run Scenario {
         eventually (chat.c).end[u]
     }
     eventually always no Reaction
-} for 2 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 11 steps expect 1
+} for 2 but 11 Action, 5 Reaction, 1 Meeting, 1 Chat, 11 steps expect 1
 
 // Reactions
 
@@ -72,16 +78,21 @@ reaction StartMeeting[m]
 when
     m.start[u]
 then
-    (some c : Chat | OC.acquire[m,c]) or m.end[u]
+    some c : Chat | OC.acquire[m,c]
 */
 
 var sig StartMeeting extends Reaction { var m : Meeting }
+fact {
+	always all r : StartMeeting {
+		all d : StartMeeting' | d.m' = r.m implies d = r
+	}    
+}
 pred StartMeeting [x : Meeting] { some r : StartMeeting | r.m = x }
 
 fact {
     all m : Meeting | always {
         StartMeeting[m] iff some u : User | before {
-            not ((some c : Chat | OC.acquire[m,c]) or m.end[u]) since m.start[u]
+            not (some c : Chat | OC.acquire[m,c]) since m.start[u]
         }
     }
 }
@@ -90,19 +101,22 @@ fact {
 reaction EndMeeting[m]
 when
     m.end[u]
-where
-    c in m.chat
 then
     OC.release[m,c]
 */
 
 var sig EndMeeting extends Reaction { var m : Meeting }
+fact {
+    always all r : EndMeeting {
+        all d : EndMeeting' | d.m' = r.m implies d = r
+    }    
+}
 pred EndMeeting [x : Meeting] { some r : EndMeeting | r.m = x }
 
 fact {
     all m : Meeting | always {
         EndMeeting[m] iff some u : User, c : Chat | before {
-            not OC.release[m,c] since (m.end[u] and c in m.chat)
+            not OC.release[m,c] since m.end[u]
         }
     }
 }
@@ -118,6 +132,11 @@ then
 */
 
 var sig EndMeetingForceLeaving extends Reaction { var m : Meeting, var u : User }
+fact {
+    always all r : EndMeetingForceLeaving {
+        all d : EndMeetingForceLeaving' | d.m' = r.m and d.u' = r.u implies d = r
+    }    
+}
 pred EndMeetingForceLeaving [x : Meeting, y : User] { some r : EndMeetingForceLeaving | r.m = x and r.u = y }
 
 fact {
@@ -133,18 +152,23 @@ reaction JoinMeeting[m,u]
 when
     m.join[u]
 where
-    c in m.chat and u not in c.joined.Time
+    c in m.chat
 then
-    c.join[u] or m.leave[u] or (some h : User | m.end[h])
+    c.join[u]
 */
 
 var sig JoinMeeting extends Reaction { var m : Meeting, var u : User }
+fact {
+    always all r : JoinMeeting {
+        all d : JoinMeeting' | d.m' = r.m and d.u' = r.u implies d = r
+    }
+}
 pred JoinMeeting [x : Meeting, y : User] { some r : JoinMeeting | r.m = x and r.u = y }
 
 fact {
     all m : Meeting, u : User | always {
         JoinMeeting[m,u] iff some c : Chat | before {
-            not (c.join[u] or m.leave[u] or (some h : User | m.end[h])) since (m.join[u] and c in m.chat and u not in c.joined.Time)
+            not c.join[u] since (m.join[u] and c in m.chat)
         }
     }
 }
@@ -154,18 +178,23 @@ reaction LeaveMeeting[m,u]
 when
     m.leave[u]
 where
-    c in m.chat and u in c.joined.Time
+    c in m.chat
 then
-    c.leave[u] or m.join[u] or (some h : User | m.end[h])
+    c.leave[u]
 */
 
 var sig LeaveMeeting extends Reaction { var m : Meeting, var u : User }
+fact {
+    always all r : LeaveMeeting {
+        all d : LeaveMeeting' | d.m' = r.m and d.u' = r.u implies d = r
+    }
+}
 pred LeaveMeeting [x : Meeting, y : User] { some r : LeaveMeeting | r.m = x and r.u = y }
 
 fact {
     all m : Meeting, u : User | always {
         LeaveMeeting[m,u] iff some c : Chat | before {
-            not (c.leave[u] or m.join[u] or (some h : User | m.end[h])) since (m.leave[u] and c in m.chat and u in c.joined.Time)
+            not c.leave[u] since (m.leave[u] and c in m.chat)
         }
     }
 }
@@ -229,12 +258,12 @@ fact {
 when
     OC.acquire[m,c]
 require
-    some m.host and no m.chat and no c.joined
+    some m.host and no m.chat
 */
 
 fact {
     all m : Meeting, c : Chat | always {
-        OC.acquire[m,c] implies some m.host and no m.chat and no c.joined
+        OC.acquire[m,c] implies some m.host and no m.chat
     }
 }
 
@@ -251,28 +280,3 @@ fact {
     }
 }
 
-/*
-when
-    m.join[u]
-require
-    some m.chat
-*/
-
-fact {
-    all m : Meeting, u : User | always {
-        m.join[u] implies some m.chat
-    }
-}
-
-/*
-when
-    m.start[u]
-require
-    no m.chat
-*/
-
-fact {
-    all m : Meeting, u : User | always {
-        m.start[u] implies no m.chat
-    }
-}

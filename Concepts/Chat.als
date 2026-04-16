@@ -32,6 +32,7 @@ var abstract sig ChatAction extends Action { var u : User } { c in Chat }
 
 var sig Join extends ChatAction { } {
     u not in c.joined.Time
+    some c.time
     joined' = joined + c->u->c.time
     messages' = messages
     read' = read
@@ -120,10 +121,8 @@ check Joined {
 
 // Expected value of messages
 check Messages {
-    all m : Message | always {
-        m in Chat.messages iff before {
-            not Chat.delete[m.from,m] since (Chat.send[m.from, m] and Chat.time = m.when)
-        }
+    always {
+        Chat.messages = { m : Message | before (not Chat.delete[m.from,m] since Chat.send[m.from,m]) }
     }
 } for 2 but exactly 1 Chat, 5 Action expect 0
 

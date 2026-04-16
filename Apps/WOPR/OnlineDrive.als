@@ -33,10 +33,9 @@ fun trash : User -> Trash { O.owns }
 check Invariant {
 	always {
         no Reaction iff {
-            trash.Trash = registered
-            trash in User -> lone Trash
-            all u : registered & User, t : u.trash | t.accessible = { f : File | before (not (t.delete[f] and u in loggedin) since ((t.create[f] or t.restore[f]) and u in loggedin)) }
-            all u : registered & User, t : u.trash | t.trashed = { f : File | before (not ((t.restore[f] or t.empty[]) and u in loggedin) since (t.delete[f] and u in loggedin)) }
+            trash in registered -> one Trash
+            accessible = { t : Trash, f : File | before (not (t.delete[f] and t = loggedin.trash) since ((t.create[f] or t.restore[f]) and t = loggedin.trash)) }
+            trashed = { t : Trash, f : File | before (not ((t.restore[f] or t.empty[]) and t = loggedin.trash) since (t.delete[f] and t = loggedin.trash)) }
         }
 	}
 } for 2 but 10 Action, 2 Reaction, 2 Trash expect 0 // must set the scope of Trash as 2 otherwise a scope of 2 will apply to Concept, which will not allow trashes
@@ -59,7 +58,7 @@ reaction RegisterAcquire[u : User]
 when
     A.register[u]
 then
-    some t : Trash | no t.accessible and no t.trashed and O.acquire[u,t]
+    some t : Trash | O.acquire[u,t]
 */
 
 var sig RegisterAcquire extends Reaction { var u : User }
@@ -69,7 +68,7 @@ fact {
     all u : User | always {
         RegisterAcquire[u] iff {
             before {
-                not (some t : Trash | no t.accessible and no t.trashed and O.acquire[u,t]) since A.register[u]
+                not (some t : Trash | O.acquire[u,t]) since A.register[u]
             }
         }
     }
@@ -115,12 +114,12 @@ fact {
 when
     O.acquire[u,t]
 require
-    u in registered and no t.accessible and no t.trashed and no u.trash
+    u in registered and no u.trash and no t.accessible and no t.trashed
 */
 
 fact {
     all u : User, t : Trash | always {
-        O.acquire[u,t] implies u in registered and no t.accessible and no t.trashed and no u.trash
+        O.acquire[u,t] implies u in registered and no u.trash and no t.accessible and no t.trashed
     }
 }
 

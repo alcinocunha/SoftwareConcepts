@@ -36,10 +36,6 @@
    <type name="User"/>
 </node>
 
-<node color="Yellow" label="registered">
-   <set name="$registered" type="User"/>
-</node>
-
 <node numberatoms="no" color="Gray">
    <type name="Action/Action"/>
 </node>
@@ -52,12 +48,16 @@
    <type name="File"/>
 </node>
 
-<node shape="Hexagon" color="Yellow" label="loggedin">
-   <set name="$loggedin" type="User"/>
-</node>
-
 <node shape="Trapezoid" color="Yellow" label="Trash">
    <type name="Trash/Trash"/>
+</node>
+
+<node showlabel="no" color="Yellow" label="registered">
+   <set name="$registered" type="User"/>
+</node>
+
+<node showlabel="no" shape="Hexagon" color="Yellow" label="loggedin">
+   <set name="$loggedin" type="User"/>
 </node>
 
 <node visible="no">
