@@ -1,4 +1,4 @@
-module Apps/WOPR/OnlineDrive
+module Apps/WPR/OnlineDrive
 
 open Action
 open Reaction
@@ -26,6 +26,12 @@ sig File {}
 fun registered : set User { A.registered }
 fun loggedin : set User { A.loggedin }
 fun trash : User -> Trash { O.owns }
+
+// Priority of reactions over requests
+
+fact {
+    PriorityToReactions
+}
 
 // The app invariant
 
@@ -63,6 +69,11 @@ then
 */
 
 var sig RegisterAcquire extends Reaction { var u : User }
+fact {	
+	always all r : RegisterAcquire {
+		all d : RegisterAcquire' | d.u' = r.u implies d = r
+	}
+}
 pred RegisterAcquire[x : User] { some r : RegisterAcquire | r.u = x }
 
 fact {
@@ -84,6 +95,11 @@ then
 */
 
 var sig DeleteRelease extends Reaction { var u : User }
+fact {	
+    always all r : DeleteRelease {
+        all d : DeleteRelease' | d.u' = r.u implies d = r
+    }
+}
 pred DeleteRelease[x : User] { some r : DeleteRelease | r.u = x }
 
 fact {
@@ -97,19 +113,6 @@ fact {
 }
 
 // Preventions
-
-/*
-when
-    A.login[u]
-require
-    some u.trash
-*/
-
-fact {
-    all u : User | always {
-        A.login[u] implies some u.trash
-    }
-}
 
 /*
 when
@@ -134,19 +137,6 @@ require
 fact {
     all u : User, t : Trash | always {
         O.release[u,t] implies u not in registered
-    }
-}
-
-/*
-when
-    A.register[u]
-require
-    no u.trash
-*/
-
-fact {
-    all u : User | always {
-        A.register[u] implies no u.trash
     }
 }
 

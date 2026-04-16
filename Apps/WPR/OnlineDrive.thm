@@ -8,11 +8,16 @@
 <defaultedge/>
 
 <node>
-   <type name="File"/>
+   <type name="DeleteRelease"/>
    <type name="Int"/>
+   <type name="RegisterAcquire"/>
    <type name="String"/>
    <type name="univ"/>
    <type name="Action/Concept"/>
+   <type name="Owning/Acquire"/>
+   <type name="Owning/Owning"/>
+   <type name="Owning/OwningAction"/>
+   <type name="Owning/Release"/>
    <type name="seq/Int"/>
    <type name="Trash/Create"/>
    <type name="Trash/Delete"/>
@@ -27,10 +32,6 @@
    <type name="WebApp/WebAppAction"/>
 </node>
 
-<node color="Gray" label="Trash">
-   <type name="Trash/Trash"/>
-</node>
-
 <node color="White">
    <type name="User"/>
 </node>
@@ -43,12 +44,25 @@
    <type name="Action/Action"/>
 </node>
 
+<node shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="File"/>
+</node>
+
 <node shape="Hexagon" color="Yellow" label="loggedin">
    <set name="$loggedin" type="User"/>
 </node>
 
+<node shape="Trapezoid" color="Yellow" label="Trash">
+   <type name="Trash/Trash"/>
+</node>
+
 <node visible="no">
-   <type name="App"/>
+   <type name="A"/>
+   <type name="O"/>
 </node>
 
 <edge style="inherit">
@@ -65,8 +79,17 @@
    <relation name="u"> <type name="WebApp/WebAppAction"/> <type name="User"/> </relation>
 </edge>
 
-<edge visible="no" attribute="yes">
+<edge visible="no" attribute="no">
    <relation name="c"> <type name="Action/Action"/> <type name="Action/Concept"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="t"> <type name="Owning/OwningAction"/> <type name="Trash/Trash"/> </relation>
+   <relation name="u"> <type name="Owning/OwningAction"/> <type name="User"/> </relation>
+</edge>
+
+<edge visible="yes" attribute="no">
+   <relation name="u"> <type name="DeleteRelease"/> <type name="User"/> </relation>
 </edge>
 
 </view>
