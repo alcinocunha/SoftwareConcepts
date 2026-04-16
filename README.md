@@ -6,8 +6,8 @@ The repository includes both formal models of the individual concepts and apps b
 
 # Index of Concepts
 
-| Concept | Parameters |      State      | Actions | Used in |
-|---------|-------|-------------|-----|------|
+| Concept | Parameters |      State      | Actions | Used in (w/o PR) | Used in (w/ PR) |
+|---------|-------|-------------|-----|------|-----|
 | [Chat](Concepts/Chat.als) | `User` `Content` | `joined ⊆ User × Time` `messages ⊆ Message` `read ⊆ User × Message` | `join` `leave` `send` `delete` `read`| [Zoomy](Apps/WOPR/Zoomy.als) |
 | [Label](Concepts/Label.als) | `Item` `Tag` | `labels ⊆ Item × Tag` | `affix` `detach` `clear` | [ColoredFiles1](Apps/ColoredFiles1.als) [ColoredFiles2](Apps/ColoredFiles2.als) [ColoredFiles3](Apps/ColoredFiles3.als) [Restaurant1](Apps/Restaurant1.als) |
 | [Meeting](Concepts/Meeting.als) | `User` | `host ⊆ User` `participants ⊆ User` | `start` `join` `leave` `end` | [Zoomy](Apps/WOPR/Zoomy.als) |
