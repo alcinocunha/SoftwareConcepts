@@ -1,4 +1,4 @@
-module Apps/OnlineDrive
+module Apps/WOPR/OnlineDrive
 
 open Action
 open Reaction

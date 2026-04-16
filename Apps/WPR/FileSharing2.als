@@ -1,4 +1,4 @@
-module Apps/FileSharing2
+module Apps/WPR/FileSharing2
 open Action
 open Reaction
 

@@ -1,4 +1,4 @@
-module Apps/Restaurant1
+module Apps/WOPR/Restaurant1
 open Action
 open Reaction
 

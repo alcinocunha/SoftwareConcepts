@@ -1,4 +1,4 @@
-module Apps/NoSecretsInTrash1
+module Apps/WPR/NoSecretsInTrash1
 open Action
 open Reaction
 

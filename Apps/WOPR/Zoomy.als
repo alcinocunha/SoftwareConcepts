@@ -1,4 +1,4 @@
-module Apps/Zoomy
+module Apps/WOPR/Zoomy
 
 open Action
 open Reaction
