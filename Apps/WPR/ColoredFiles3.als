@@ -71,7 +71,7 @@ reaction EmptyClear[f : File]
 when
 	T.empty[]
 where
-	f in trashed and some f.colors
+	f in trashed
 then
 	L.clear[f]
 */
@@ -88,7 +88,7 @@ fact {
 	all f : File | always {
 		EmptyClear[f] iff {
 			before {
-				not L.clear[f] since (T.empty[] and f in trashed and some f.colors)
+				not L.clear[f] since (T.empty[] and f in trashed)
 			}
 		}
 	}
@@ -125,8 +125,6 @@ fact {
 reaction RestoreDetach[f : File]
 when
 	T.restore[f]
-where
-	Red in f.colors
 then
 	L.detach[f,Red]
 */
@@ -144,7 +142,7 @@ fact {
 	all f : File | always {
 		RestoreDetach[f] iff {
 			before {
-				not L.detach[f,Red] since (T.restore[f] and Red in f.colors)
+				not L.detach[f,Red] since T.restore[f]
 			}
 		}
 	}

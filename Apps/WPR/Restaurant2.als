@@ -106,24 +106,24 @@ fact {
 }
 
 /*
-reaction CancelDeleteFromOutbox[t]
+reaction CancelDelete[t]
 when
     R.cancel[c,t]
 then
     some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
 */
 
-var sig CancelDeleteFromOutbox extends Reaction { var t : Table }
+var sig CancelDelete extends Reaction { var t : Table }
 fact {
-    always all r : CancelDeleteFromOutbox {
-        all d : CancelDeleteFromOutbox' | d.t' = r.t implies d = r
+    always all r : CancelDelete {
+        all d : CancelDelete' | d.t' = r.t implies d = r
     }
 }
-pred CancelDeleteFromOutbox [ y : Table ] { some d : CancelDeleteFromOutbox | d.t = y }
+pred CancelDelete [ y : Table ] { some d : CancelDelete | d.t = y }
 
 fact {
     all t : Table | always {
-        CancelDeleteFromOutbox[t] iff some c : Client | before {
+        CancelDelete[t] iff some c : Client | before {
             not (some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t) since R.cancel[c,t]
         }
     }
