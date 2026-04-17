@@ -1,4 +1,4 @@
-# concept: Trash [File]
+# concept: `Trash [File]`
 
 * **purpose**: To allow undoing the deletion of files.
 * **principle**: If a file is deleted, it can be restored, and if restored becomes accessible again.
@@ -12,7 +12,7 @@
     * `delete(f:File)`
         * **requires**: `f` is in `accessible`
         * **effects**: moves `f` from `accessible` to `trashed`
-    * `restore(f)`
+    * `restore(f:File)`
         * **requires**: `f` is in `trashed`
         * **effects**: moves `f` from `trashed` to `accessible`
     * `empty()`
