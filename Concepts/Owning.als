@@ -15,26 +15,42 @@ fact Init {
 
 // Actions
 
-abstract var sig OwningAction extends Action { var u : User, var t : Thing } { c in Owning }
+abstract sig OwningAction extends Action { user : User, thing : Thing } { concept in Owning }
+sig Acquire extends OwningAction {}
+fact {
+    all x,y : Acquire | x.concept = y.concept and x.user = y.user and x.thing = y.thing implies x = y
+}
+sig Release extends OwningAction {}
+fact {    
+    all x,y : Release | x.concept = y.concept and x.user = y.user and x.thing = y.thing implies x = y 
+}
 
-var sig Acquire extends OwningAction {} {
+pred acquire [c : Owning, u : User, t : Thing] {
     no c.owns.t
     owns' = owns + c->u->t
+
+    some a : Acquire | a.concept = c and a.user = u and a.thing = t and occurred' = a
 }
 
-var sig Release extends OwningAction {} {
-    c.owns.t = u
-    owns' = owns - c->u->t
+pred release [c : Owning, u : User, t : Thing] {
+     c.owns.t = u
+     owns' = owns - c->u->t
+
+    some a : Release | a.concept = c and a.user = u and a.thing = t and occurred' = a
 }
 
-fact Stutter {
+pred stutter {
+    owns' = owns
+
+    no occurred' & OwningAction
+}
+
+fact Actions {
     always {
-        no OwningAction implies owns' = owns
+        (some c : Owning, u : User, t : Thing | acquire[c,u,t]) or
+        (some c : Owning, u : User, t : Thing | release[c,u,t])
     }
 }
-
-pred acquire [o : Owning, x : User, y : Thing] { some Acquire and Acquire.c = o and Acquire.u = x and Acquire.t = y }
-pred release [o : Owning, x : User, y : Thing] { some Release and Release.c = o and Release.u = x and Release.t = y }
 
 // Properties
 
@@ -43,14 +59,14 @@ check Invariant {
     always {
         all t : Thing | lone owns.t
     }
-} for 3 but 2 Action, exactly 1 Owning expect 0
+} for 3 but 10 Action, exactly 1 Owning expect 0
 
 // After a thing is acquired it can only be acquired again after it is released
 check Principle {
 	all t : Thing, u,v : User | always {
 		Owning.acquire[u,t] implies after (Owning.release[u,t] releases not Owning.acquire[v,t])
 	}
-} for 3 but 2 Action, exactly 1 Owning
+} for 3 but 10 Action, exactly 1 Owning
 
 // Scenarios
 
@@ -59,4 +75,4 @@ run Scenario {
         Owning.owns = User->Thing
 		eventually no owns
 	}
-} for exactly 1 User, exactly 3 Thing, 2 Action, exactly 1 Owning expect 1
+} for exactly 1 User, exactly 3 Thing, 10 Action, exactly 1 Owning expect 1

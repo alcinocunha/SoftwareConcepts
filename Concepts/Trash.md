@@ -2,7 +2,7 @@
 
 * **purpose**: To allow undoing the deletion of files.
 * **principle**: If a file is deleted, it can be restored, and if restored becomes accessible again.
-* **state**
+* **state**:
     * an `accessible` set of `File`s
     * a `trashed` set of `File`s
 * **actions**:
@@ -20,4 +20,4 @@
         * **effects**: removes all files in `trashed`
 * **invariants**:
     * `accessible` and `trashed` are disjoint
-* **formalizations**: Alloy [Trash.als](Trash.als), TLA+ [Trash.tla](Trash.tla)
+* **formalizations**: [Alloy](Trash.als), [TLA+](Trash.tla)

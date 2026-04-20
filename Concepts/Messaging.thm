@@ -10,7 +10,8 @@
 <defaultedge/>
 
 <node>
-   <type name="Delete"/>
+   <type name="DeleteFromInbox"/>
+   <type name="DeleteFromOutbox"/>
    <type name="Int"/>
    <type name="Messaging"/>
    <type name="MessagingAction"/>
@@ -22,6 +23,7 @@
    <type name="Action/Concept"/>
    <type name="ordering/Ord"/>
    <type name="seq/Int"/>
+   <set name="$Scenario1_t" type="User"/>
 </node>
 
 <node hideunconnected="yes">
@@ -29,33 +31,36 @@
    <type name="Message"/>
 </node>
 
-<node numberatoms="no" color="Gray">
-   <type name="Action/Action"/>
-</node>
-
 <node showlabel="no">
    <set name="$first" type="Time"/>
    <set name="$last" type="Time"/>
-   <set name="c" type="Action/Action"/>
+   <set name="concept" type="Action/Action"/>
+   <set name="occurred" type="Action/Action"/>
 </node>
 
-<node visible="no">
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="no" shape="Ellipse" color="Red">
    <type name="Time"/>
 </node>
 
-<node visible="yes">
+<node visible="yes" showlabel="no">
+   <set name="$action" type="Action/Action"/>
    <set name="time" type="Time"/>
 </node>
 
-<edge style="inherit">
-   <relation name="m"> <type name="Action/Action"/> <type name="Message"/> </relation>
+<edge visible="no">
+   <relation name="$Scenario1_m"> <type name="User"/> <type name="Message"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
    <relation name="content"> <type name="Message"/> <type name="Content"/> </relation>
    <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
+   <relation name="message"> <type name="Action/Action"/> <type name="Message"/> </relation>
    <relation name="to"> <type name="Message"/> <type name="User"/> </relation>
-   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="user"> <type name="Action/Action"/> <type name="User"/> </relation>
    <relation name="when"> <type name="Message"/> <type name="Time"/> </relation>
 </edge>
 

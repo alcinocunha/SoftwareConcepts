@@ -28,26 +28,50 @@ fact Init {
 }
 
 // Actions
-var abstract sig ChatAction extends Action { var u : User } { c in Chat }
+abstract sig ChatAction extends Action { user : User } { concept in Chat }
+sig Join extends ChatAction {}
+fact {
+    all x,y : Join | x.concept = y.concept and x.user = y.user implies x = y
+}
+sig Leave extends ChatAction {}
+fact {
+    all x,y : Leave | x.concept = y.concept and x.user = y.user implies x = y
+}
+sig Send extends ChatAction { message : Message }
+fact {
+    all x,y : Send | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
+}
+sig Delete extends ChatAction { message : Message }
+fact {
+    all x,y : Delete | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
+}
+sig Read extends ChatAction { message : Message }
+fact {
+    all x,y : Read | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
+}
 
-var sig Join extends ChatAction { } {
+pred join [c : Chat, u : User] {
     u not in c.joined.Time
     some c.time
     joined' = joined + c->u->c.time
     messages' = messages
     read' = read
     time' = time
+
+    some a : Join | a.concept = c and a.user = u and occurred' = a
 }
 
-var sig Leave extends ChatAction { } {
+pred leave [c : Chat, u : User] {
     u in c.joined.Time
     joined' = joined - c->u->Time
     messages' = messages
     read' = read - c->u->Message
     time' = time
+
+    some a : Leave | a.concept = c and a.user = u and occurred' = a
 }
 
-var sig Send extends ChatAction { var m : Message } {
+pred send [c : Chat, u : User, m : Message] {
     u in c.joined.Time
     m.from = u
     m.when = c.time
@@ -55,9 +79,11 @@ var sig Send extends ChatAction { var m : Message } {
     joined' = joined
     read' = read + c->u->m
     time' = time - (c -> Time) + (c -> c.time.next)
+
+    some a : Send | a.concept = c and a.user = u and a.message = m and occurred' = a
 }
 
-var sig Delete extends ChatAction { var m : Message } {
+pred delete [c : Chat, u : User, m : Message] {
     u in c.joined.Time
     m in c.messages
     m.from = u
@@ -65,9 +91,11 @@ var sig Delete extends ChatAction { var m : Message } {
     joined' = joined
     read' = read - c->User->m
     time' = time
+
+    some a : Delete | a.concept = c and a.user = u and a.message = m and occurred' = a
 }
 
-var sig Read extends ChatAction { var m : Message } {
+pred read [c : Chat, u : User, m : Message] {
     u in c.joined.Time
     m in c.messages
     m not in c.read[u]
@@ -76,24 +104,29 @@ var sig Read extends ChatAction { var m : Message } {
     joined' = joined
     messages' = messages
     time' = time
+
+    some a : Read | a.concept = c and a.user = u and a.message = m and occurred' = a
 }
 
-fact Stutter {
+pred stutter {
+    joined' = joined
+    messages' = messages
+    read' = read
+    time' = time
+
+    no occurred' & ChatAction
+}
+
+fact Actions {
     always {
-        no ChatAction implies {
-            joined' = joined
-            messages' = messages
-            read' = read
-            time' = time
-        }
+        (some c : Chat, u : User | c.join[u]) or
+        (some c : Chat, u : User | c.leave[u]) or
+        (some c : Chat, u : User, m : Message | c.send[u,m]) or
+        (some c : Chat, u : User, m : Message | c.delete[u,m]) or
+        (some c : Chat, u : User, m : Message | c.read[u,m]) or
+        stutter
     }
 }
-
-pred join [x : Chat, y : User] { some Join and Join.c = x and Join.u = y }
-pred leave [x : Chat, y : User] { some Leave and Leave.c = x and Leave.u = y }
-pred send [x : Chat, y : User, z : Message] { some Send and Send.c = x and Send.u = y and Send.m = z }
-pred delete [x : Chat, y : User, z : Message] { some Delete and Delete.c = x and Delete.u = y and Delete.m = z }
-pred read [x : Chat, y : User, z : Message] { some Read and Read.c = x and Read.u = y and Read.m = z }
 
 // Properties
 
@@ -108,7 +141,7 @@ check Invariant {
         // Users cannot read messages sent before they joined
         all u : User, m : Chat.read[u] | gte[m.when, Chat.joined[u]]
     }
-} for 2 but exactly 1 Chat, 5 Action expect 0
+} for 2 but exactly 1 Chat, 10 Action expect 0
 
 // Expected value of joined
 check Joined {
@@ -117,14 +150,14 @@ check Joined {
             not Chat.leave[u] since (Chat.join[u] and Chat.time = t)
         }
     }
-} for 2 but exactly 1 Chat, 5 Action expect 0
+} for 2 but exactly 1 Chat, 10 Action expect 0
 
 // Expected value of messages
 check Messages {
     always {
         Chat.messages = { m : Message | before (not Chat.delete[m.from,m] since Chat.send[m.from,m]) }
     }
-} for 2 but exactly 1 Chat, 5 Action expect 0
+} for 2 but exactly 1 Chat, 10 Action expect 0
 
 // Expected value of read
 check Read {
@@ -133,7 +166,7 @@ check Read {
             not (Chat.leave[u] or Chat.delete[m.from,m]) since (Chat.read[u,m] or Chat.send[u,m])
         }
     }
-} for 2 but exactly 1 Chat, 5 Action expect 0
+} for 2 but exactly 1 Chat, 10 Action expect 0
 
 // Operational principles
 
@@ -142,11 +175,12 @@ check LeavePreventsReadSend {
     all u : User, m : Message | always {
         Chat.leave[u] implies (Chat.join[u] releases not (Chat.read[u,m] or Chat.send[u,m]))
     }
-} for 2 but exactly 1 Chat, 5 Action expect 0
+} for 2 but exactly 1 Chat, 10 Action expect 0
 
 // Scenarios
 
-// Someone reads something
+// Someone reads something and everyone leaves the chat
 run Scenario1 {
     some u : User, m : Message | eventually Chat.read[u, m]
-} for 3 but exactly 1 Chat, 5 Action expect 1
+	eventually always no joined
+} for 3 but exactly 1 Chat, 10 Action expect 1

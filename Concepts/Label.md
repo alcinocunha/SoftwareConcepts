@@ -2,7 +2,7 @@
  
 * **purpose**: To allow labeling items with tags.
 * **principle**: If a tag is affixed to an item, then it remains affixed until it is detached or all tags of the item are cleared.
-* **state**
+* **state**:
     * a set of `Item`s with
         * a `labels` set of `Tag`s
 * **actions**:
@@ -15,4 +15,4 @@
     * `clear(i:Item)`
         * **requires**: `i` has at least one label
         * **effects**: removes all labels from `i`
-* **formalizations**: Alloy [Label.als](Label.als), TLA+ [Label.tla](Label.tla)
+* **formalizations**: [Alloy](Label.als), [TLA+](Label.tla)

@@ -19,4 +19,4 @@
         * **effects**: adds `u` to `accessed`
 * **invariants**:
     * `revoked` and `accessed` only contain URLs of shared resources
-* **formalizations**: Alloy [Permalink.als](Permalink.als)
+* **formalizations**: [Alloy](Permalink.als), [TLA+](Permalink.tla)

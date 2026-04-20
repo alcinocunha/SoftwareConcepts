@@ -12,7 +12,6 @@
 <node>
    <type name="Chat"/>
    <type name="ChatAction"/>
-   <type name="Content"/>
    <type name="Delete"/>
    <type name="Int"/>
    <type name="Join"/>
@@ -27,15 +26,15 @@
    <type name="seq/Int"/>
 </node>
 
-<node color="Gray">
-   <type name="Action/Action"/>
-</node>
-
 <node color="Yellow">
    <set name="messages" type="Message"/>
 </node>
 
-<node hideunconnected="no" color="White">
+<node hideunconnected="yes">
+   <type name="Content"/>
+</node>
+
+<node hideunconnected="yes" color="White">
    <type name="Message"/>
 </node>
 
@@ -44,31 +43,34 @@
    <set name="$last" type="Time"/>
    <set name="$Scenario1_m" type="Message"/>
    <set name="$Scenario1_u" type="User"/>
-   <set name="c" type="Action/Action"/>
+   <set name="concept" type="Action/Action"/>
+   <set name="occurred" type="Action/Action"/>
 </node>
 
 <node visible="no">
    <type name="Time"/>
 </node>
 
+<node visible="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="$action" type="Action/Action"/>
+</node>
+
 <node visible="yes" showlabel="no" shape="Ellipse" color="Green">
    <set name="time" type="Time"/>
 </node>
 
-<edge style="inherit">
-   <relation name="joined"> <type name="Action/Concept"/> <type name="User"/> <type name="Time"/> </relation>
-   <relation name="m"> <type name="Delete"/> <type name="Message"/> </relation>
-   <relation name="m"> <type name="Read"/> <type name="Message"/> </relation>
-   <relation name="m"> <type name="Send"/> <type name="Message"/> </relation>
-   <relation name="messages"> <type name="Action/Concept"/> <type name="Message"/> </relation>
-   <relation name="read"> <type name="Action/Concept"/> <type name="User"/> <type name="Message"/> </relation>
-   <relation name="time"> <type name="Action/Concept"/> <type name="Time"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
    <relation name="content"> <type name="Message"/> <type name="Content"/> </relation>
    <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
-   <relation name="u"> <type name="Action/Action"/> <type name="User"/> </relation>
+   <relation name="joined"> <type name="User"/> <type name="Time"/> </relation>
+   <relation name="message"> <type name="Delete"/> <type name="Message"/> </relation>
+   <relation name="message"> <type name="Read"/> <type name="Message"/> </relation>
+   <relation name="message"> <type name="Send"/> <type name="Message"/> </relation>
+   <relation name="user"> <type name="Action/Action"/> <type name="User"/> </relation>
    <relation name="when"> <type name="Message"/> <type name="Time"/> </relation>
 </edge>
 

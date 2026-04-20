@@ -2,7 +2,7 @@
 
 * **purpose**: To allow users to have meetings with each other.
 * **principle**: If a user starts a meeting, then they are the host of the meeting until they end it, and if a user joins a meeting, then they are a participant of the meeting until they leave it or the meeting ends.
-* **state**
+* **state**:
     * a `host` with at most one `User`
     * a `participants` set of `User`s
 * **actions**:

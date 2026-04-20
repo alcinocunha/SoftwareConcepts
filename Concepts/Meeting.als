@@ -16,46 +16,73 @@ fact Init {
 }
 
 // Actions
-var abstract sig MeetingAction extends Action { var u : User } { c in Meeting }
+abstract sig MeetingAction extends Action { user : User } { concept in Meeting }
+sig Start extends MeetingAction {}
+fact {
+    all x,y : Start | x.concept = y.concept and x.user = y.user implies x = y
+}
+sig Join extends MeetingAction {}
+fact {    
+    all x,y : Join | x.concept = y.concept and x.user = y.user implies x = y 
+}
+sig Leave extends MeetingAction {}
+fact {    
+    all x,y : Leave | x.concept = y.concept and x.user = y.user implies x = y 
+}
+sig End extends MeetingAction {}
+fact {    
+    all x,y : End | x.concept = y.concept and x.user = y.user implies x = y 
+}
 
-var sig Start extends MeetingAction { } {
+pred start [c : Meeting, u : User] {
     no c.host
     host' = host + c->u
     participants' = participants
+
+    some a : Start | a.concept = c and a.user = u and occurred' = a
 }
 
-var sig Join extends MeetingAction { } {
+pred join [c : Meeting, u : User] {
     some c.host
     u not in c.participants
     participants' = participants + c->u
     host' = host
+
+    some a : Join | a.concept = c and a.user = u and occurred' = a
 }
 
-var sig Leave extends MeetingAction { } {
+pred leave [c : Meeting, u : User] {
     u in c.participants
     participants' = participants - c->u
     host' = host
+
+    some a : Leave | a.concept = c and a.user = u and occurred' = a
 }
 
-var sig End extends MeetingAction { } {
-    u = c.host
-    participants' = participants - c->User
+pred end [c : Meeting, u : User] {
+    u in c.host
     host' = host - c->u
+    participants' = participants - c->User
+
+    some a : End | a.concept = c and a.user = u and occurred' = a
 }
 
-fact Stutter {
+pred stutter {
+    host' = host
+    participants' = participants
+
+    no occurred' & MeetingAction
+}
+
+fact Actions {
     always {
-        no MeetingAction implies {
-            participants' = participants
-            host' = host
-        }
+        (some c : Meeting, u : User | start[c,u]) or
+        (some c : Meeting, u : User | join[c,u]) or
+        (some c : Meeting, u : User | leave[c,u]) or
+        (some c : Meeting, u : User | end[c,u]) or
+        stutter
     }
 }
-
-pred start [z : Meeting, y : User] { some Start and Start.c = z and Start.u = y }
-pred join [z : Meeting, y : User] { some Join and Join.c = z and Join.u = y }
-pred leave [z : Meeting, y : User] { some Leave and Leave.c = z and Leave.u = y }
-pred end [z : Meeting, y : User] { some End and End.c = z and End.u = y }
 
 // Properties
 
@@ -66,14 +93,14 @@ check Invariant {
         // Meetings with participants have started
         some Meeting.participants implies some Meeting.host
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0
 
 // Expected value of host
 check Host {
     all u : User | always {
         u in Meeting.host iff before (not Meeting.end[u] since Meeting.start[u])
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0
 
 // Expected value of participants
 check Participants {
@@ -82,7 +109,7 @@ check Participants {
             not (Meeting.leave[u] or some h : User | Meeting.end[h]) since Meeting.join[u]
         }
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0
 
 // Operational principles
 
@@ -91,21 +118,21 @@ check EndPreventsJoin {
     all h,u : User | always {
             Meeting.end[h] implies ((some h : User | Meeting.start[h]) releases not Meeting.join[u])
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0
 
 // Leave undoes Join
 check LeaveUndoesJoin {
     all u : User | always {
         (Meeting.join[u];Meeting.leave[u]) implies (host'' = host and participants'' = participants)
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0
 
 // End undoes Start
 check EndUndoesStart {
     all u : User | always {
         (Meeting.start[u];Meeting.end[u]) implies (host'' = host and participants'' = participants)
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0
 
 // Scenarios
 
@@ -114,11 +141,11 @@ run Scenario1 {
     some disj h,u : User {
         Meeting.start[h]; Meeting.join[h]; Meeting.join[u]; Meeting.end[h]
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 1
+} for 3 but exactly 1 Meeting, 10 Action expect 1
 
 // start; end; join
 run Scenario2 {
     some disj h,u : User {
         Meeting.start[h]; Meeting.end[h]; Meeting.join[u]
     }
-} for 3 but exactly 1 Meeting, 4 Action expect 0
+} for 3 but exactly 1 Meeting, 10 Action expect 0

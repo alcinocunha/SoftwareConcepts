@@ -2,7 +2,7 @@
 
 * **purpose**: To allow users to reserve resources for later use.
 * **principle**: If a user reserves a resource, then they can later use it, but if they cancel the reservation then they cannot use it.
-* **state**
+* **state**:
     * a set of `User`s with
         * a `reservations` set of `Resource`s
     * an `available` set of `Resource`s
