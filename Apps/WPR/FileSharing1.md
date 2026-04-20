@@ -7,7 +7,7 @@
     * one `Trash[File]`
     * one `Permalink[File,Token]`
 * **design goal**:
-    * the `urls` of a `File` that can still be accessed are those that were shared when the `File` was `accessible`, and which have not been `accessed` yet, nor the `File` has been deleted.
+    * a `File` has a `Token` in its `urls` that can still be accessed iff that `Token` was shared when the `File` was `accessible`, and the `Token` has not been `accessed` in the meantime, nor the `File` has been deleted.
 * **priority to reactions**: yes
 * **reactions**:
 ```
