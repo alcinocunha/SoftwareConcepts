@@ -1,4 +1,4 @@
-# concept: `Trash [File]`
+# concept: `Trash[File]`
 
 * **purpose**: To allow undoing the deletion of files.
 * **principle**: If a file is deleted, it can be restored, and if restored becomes accessible again.
@@ -20,3 +20,4 @@
         * **effects**: removes all files in `trashed`
 * **invariants**:
     * `accessible` and `trashed` are disjoint
+* **formalizations**: Alloy [Trash.als](Trash.als), TLA+ [Trash.tla](Trash.tla)

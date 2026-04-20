@@ -1,4 +1,4 @@
-module Concepts/Trash[Item]
+module Trash[Item]
 open Action
 
 // State
@@ -17,52 +17,79 @@ fact Init {
 
 // Actions
 
-var abstract sig TrashAction extends Action {} { c in Trash }
+abstract sig TrashAction extends Action { } { concept in Trash }
+sig Create extends TrashAction { item : one Item }
+fact {
+	all x,y : Create | x.concept = y.concept and x.item = y.item implies x = y
+}
+sig Delete extends TrashAction { item : one Item }
+fact {
+	all x,y : Delete | x.concept = y.concept and x.item = y.item implies x = y
+}
+sig Restore extends TrashAction { item : one Item }
+fact {
+	all x,y : Restore | x.concept = y.concept and x.item = y.item implies x = y
+}
+sig Empty extends TrashAction {}
+fact {
+	all x,y : Empty | x.concept = y.concept implies x = y
+}
 
-var sig Create extends TrashAction { var i : Item } { 
+pred create [c : Trash, i : Item] { 
 	i not in c.(accessible+trashed)
 	accessible' = accessible + c->i
 	trashed' = trashed
+
+	some a : Create | a.concept = c and a.item = i and occurred' = a
 }
 
-var sig Delete extends TrashAction { var i : Item } {
+pred delete [c : Trash, i : Item] {
 	i in c.accessible
 	accessible' = accessible - c->i
 	trashed' = trashed + c->i
+
+	some a : Delete | a.concept = c and a.item = i and occurred' = a
 }
 
-var sig Restore extends TrashAction { var i : Item } {
+pred restore [c : Trash, i : Item] {
 	i in c.trashed
 	accessible' = accessible + c->i
 	trashed' = trashed - c->i
+
+	some a : Restore | a.concept = c and a.item = i and occurred' = a	
 }
 
-var sig Empty extends TrashAction { } {
+pred empty [c : Trash] {
 	some c.trashed
 	trashed' = trashed - c->Item
 	accessible' = accessible
+
+	some a : Empty | a.concept = c and occurred' = a
 }
 
-fact Stutter {
-	always {
-		no TrashAction implies {
-			accessible' = accessible
-			trashed' = trashed
-		}
+pred stutter {
+	accessible' = accessible
+	trashed' = trashed
+
+	no occurred' & TrashAction
+}
+
+fact Actions {
+	always { 
+		(some c : Trash, i : Item | create[c, i]) or 
+		(some c : Trash, i : Item | delete[c, i]) or 
+		(some c : Trash, i : Item | restore[c, i]) or 
+		(some c : Trash | empty[c]) or 
+		stutter
 	}
 }
-
-pred create [t : Trash, x : Item] { some Create and Create.c = t and Create.i = x }
-pred delete [t : Trash, x : Item] { some Delete and Delete.c = t and Delete.i = x }
-pred restore [t : Trash, x : Item] { some Restore and Restore.c = t and Restore.i = x }
-pred empty [t : Trash] { some Empty and Empty.c = t }
 
 // Properties
 
 // Items cannot be simultaneously accessible and trashed
 check Invariant {
 	always no Trash.accessible & Trash.trashed
-} for 3 but 4 Action, exactly 1 Trash expect 0
+} for 3 but exactly 1 Trash, 10 Action expect 0
 
 // Expected value of accessible
 check Accessible {
@@ -71,7 +98,7 @@ check Accessible {
 			not Trash.delete[i] since (Trash.create[i] or Trash.restore[i])
 		}
 	}
-} for 3 but 4 Action, exactly 1 Trash expect 0
+} for 3 but exactly 1 Trash, 10 Action expect 0
 
 // Expected value of trashed
 check Trashed {
@@ -80,27 +107,27 @@ check Trashed {
 			not (Trash.empty or Trash.restore[i]) since Trash.delete[i]
 		}
 	}
-} for 3 but 4 Action, exactly 1 Trash expect 0
+} for 3 but exactly 1 Trash, 10 Action expect 0
 
 // If an item is deleted and then restored it will be accessible
 check OP1 {
 	all i : Item | always ((Trash.delete[i];Trash.restore[i]) implies i in Trash.accessible'')
-} for 3 but 4 Action, exactly 1 Trash expect 0
+} for 3 but exactly 1 Trash, 10 Action expect 0
 
 // If an item is deleted and then the trash is emptied then the it is neither accessible nor trashed
 check OP2 {
 	all i : Item | always ((Trash.delete[i];Trash.empty[]) implies i not in Trash.(trashed+accessible)'')
-} for 3 but 4 Action, exactly 1 Trash expect 0
+} for 3 but exactly 1 Trash, 10 Action expect 0
 
 // Scenarios
 
 // All items are deleted and then the thrash is emptied
 run Scenario1 {
 	eventually (Item in Trash.trashed and Trash.empty[])
-} for exactly 3 Item, 4 Action, exactly 1 Trash expect 1
+} for exactly 3 Item, exactly 1 Trash, 10 Action expect 1
 
 // All items are deleted and then restored
 run Scenario2 {
 	always not Trash.empty[]
 	eventually (Item in Trash.trashed and eventually Item in Trash.accessible )
-} for exactly 2 Item, 4 Action, exactly 1 Trash expect 1
+} for exactly 2 Item, exactly 1 Trash, 10 Action expect 1
