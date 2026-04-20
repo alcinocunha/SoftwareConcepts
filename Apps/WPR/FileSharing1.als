@@ -1,11 +1,11 @@
-module Apps/WPR/FileSharing1
+module FileSharing1
 open Action
 open Reaction
 
 // Composed concepts
 
-open Concepts/Trash[File]
-open Concepts/Permalink[File,Token]
+open Trash[File]
+open Permalink[File,Token]
 
 one sig T extends Trash {}
 one sig P extends Permalink {}
@@ -30,44 +30,38 @@ pred empty { T.empty }
 pred share[f : File, t : Token] { P.share[f,t] }
 pred download[t : Token] { P.access[t] }
 
-// Priority of reactions over requests
-
-fact {
-	PriorityToReactions
-}
-
 // The design goal
 
 // The shared tokes are those that have been shared while the respective file was accessible
 // and not deleted nor downloaded afterwards
 check Design {
 	always {
-		no Reaction iff {
+		no reactions iff {
 			shared = { f : File, t : Token | before (not (delete[f] or download[t]) since (share[f,t] and f in uploaded - trashed))}
 		}
 	}
-} for 2 but 7 Action, 4 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Additional properties
 
 // Some invariants
 check Invariants {
 	always {
-		no Reaction implies {
+		no reactions implies {
 			shared.Token in uploaded - trashed
 			accessed in revoked			
 		}
 	}
-} for 2 but 7 Action, 4 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Expected revoked value
 check Revoked {
 	always {
-		no Reaction implies {
+		no reactions implies {
 			P.revoked = { t : Token | before once (download[t] or some f : File | t in f.shared and delete[f]) }
 		}
 	}
-} for 2 but 7 Action, 4 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Note that the following two properties are always true, unlike in the version without priority to reactions.
 
@@ -76,31 +70,28 @@ check DownloadedAreAccessible {
 	all t : Token | always {
 		download[t] implies shared.t in uploaded - trashed
 	}
-} for 2 but 7 Action, 4 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Tokens can only be accessed once
 check SingleAccess {
 	all t : Token | always {
 		download[t] implies before historically not download[t]
 	}
-} for 2 but 7 Action, 4 Reaction expect 0
-
-// Revokes only possible in reactions
-check NoRevokes {
-	all t : Token | always {
-		no Reaction implies not P.revoke[t]
-	}
-} for 2 but 7 Action, 4 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Scenarios
+
+run {
+	eventually some Share_Error & reactions
+} for 3 but 10 Action, 10 Reaction expect 1
 
 // A file is uploaded, shared twice, accessed, and deleted. Reactions should revoke all tokens.
 run Scenario1 {
 	some f : File, t,u : Token {
-		upload[f]; share[f,t]; share[f,u]; download[u]; some Reaction; delete[f]
+		upload[f]; share[f,t]; share[f,u]; download[u]; some reactions; delete[f]
 	}
-	eventually always no Reaction
-} for exactly 1 File, 2 Token, 7 Action, 2 Reaction expect 1
+	eventually always no reactions
+} for exactly 1 File, 2 Token, 10 Action, 10 Reaction expect 1
 
 // A file is uploaded, shared, and deleted. 
 // Then, when the reactions are finished one tries to access the token, which should not be possible.
@@ -108,7 +99,8 @@ run Scenario2 {
 	some f : File, t : Token {
 		upload[f]; share[f,t]; delete[f]; eventually download[t]
 	}
-} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
+	eventually always no reactions
+} for exactly 1 File, exactly 1 Token, 10 Action, 10 Reaction expect 0
 
 // A file is uploaded and shared.
 // Then one tries to revoke the token, which should not be possible.
@@ -116,12 +108,13 @@ run Scenario3 {
 	some f : File, t : Token {
 		upload[f]; share[f,t]; P.revoke[t]
 	}
-} for exactly 1 File, exactly 1 Token, 7 Action, 2 Reaction expect 0
+	eventually always no reactions
+} for exactly 1 File, exactly 1 Token, 10 Action, 10 Reaction expect 0
 
 // Reactions
 
 /*
-reaction DeleteRevoke[t : Token]
+reaction delete_revoke
 when
 	delete[f]
 where
@@ -130,74 +123,67 @@ then
 	P.revoke[t]
 */
 
-var sig DeleteRevoke extends Reaction { var t : Token }
-fact { 
-	always all r : DeleteRevoke {
-		all d : DeleteRevoke' | d.t' = r.t implies d = r
-	}
-}
-pred DeleteRevoke [ x : Token ] { some r : DeleteRevoke | r.t = x }
-
+sig Delete_Revoke extends Reaction { t : Token }
 fact {
-	all t : Token | always {
-		DeleteRevoke[t] iff {
-			some f : File | before {
-				not P.revoke[t] since (delete[f] and t in f.shared)
-			}
-		}
-	}
+	all x,y : Delete_Revoke | x.t = y.t implies x = y
+	all x : Token | eventually { some f : File | delete[f] and x in f.shared } implies some d : Delete_Revoke | x = d.t
 }
+
+fun delete_revoke_add : set Reaction { { d : Delete_Revoke | some f : File | delete[f] and d.t in f.shared } }
+fun delete_revoke_remove : set Reaction { { d : Delete_Revoke | P.revoke[d.t] } }
 
 /*
-reaction DownloadRevoke[t : Token]
+reaction download_revoke
 when
 	download[t]
 then
 	P.revoke[t]
 */
 
-var sig DownloadRevoke extends Reaction { var t : Token }
-fact { 
-	always all r : DownloadRevoke {
-		all d : DownloadRevoke' | d.t' = r.t implies d = r
-	}
-}
-pred DownloadRevoke [ x : Token ] { some r : DownloadRevoke | r.t = x }
-
+sig Download_Revoke extends Reaction { t : Token }
 fact {
-	all t : Token | always {
-		DownloadRevoke[t] iff {
-			before {
-				not P.revoke[t] since download[t]
-			}
-		}
-	}
+	all x,y : Download_Revoke | x.t = y.t implies x = y
+	all x : Token | eventually { download[x] } implies some d : Download_Revoke | x = d.t
 }
 
-// Preventions
+fun download_revoke_add : set Reaction { { d : Download_Revoke | download[d.t] } }
+fun download_revoke_remove : set Reaction { { d : Download_Revoke | P.revoke[d.t] } }
 
 /*
+reaction share_error
 when
 	share[f,t]
-require
-	f in uploaded - trashed
+where
+	f not in uploaded - trashed
+then
 */
 
-fact {
-	all f : File, t : Token | always {
-		share[f,t] implies f in uploaded - trashed
-	}
-}
+one sig Share_Error extends Reaction {}
+
+fun share_error_add : set Reaction { { r : Share_Error | some f : File, t : Token | share[f,t] and f not in uploaded - trashed } }
 
 /*
+reaction revoke_error
 when
 	P.revoke[t]
-require
-	t in accessed or shared.t in trashed
+where
+	t not in P.accessed and shared.t not in trashed
+then
 */
 
+one sig Revoke_Error extends Reaction {}
+fun revoke_error_add : set Reaction { { r : Revoke_Error | some t : Token | P.revoke[t] and t not in P.accessed and shared.t not in trashed } }
+
+// Reaction semantics
+
+fun reactions_to_add : set Reaction { delete_revoke_add + download_revoke_add + share_error_add + revoke_error_add }
+fun reactions_to_remove : set Reaction { delete_revoke_remove + download_revoke_remove }
+
 fact {
-	all t : Token | always {
-		P.revoke[t] implies t in P.accessed or shared.t in trashed
+	no reactions
+	always {
+		// Priority to reactions
+		some reactions and some action implies some reactions & reactions_to_remove
+		reactions' = (reactions - reactions_to_remove) + reactions_to_add
 	}
 }

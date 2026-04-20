@@ -1,4 +1,4 @@
-module Trash[Item]
+module Concepts/Trash[Item]
 open Action
 
 // State

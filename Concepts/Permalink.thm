@@ -21,9 +21,8 @@
    <type name="univ"/>
    <type name="Action/Concept"/>
    <type name="seq/Int"/>
-   <set name="$Scenario1_l" type="URL"/>
-   <set name="$Scenario1_m" type="URL"/>
-   <set name="$Scenario1_r" type="Resource"/>
+   <set name="$Scenario2_l" type="URL"/>
+   <set name="$Scenario2_r" type="Resource"/>
    <set name="accessed" type="URL"/>
 </node>
 
@@ -31,24 +30,27 @@
    <set name="revoked" type="URL"/>
 </node>
 
-<node numberatoms="no" color="Gray">
-   <type name="Action/Action"/>
-</node>
-
 <node shape="Ellipse">
    <type name="URL"/>
 </node>
 
 <node showlabel="no">
-   <set name="c" type="Action/Action"/>
+   <set name="$share_a" type="Share"/>
+   <set name="concept" type="Action/Action"/>
+   <set name="occurred" type="Action/Action"/>
 </node>
 
-<edge style="inherit" visible="no" attribute="yes">
-   <relation name="l"> <type name="Action/Action"/> <type name="URL"/> </relation>
-</edge>
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="$action" type="Action/Action"/>
+</node>
 
 <edge visible="no" attribute="yes">
-   <relation name="r"> <type name="Share"/> <type name="Resource"/> </relation>
+   <relation name="label"> <type name="Action/Action"/> <type name="URL"/> </relation>
+   <relation name="resource"> <type name="Share"/> <type name="Resource"/> </relation>
 </edge>
 
 </view>

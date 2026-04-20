@@ -1,6 +1,14 @@
 module Action
 
-abstract sig Concept {}
+abstract sig Action {
+	concept : one Concept
+}
 
-var lone abstract sig Action { var c : Concept }
+var lone sig occurred in Action {}
+
+fact { no occurred }
+
+fun action : set Action { occurred' }
+
+abstract sig Concept {}
 

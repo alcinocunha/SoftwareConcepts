@@ -1,16 +1,10 @@
 module Reaction
 open Action
 
-abstract var sig Reaction {}
+abstract sig Reaction {}
+
+var sig reactions in Reaction {}
 
 pred false {
     some none
-}
-
-pred PriorityToReactions {
-    always {
-        some Reaction and some Action implies {
-            some r : Reaction | r not in Reaction'
-        }
-    }
 }

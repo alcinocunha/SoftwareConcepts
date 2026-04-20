@@ -21,6 +21,7 @@
    <type name="univ"/>
    <type name="Action/Concept"/>
    <type name="seq/Int"/>
+   <set name="occurred" type="Action/Action"/>
 </node>
 
 <node color="Black">
@@ -44,7 +45,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="action" type="Action/Action"/>
+   <set name="$action" type="Action/Action"/>
 </node>
 
 <edge visible="no" attribute="yes">
