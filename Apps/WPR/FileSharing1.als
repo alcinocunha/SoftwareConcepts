@@ -116,7 +116,7 @@ run Scenario3 {
 /*
 reaction delete_revoke
 when
-	delete[f]
+	T.delete[f]
 where
 	t in f.shared
 then
@@ -130,14 +130,14 @@ fact {
 
 fact {
 	all t : Token | always {
-		(some d : Delete_Revoke & reactions_to_add | d.token = t) iff (some f : File | delete[f] and t in f.shared)
+		(some d : Delete_Revoke & reactions_to_add | d.token = t) iff (some f : File | T.delete[f] and t in f.shared)
 		(some d : Delete_Revoke & reactions_to_remove | d.token = t) iff P.revoke[t]
 	}
 }
 /*
 reaction download_revoke
 when
-	download[t]
+	P.access[t]
 then
 	P.revoke[t]
 */
@@ -149,7 +149,7 @@ fact {
 
 fact {
 	all t : Token | always {
-		(some d : Download_Revoke & reactions_to_add | d.token = t) iff download[t]
+		(some d : Download_Revoke & reactions_to_add | d.token = t) iff P.access[t]
 		(some d : Download_Revoke & reactions_to_remove | d.token = t) iff P.revoke[t]
 	}
 }
@@ -157,7 +157,7 @@ fact {
 /*
 reaction share_error
 when
-	share[f,t]
+	P.share[f,t]
 where
 	f not in uploaded - trashed
 then
@@ -168,7 +168,7 @@ lone sig Share_Error extends Reaction {}
 
 fact {
 	always {
-		some Share_Error & reactions_to_add iff (some f : File, t : Token | share[f,t] and f not in uploaded - trashed)
+		some Share_Error & reactions_to_add iff (some f : File, t : Token | P.share[f,t] and f not in uploaded - trashed)
 		some Share_Error & reactions_to_remove iff error
 	}
 }

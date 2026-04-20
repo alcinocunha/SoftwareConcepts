@@ -4,8 +4,8 @@
     * a set of `File`s
     * a set of `Token`s
 * **concepts**:
-    * one `Trash[File]`
-    * one `Permalink[File,Token]`
+    * one `Trash[File]` named `T`
+    * one `Permalink[File,Token]` named `P`
 * **design goal**:
     * a `File` has a `Token` in its `urls` that can still be accessed iff that `Token` was shared when the `File` was `accessible`, and the `Token` has not been `accessed` in the meantime, nor the `File` has been deleted.
 * **priority to reactions**: yes
@@ -13,7 +13,7 @@
 ```
 reaction delete_revoke
 when
-	delete[f]
+	T.delete[f]
 where
 	t in f.shared
 then
@@ -21,13 +21,13 @@ then
 
 reaction download_revoke
 when
-	download[t]
+	P.access[t]
 then
 	P.revoke[t]
 
 reaction share_error
 when
-	share[f,t]
+	P.share[f,t]
 where
 	f not in uploaded - trashed
 then
