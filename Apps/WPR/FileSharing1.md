@@ -8,6 +8,7 @@
     * one `Permalink[File,Token]`
 * **design goal**:
     * the `urls` of a `File` that can still be accessed are those that were shared when the `File` was `accessible`, and which have not been `accessed` yet, nor the `File` has been deleted.
+* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction delete_revoke
@@ -30,6 +31,7 @@ when
 where
 	f not in uploaded - trashed
 then
+    error
 
 reaction revoke_error
 when
@@ -37,5 +39,6 @@ when
 where
 	t not in P.accessed and shared.t not in trashed
 then
+    error
 ```
 * **formalizations**: [Alloy](FileSharing1.als)

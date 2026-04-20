@@ -18,6 +18,6 @@ pred PriorityToReactions {
     }
 }
 
-pred false {
+pred error {
     some none
 }
