@@ -21,8 +21,9 @@
    <type name="univ"/>
    <type name="Action/Concept"/>
    <type name="seq/Int"/>
-   <set name="$Scenario2_l" type="URL"/>
-   <set name="$Scenario2_r" type="Resource"/>
+   <set name="$Scenario1_l" type="URL"/>
+   <set name="$Scenario1_m" type="URL"/>
+   <set name="$Scenario1_r" type="Resource"/>
    <set name="accessed" type="URL"/>
 </node>
 
@@ -49,8 +50,8 @@
 </node>
 
 <edge visible="no" attribute="yes">
-   <relation name="label"> <type name="Action/Action"/> <type name="URL"/> </relation>
    <relation name="resource"> <type name="Share"/> <type name="Resource"/> </relation>
+   <relation name="url"> <type name="Action/Action"/> <type name="URL"/> </relation>
 </edge>
 
 </view>

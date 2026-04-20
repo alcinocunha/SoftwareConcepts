@@ -19,18 +19,18 @@ fact Init {
 
 // Actions
 
-abstract sig PermalinkAction extends Action { label : URL } { concept in Permalink }
+abstract sig PermalinkAction extends Action { url : URL } { concept in Permalink }
 
 sig Share extends PermalinkAction { resource : Resource }
 fact {
-	all x,y : Share | x.concept = y.concept and x.resource = y.resource and x.label = y.label implies x = y
+	all x,y : Share | x.concept = y.concept and x.resource = y.resource and x.url = y.url implies x = y
 }
 sig Revoke extends PermalinkAction {}
 fact {
-	all x,y : Revoke | x.concept = y.concept and x.label = y.label implies x = y
+	all x,y : Revoke | x.concept = y.concept and x.url = y.url implies x = y
 }
 sig Access extends PermalinkAction {}
-fact {	all x,y : Access | x.concept = y.concept and x.label = y.label implies x = y }
+fact {	all x,y : Access | x.concept = y.concept and x.url = y.url implies x = y }
 
 pred share [c : Permalink, r : Resource, l : URL] {
 	l not in c.urls[Resource]
@@ -38,7 +38,7 @@ pred share [c : Permalink, r : Resource, l : URL] {
 	revoked' = revoked
 	accessed' = accessed
 
-	some a : Share | a.concept = c and a.resource = r and a.label = l and occurred' = a
+	some a : Share | a.concept = c and a.resource = r and a.url = l and occurred' = a
 }
 
 pred revoke [c : Permalink, l : URL] {
@@ -48,7 +48,7 @@ pred revoke [c : Permalink, l : URL] {
 	revoked' = revoked + c->l
 	accessed' = accessed
 
-	some a : Revoke | a.concept = c and a.label = l and occurred' = a
+	some a : Revoke | a.concept = c and a.url = l and occurred' = a
 }
 
 pred access [c : Permalink, l : URL] {
@@ -58,7 +58,7 @@ pred access [c : Permalink, l : URL] {
 	revoked' = revoked
 	accessed' = accessed + c->l
 
-	some a : Access | a.concept = c and a.label = l and occurred' = a
+	some a : Access | a.concept = c and a.url = l and occurred' = a
 }
 
 pred stutter {

@@ -8,10 +8,12 @@
 <defaultedge/>
 
 <node>
-   <type name="DeleteRevoke"/>
-   <type name="DownloadRevoke"/>
+   <type name="Delete_Revoke"/>
+   <type name="Download_Revoke"/>
    <type name="Int"/>
    <type name="P"/>
+   <type name="Revoke_Error"/>
+   <type name="Share_Error"/>
    <type name="String"/>
    <type name="T"/>
    <type name="univ"/>
@@ -26,23 +28,30 @@
    <type name="Trash/Restore"/>
    <type name="Trash/Trash"/>
    <type name="Trash/TrashAction"/>
-   <set name="$DownloadedAreAccessible_t" type="Token"/>
+   <set name="$delete_revoke_add" type="Reaction/Reaction"/>
+   <set name="$delete_revoke_remove" type="Reaction/Reaction"/>
+   <set name="$download_revoke_add" type="Reaction/Reaction"/>
+   <set name="$download_revoke_remove" type="Reaction/Reaction"/>
+   <set name="$reactions_to_add" type="Reaction/Reaction"/>
+   <set name="$reactions_to_remove" type="Reaction/Reaction"/>
+   <set name="$revoke_error_add" type="Reaction/Reaction"/>
+   <set name="$Scenario1_f" type="File"/>
+   <set name="$Scenario1_t" type="Token"/>
+   <set name="$Scenario1_u" type="Token"/>
+   <set name="$share_error_add" type="Reaction/Reaction"/>
 </node>
 
 <node color="White">
    <type name="File"/>
 </node>
 
-<node numberatoms="no" color="Gray">
-   <type name="Action/Action"/>
-</node>
-
-<node numberatoms="no" shape="Dbl Octagon" color="Red">
-   <type name="Reaction/Reaction"/>
-</node>
-
 <node shape="Ellipse">
    <type name="Token"/>
+</node>
+
+<node showlabel="no">
+   <set name="$create_a" type="Trash/Create"/>
+   <set name="occurred" type="Action/Action"/>
 </node>
 
 <node showlabel="no" color="Black">
@@ -58,21 +67,29 @@
    <type name="Permalink/Permalink"/>
 </node>
 
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="no" numberatoms="no" shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="$action" type="Action/Action"/>
+   <set name="reactions" type="Reaction/Reaction"/>
+</node>
+
 <edge label="shared">
    <relation name="$shared"> <type name="File"/> <type name="Token"/> </relation>
 </edge>
 
-<edge style="inherit" visible="no" attribute="yes">
-   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
-   <relation name="t"> <type name="DownloadRevoke"/> <type name="Token"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
-   <relation name="l"> <type name="Permalink/PermalinkAction"/> <type name="Token"/> </relation>
-   <relation name="r"> <type name="Permalink/Share"/> <type name="File"/> </relation>
-   <relation name="t"> <type name="DeleteRevoke"/> <type name="Token"/> </relation>
+   <relation name="item"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="resource"> <type name="Permalink/Share"/> <type name="File"/> </relation>
+   <relation name="url"> <type name="Permalink/PermalinkAction"/> <type name="Token"/> </relation>
 </edge>
 
 </view>
