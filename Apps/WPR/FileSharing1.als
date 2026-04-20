@@ -159,7 +159,7 @@ reaction share_error
 when
 	P.share[f,t]
 where
-	f not in uploaded - trashed
+	f not in uploaded - T.trashed
 then
 	error
 */
@@ -168,7 +168,7 @@ lone sig Share_Error extends Reaction {}
 
 fact {
 	always {
-		some Share_Error & reactions_to_add iff (some f : File, t : Token | P.share[f,t] and f not in uploaded - trashed)
+		some Share_Error & reactions_to_add iff (some f : File, t : Token | P.share[f,t] and f not in uploaded - T.trashed)
 		some Share_Error & reactions_to_remove iff error
 	}
 }
@@ -178,7 +178,7 @@ reaction revoke_error
 when
 	P.revoke[t]
 where
-	t not in P.accessed and shared.t not in trashed
+	t not in P.accessed and shared.t not in T.trashed
 then
 	error
 */
@@ -187,7 +187,7 @@ lone sig Revoke_Error extends Reaction {}
 
 fact {
 	always {
-		some Revoke_Error & reactions_to_add iff (some t : Token | P.revoke[t] and t not in P.accessed and shared.t not in trashed)
+		some Revoke_Error & reactions_to_add iff (some t : Token | P.revoke[t] and t not in P.accessed and shared.t not in T.trashed)
 		some Revoke_Error & reactions_to_remove iff error
 	}
 }

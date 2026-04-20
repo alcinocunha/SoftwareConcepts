@@ -9,6 +9,9 @@
 * **design goal**:
     * a `File` has a `Token` in its `urls` that can still be accessed iff that `Token` was shared when the `File` was `accessible`, and the `Token` has not been `accessed` in the meantime, nor the `File` has been deleted.
 * **priority to reactions**: yes
+* **views**:
+    * `uploaded` = the set of `File`s that have been created
+    * `shared` = the set of `Token`s that have been shared for each `File` and not yet revoked
 * **reactions**:
 ```
 reaction delete_revoke
@@ -29,7 +32,7 @@ reaction share_error
 when
 	P.share[f,t]
 where
-	f not in uploaded - trashed
+	f not in uploaded - T.trashed
 then
     error
 
@@ -37,7 +40,7 @@ reaction revoke_error
 when
 	P.revoke[t]
 where
-	t not in P.accessed and shared.t not in trashed
+	t not in P.accessed and shared.t not in T.trashed
 then
     error
 ```
