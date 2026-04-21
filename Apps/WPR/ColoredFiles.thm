@@ -9,9 +9,15 @@
 
 <node>
    <type name="Affix_Error"/>
-   <type name="Delete_Clear"/>
+   <type name="Affix_Red_Error"/>
+   <type name="Clear_Red_Error"/>
+   <type name="Delete_Affix"/>
+   <type name="Detach_Red_Error"/>
+   <type name="Empty_Clear"/>
    <type name="Int"/>
    <type name="L"/>
+   <type name="Red"/>
+   <type name="Restore_Detach"/>
    <type name="String"/>
    <type name="T"/>
    <type name="univ"/>

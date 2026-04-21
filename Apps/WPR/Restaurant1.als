@@ -26,172 +26,151 @@ fun tables : set Table { R.available }
 fun reservations : Client -> Table { R.reservations :> R.available }
 fun reserved : set Table { L.labels.Reserved }
 
-// Priority of reactions over requests
+// This app assumes reactions have priority over requests
 
 fact {
 	PriorityToReactions
 }
 
-// The app invariant
+// The design goal
 
 // The tables labeled as Reserved are exactly those that are reserved by some client
-check Invariant {
+check Design {
 	always {
-		no Reaction iff {
+		no reactions iff {
 			reserved = Client.reservations
 		}
 	}
-} for 2 Table, 2 Client, 8 Action, 4 Reaction expect 0
+} for 2 Table, 2 Client, 10 Action, 10 Reaction expect 0
 
-// Other properties
-
-// Affix is only possible in reactions
-check AffixOnlyInReactions {
-	all t : Table | always {
-		L.affix[t,Reserved] implies some Reaction
-	}
-} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
-
-// Detach is only possible in reactions
-check DetachOnlyInReactions {
-	all t : Table | always {
-		L.detach[t,Reserved] implies some Reaction
-	}
-} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
-
-// Clear is only possible in reactions
-check ClearOnlyInReactions {
-	all t : Table | always {
-		L.clear[t] implies some Reaction
-	}
-} for 2 Table, 2 Client, 8 Action, 3 Reaction expect 0
 
 // Scenarios
 
 // All tables are reserved and used by some client
 // Then a reaction will add and later remove the reserved sign
 run Scenario {
-	eventually always no Reaction
+	eventually always no reactions
 	all t : Table | eventually R.use[Client,t]
-} for exactly 1 Client, exactly 2 Table, 8 Action, 4 Reaction, 11 steps expect 1
+} for exactly 1 Client, exactly 2 Table, 11 Action, 6 Reaction, 12 steps expect 1
 
 // Reactions
 
 /*
-reaction ReserveAffix[t : Table]
+reaction reserve_affix
 when
 	R.reserve[c,t]
 then
 	L.affix[t,Reserved] 
 */
 
-var sig ReserveAffix extends Reaction { var t : Table }
-fact {	
-	always all r : ReserveAffix {
-		all d : ReserveAffix' | d.t' = r.t implies d = r
-	}
+sig Reserve_Affix extends Reaction { table : Table }
+fact {
+	all x,y : Reserve_Affix | x.table = y.table implies x = y
 }
-pred ReserveAffix [x : Table] { some d : ReserveAffix | d.t = x }
-
 fact {
 	all t : Table | always {
-		ReserveAffix[t] iff {
-			some c : Client | before {
-				not L.affix[t,Reserved] since R.reserve[c,t]
-			}
-		}
+		(some r : Reserve_Affix & reactions_to_add | r.table = t) iff (some c : Client | R.reserve[c,t])
+		(some r : Reserve_Affix & reactions_to_remove | r.table = t) iff (L.affix[t,Reserved])
 	}
 }
 
 /*
-reaction CancelDetach[t : Table]
+reaction cancel_detach
 when
 	R.cancel[c,t]
 then
 	L.detach[t,Reserved] or L.clear[t]
 */
 
-var sig CancelDetach extends Reaction { var t : Table }
+sig Cancel_Detach extends Reaction { table : Table }
 fact {
-	always all r : CancelDetach {
-		all d : CancelDetach' | d.t' = r.t implies d = r
-	}
+	all x,y : Cancel_Detach | x.table = y.table implies x = y
 }
-pred CancelDetach [x : Table] { some d : CancelDetach | d.t = x }
-
 fact {
 	all t : Table | always {
-		CancelDetach[t] iff {
-			some c : Client | before {
-				not (L.detach[t,Reserved] or L.clear[t]) since R.cancel[c,t]
-			}
-		}
+		(some r : Cancel_Detach & reactions_to_add | r.table = t) iff (some c : Client | R.cancel[c,t])
+		(some r : Cancel_Detach & reactions_to_remove | r.table = t) iff (L.detach[t,Reserved] or L.clear[t])
 	}
-}
+}	
 
 /*
-reaction UseDetach[t : Table]
+reaction use_detach
 when
 	R.use[c,t]
 then
 	L.detach[t,Reserved] or L.clear[t]
 */
 
-var sig UseDetach extends Reaction { var t : Table }
+sig Use_Detach extends Reaction { table : Table }
 fact {
-	always all r : UseDetach {
-		all d : UseDetach' | d.t' = r.t implies d = r
-	}
+	all x,y : Use_Detach | x.table = y.table implies x = y
 }
-pred UseDetach [x : Table] { some d : UseDetach | d.t = x }
-
 fact {
 	all t : Table | always {
-		UseDetach[t] iff {
-			some c : Client | before {
-				not (L.detach[t,Reserved] or L.clear[t]) since R.use[c,t]
-			}
-		}
+		(some r : Use_Detach & reactions_to_add | r.table = t) iff (some c : Client | R.use[c,t])
+		(some r : Use_Detach & reactions_to_remove | r.table = t) iff (L.detach[t,Reserved] or L.clear[t])
 	}
 }
 
-// Preventions
-
 /*
+reaction affix_error
 when
 	L.affix[t,Reserved]
-require
-	t in Client.reservations
+where
+	t not in Client.reservations
+then
+	error
 */
 
+sig Affix_Error extends Reaction { }
 fact {
-	all t : Table | always {
-		L.affix[t,Reserved] implies t in Client.reservations
+	all x,y : Affix_Error | x = y
+}
+fact {
+	always {
+		(some Affix_Error & reactions_to_add) iff (some t : Table | L.affix[t,Reserved] and t not in Client.reservations)
+		(some Affix_Error & reactions_to_remove) iff error
 	}
 }
 
 /*
+reaction detach_error
 when
 	L.detach[t,Reserved]
-require
-	t not in Client.reservations
+where
+	t in Client.reservations
+then
+	error
 */
 
+sig Detach_Error extends Reaction { }
 fact {
-	all t : Table | always {
-		L.detach[t,Reserved] implies t not in Client.reservations
+	all x,y : Detach_Error | x = y
+}
+fact {
+	always {
+		(some Detach_Error & reactions_to_add) iff (some t : Table | L.detach[t,Reserved] and t in Client.reservations)
+		(some Detach_Error & reactions_to_remove) iff error
 	}
 }
 
 /*
+reaction clear_error
 when
 	L.clear[t]
-require
-	t not in Client.reservations
+where
+	t in Client.reservations
+then
+	error
 */
 
+sig Clear_Error extends Reaction { }
 fact {
-	all t : Table | always {
-		L.clear[t] implies t not in Client.reservations
+	all x,y : Clear_Error | x = y
+}
+fact {
+	always {
+		(some Clear_Error & reactions_to_add) iff (some t : Table | L.clear[t] and t in Client.reservations)
+		(some Clear_Error & reactions_to_remove) iff error
 	}
 }
