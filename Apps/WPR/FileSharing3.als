@@ -171,7 +171,10 @@ then
 	T.empty[]
 */
 	
-lone sig Access_Empty extends Reaction { }
+sig Access_Empty extends Reaction { }
+fact {
+	all x,y : Access_Empty | x = y
+}
 fact {
 	always {
 		some Access_Empty & reactions_to_add iff (some t : Token | P.access[t])
@@ -189,7 +192,10 @@ then
 	error
 */
 
-lone sig Share_Error extends Reaction { }
+sig Share_Error extends Reaction { }
+fact {
+	all x,y : Share_Error | x = y
+}
 fact {
 	always {
 		some Share_Error & reactions_to_add iff (some f : File, t : Token | P.share[f,t] and (f not in uploaded or some f.shared))
@@ -207,7 +213,10 @@ then
 	error
 */
 
-lone sig Delete_Error extends Reaction { }
+sig Delete_Error extends Reaction { }
+fact {
+	all x,y : Delete_Error | x = y
+}
 fact {
 	always {
 		some Delete_Error & reactions_to_add iff (some f : File | T.delete[f] and (some f.shared and f.shared not in P.accessed))
@@ -225,7 +234,10 @@ then
 	error
 */
 
-lone sig Revoke_Error extends Reaction { }
+sig Revoke_Error extends Reaction { }
+fact {
+	all x,y : Revoke_Error | x = y
+}
 fact {
 	always {
 		some Revoke_Error & reactions_to_add iff (some t : Token | P.revoke[t] and t not in P.accessed)

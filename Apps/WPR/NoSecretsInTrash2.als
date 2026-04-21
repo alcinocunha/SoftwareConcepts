@@ -77,7 +77,10 @@ then
 	T.empty[]
 */
 
-lone sig Delete_Empty extends Reaction {}
+sig Delete_Empty extends Reaction {}
+fact {
+	all x,y : Delete_Empty | x = y
+}
 fact {
 	always {
 		some Delete_Empty & reactions_to_add iff some f : File | T.delete[f] and f in Secret
@@ -137,7 +140,10 @@ then
 	error
 */
 
-lone sig Empty_Error extends Reaction {}
+sig Empty_Error extends Reaction {}
+fact {
+	all x,y : Empty_Error | x = y
+}
 fact {
 	always {
 		some Empty_Error & reactions_to_add iff (T.empty[] and some Secret & trashed and some trashed - Secret)

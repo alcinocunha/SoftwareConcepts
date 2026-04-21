@@ -8,14 +8,12 @@
 <defaultedge/>
 
 <node>
-   <type name="DeleteAffixOrEmptyOrRestore"/>
-   <type name="EmptyClear"/>
+   <type name="Affix_Error"/>
+   <type name="Delete_Clear"/>
    <type name="Int"/>
    <type name="L"/>
-   <type name="RestoreDetachOrDeleteOrClear"/>
    <type name="String"/>
    <type name="T"/>
-   <type name="U"/>
    <type name="univ"/>
    <type name="Label/Affix"/>
    <type name="Label/Clear"/>
@@ -31,54 +29,56 @@
    <type name="Trash/TrashAction"/>
 </node>
 
-<node color="Black" label="trashed">
-   <set name="$trashed" type="File"/>
-</node>
-
-<node color="Red">
-   <type name="Red"/>
-</node>
-
 <node color="White">
    <type name="File"/>
-</node>
-
-<node color="Yellow" label="accessible">
-   <set name="$accessible" type="File"/>
-</node>
-
-<node numberatoms="no" color="Gray">
-   <type name="Action/Action"/>
-</node>
-
-<node numberatoms="no" shape="Dbl Octagon" color="Red">
-   <type name="Reaction/Reaction"/>
 </node>
 
 <node shape="Ellipse">
    <type name="Color"/>
 </node>
 
+<node showlabel="no">
+   <set name="occurred" type="Action/Action"/>
+   <set name="reactions_to_add" type="Reaction/Reaction"/>
+   <set name="reactions_to_remove" type="Reaction/Reaction"/>
+</node>
+
+<node showlabel="no" color="Black">
+   <set name="$trashed" type="File"/>
+</node>
+
+<node showlabel="no" color="Yellow">
+   <set name="$accessible" type="File"/>
+</node>
+
 <node visible="no">
    <type name="Action/Concept"/>
-   <type name="Action/User"/>
+</node>
+
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="no" numberatoms="no" shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="$action" type="Action/Action"/>
+   <set name="reactions" type="Reaction/Reaction"/>
 </node>
 
 <edge label="colors">
    <relation name="$colors"> <type name="File"/> <type name="Color"/> </relation>
 </edge>
 
-<edge visible="no">
-   <relation name="u"> <type name="Action/Action"/> <type name="Action/User"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
-   <relation name="i"> <type name="Label/LabelAction"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
-   <relation name="t"> <type name="Label/Affix"/> <type name="Color"/> </relation>
-   <relation name="t"> <type name="Label/Detach"/> <type name="Color"/> </relation>
+   <relation name="item"> <type name="Label/LabelAction"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="label"> <type name="Label/Affix"/> <type name="Color"/> </relation>
+   <relation name="label"> <type name="Label/Detach"/> <type name="Color"/> </relation>
 </edge>
 
 </view>

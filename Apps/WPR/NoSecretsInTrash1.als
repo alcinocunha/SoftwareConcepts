@@ -67,8 +67,10 @@ then
 	T.empty[]
 */
 
-lone sig Delete_Empty extends Reaction {}
-
+sig Delete_Empty extends Reaction {}
+fact {
+	all x,y : Delete_Empty | x = y
+}
 fact {
 	always {
 		some Delete_Empty & reactions_to_add iff some f : File | T.delete[f] and f in Secret

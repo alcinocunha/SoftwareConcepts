@@ -163,8 +163,10 @@ then
 	error
 */
 
-lone sig Share_Error extends Reaction {}
-
+sig Share_Error extends Reaction {}
+fact {
+	all x,y : Share_Error | x = y
+}
 fact {
 	always {
 		some Share_Error & reactions_to_add iff (some f : File, t : Token | P.share[f,t] and f not in uploaded - T.trashed)
@@ -182,8 +184,10 @@ then
 	error
 */
 
-lone sig Revoke_Error extends Reaction {}
-
+sig Revoke_Error extends Reaction {}
+fact {
+	all x,y : Revoke_Error | x = y
+}
 fact {
 	always {
 		some Revoke_Error & reactions_to_add iff (some t : Token | P.revoke[t] and t not in P.accessed and shared.t not in T.trashed)
