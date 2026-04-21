@@ -1,4 +1,4 @@
-# app: `FileSharing1`
+# app: `FileSharing2`
 
 * **types**:
     * a set of `File`s

@@ -19,46 +19,46 @@ sig Secret extends File {}
 fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }
 
-// Priority of reactions over requests
+// This app assumes reactions have priority over requests
 
 fact {
 	PriorityToReactions
 }
 
-// The app invariant
+// The design goal
 
 // Secret files cannot be in the trash
-check Invariant {
+check Design {
 	always {
-		no Reaction iff {
+		no reactions iff {
 			no Secret & trashed
 		} 
 	}
-} for 2 but 4 Action, 1 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Scenarios
 
-// Without concurrent requests we cannot have more than one secret
-// file in the trash, so the following scenario is impossible
-run Scenario1 {
-	Secret = File
-	eventually Secret in trashed
-	eventually always no Reaction		
-} for exactly 3 File, 4 Action, 1 Reaction expect 0	
-
 // All files (including both secret and no secret) will be deleted
 // Then a reaction will empty the trash including the non secret files
-run Scenario2 {
+run Scenario1 {
 	one Secret
 	some File - Secret
 	eventually File in trashed
-	eventually always no Reaction		
-} for exactly 3 File, 4 Action, 1 Reaction expect 1
+	eventually always no reactions		
+} for exactly 3 File, 10 Action, 10 Reaction expect 1
+
+// Without concurrent requests we cannot have more than one secret
+// file in the trash, so the following scenario is impossible
+run Scenario2 {
+	Secret = File
+	eventually Secret in trashed
+	eventually always no reactions		
+} for exactly 3 File, 10 Action, 10 Reaction expect 0	
 
 // Reactions
 
 /*
-reaction DeleteEmpty
+reaction delete_empty
 when
 	T.delete[f]
 where
@@ -67,14 +67,11 @@ then
 	T.empty[]
 */
 
-var lone sig DeleteEmpty extends Reaction { }  { all d : DeleteEmpty' | d = this }
+lone sig Delete_Empty extends Reaction {}
 
 fact {
 	always {
-		DeleteEmpty iff {
-			some f : File | before {
-				not T.empty[] since (T.delete[f] and f in Secret)
-			}
-		}
+		some Delete_Empty & reactions_to_add iff some f : File | T.delete[f] and f in Secret
+		some Delete_Empty & reactions_to_remove iff T.empty[]
 	}
 }

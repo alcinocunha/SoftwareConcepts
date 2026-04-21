@@ -8,8 +8,11 @@
 <defaultedge/>
 
 <node>
-   <type name="Delete_Revoke"/>
-   <type name="Download_Revoke"/>
+   <type name="Access_Delete"/>
+   <type name="Access_Empty"/>
+   <type name="Access_Revoke"/>
+   <type name="Create_Share"/>
+   <type name="Delete_Error"/>
    <type name="Int"/>
    <type name="P"/>
    <type name="Revoke_Error"/>
@@ -28,17 +31,8 @@
    <type name="Trash/Restore"/>
    <type name="Trash/Trash"/>
    <type name="Trash/TrashAction"/>
-   <set name="$delete_revoke_add" type="Reaction/Reaction"/>
-   <set name="$delete_revoke_remove" type="Reaction/Reaction"/>
-   <set name="$download_revoke_add" type="Reaction/Reaction"/>
-   <set name="$download_revoke_remove" type="Reaction/Reaction"/>
-   <set name="$reactions_to_add" type="Reaction/Reaction"/>
-   <set name="$reactions_to_remove" type="Reaction/Reaction"/>
-   <set name="$revoke_error_add" type="Reaction/Reaction"/>
    <set name="$Scenario1_f" type="File"/>
    <set name="$Scenario1_t" type="Token"/>
-   <set name="$Scenario1_u" type="Token"/>
-   <set name="$share_error_add" type="Reaction/Reaction"/>
 </node>
 
 <node color="White">
@@ -52,6 +46,8 @@
 <node showlabel="no">
    <set name="$create_a" type="Trash/Create"/>
    <set name="occurred" type="Action/Action"/>
+   <set name="reactions_to_add" type="Reaction/Reaction"/>
+   <set name="reactions_to_remove" type="Reaction/Reaction"/>
 </node>
 
 <node showlabel="no" color="Black">

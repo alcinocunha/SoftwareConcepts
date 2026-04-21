@@ -16,5 +16,6 @@ when
 where
 	f in Secret
 then
-	T.empty[]```
+	T.empty[]
+```
 * **formalizations**: [Alloy](NoSecretsInTrash1.als)

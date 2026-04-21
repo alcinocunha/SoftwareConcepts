@@ -50,8 +50,7 @@ check Design {
 
 // Additional properties
 
-// Some invariants
-check Invariants {
+check Invariant {
 	always {
 		no reactions implies {
 			shared.Token in uploaded - trashed
