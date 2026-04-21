@@ -22,7 +22,7 @@ where
 then
 	P.revoke[t]
 
-reaction download_revoke
+reaction access_revoke
 when
 	P.access[t]
 then

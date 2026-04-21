@@ -30,11 +30,13 @@ pred empty { T.empty }
 pred share[f : File, t : Token] { P.share[f,t] }
 pred download[t : Token] { P.access[t] }
 
-// The design goal
+// This app assumes reactions have priority over requests
 
 fact {
 	PriorityToReactions
 }
+
+// The design goal
 
 // The shared tokes are those that have been shared while the respective file was accessible
 // and not deleted nor downloaded afterwards
@@ -66,8 +68,6 @@ check Revoked {
 		}
 	}
 } for 2 but 10 Action, 10 Reaction expect 0
-
-// Note that the following two properties are always true, unlike in the version without priority to reactions.
 
 // Downloaded files must be uploaded and not trashed
 check DownloadedAreAccessible {
@@ -135,22 +135,22 @@ fact {
 	}
 }
 /*
-reaction download_revoke
+reaction access_revoke
 when
 	P.access[t]
 then
 	P.revoke[t]
 */
 
-sig Download_Revoke extends Reaction { token : Token }
+sig Access_Revoke extends Reaction { token : Token }
 fact {
-	all x,y : Download_Revoke | x.token = y.token implies x = y
+	all x,y : Access_Revoke | x.token = y.token implies x = y
 }
 
 fact {
 	all t : Token | always {
-		(some d : Download_Revoke & reactions_to_add | d.token = t) iff P.access[t]
-		(some d : Download_Revoke & reactions_to_remove | d.token = t) iff P.revoke[t]
+		(some d : Access_Revoke & reactions_to_add | d.token = t) iff P.access[t]
+		(some d : Access_Revoke & reactions_to_remove | d.token = t) iff P.revoke[t]
 	}
 }
 
