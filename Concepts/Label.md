@@ -1,4 +1,4 @@
-# concept: `Label[Iten,Tag]`
+# concept: `Label[Item,Tag]`
  
 * **purpose**: To allow labeling items with tags.
 * **principle**: If a tag is affixed to an item, then it remains affixed until it is detached or all tags of the item are cleared.
