@@ -48,7 +48,8 @@ pred stutter {
 fact Actions {
     always {
         (some c : Owning, u : User, t : Thing | acquire[c,u,t]) or
-        (some c : Owning, u : User, t : Thing | release[c,u,t])
+        (some c : Owning, u : User, t : Thing | release[c,u,t]) or
+        stutter
     }
 }
 
