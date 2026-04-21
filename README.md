@@ -2,7 +2,7 @@
 
 Daniel Jackson's [software concepts](https://essenceofsoftware.com) formalized using [Alloy](https://alloytools.org) and [TLA+](https://lamport.azurewebsites.net/tla/tla.html).
 
-The repository includes formal models of both the individual concepts and of apps built by composing those concepts using synchronization rules (aka *reactions*). For some apps, we include versions where reactions have priority over user actions (w/ PR) and versions where they do not and run concurrently with user actions (w/o PR), with the former being usually simpler. By default if nothing specified the app assumes reactions have priority.
+The repository includes formal models of both the individual concepts and of apps built by composing those concepts using synchronization rules (aka *reactions*). For some apps, we include versions where reactions have priority over user actions (w/ PR) and versions where they do not, and run concurrently with user actions (w/o PR). The later is obviously more complex. By default, if nothing is specified in the name of the app, it is assumed that reactions have priority.
 
 # Index of concepts
 
