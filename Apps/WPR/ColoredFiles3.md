@@ -67,4 +67,4 @@ where
 then
 	error
 ```
-* **formalizations**: [Alloy](ColoredFiles3.als)
+* **formalizations**: [Alloy](ColoredFiles3.als), [TLA+](ColoredFiles3.tla)
