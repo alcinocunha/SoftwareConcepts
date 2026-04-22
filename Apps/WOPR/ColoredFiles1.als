@@ -1,4 +1,4 @@
-module Apps/WOPR/FileSystem1
+module Apps/WPR/ColoredFiles1
 open Action
 open Reaction
 
@@ -25,14 +25,22 @@ fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }
 fun colors : File -> set Color { L.labels }
 
-// The app invariant
+// This app assumes reactions have priority over requests
+
+fact {
+	PriorityToReactions
+}
+
+// The design goal
 
 // Only accessible files can have colors
-check Invariant {
+check Design {
 	always {
-		no Reaction iff colors.Color in accessible
+		no reactions iff {
+			colors.Color in T.accessible
+		}
 	}
-} for 2 but 7 Action, 1 Reaction expect 0
+} for 2 but 10 Action, 10 Reaction expect 0
 
 // Scenarios
 
@@ -40,67 +48,49 @@ check Invariant {
 // Then a reaction will clear all colors of all files
 run Scenario {
 	eventually (File.colors = Color and T.delete[File])
-	eventually always no Reaction
-} for exactly 1 File, exactly 3 Color, 7 Action, 1 Reaction expect 1
+	eventually always no reactions
+} for exactly 1 File, exactly 3 Color, 6 Action, 1 Reaction expect 1
 
 // Reactions
 
 /*
+reaction delete_clear
 when
 	T.delete[f]
 where
 	some f.colors
 then
-	L.clear[f] or T.restore[f]
+	L.clear[f]
 */
 
-var lone sig DeleteClearOrRestore extends Reaction { }
-
+sig Delete_Clear extends Reaction { file : File }
 fact {
-	always {
-		some DeleteClearOrRestore iff {
-			some f : File | before (not (L.clear[f] or T.restore[f]) since (T.delete[f] and some f.colors))
-		}
-	}
+	all x,y : Delete_Clear | x.file = y.file implies x = y
 }
-
-// Preventions
-
-/*
-when
-	L.affix[f,c]
-require
-	f in accessible
-*/
-
-fact {
-	all f : File, c : Color | always {
-		L.affix[f,c] implies f in accessible
-	}
-}
-
-/*
-when
-	L.detach[f,c]
-require
-	f in accessible
-*/
-
-fact {
-	all f : File, c : Color | always {
-		L.detach[f,c] implies f in accessible
-	}
-}
-
-/*
-when
-	T.create[f]
-require
-	no f.colors
-*/
-
 fact {
 	all f : File | always {
-		T.create[f] implies no f.colors
+		(some d : Delete_Clear & reactions_to_add | d.file = f) iff (T.delete[f] and some f.colors)
+		(some d : Delete_Clear & reactions_to_remove | d.file = f) iff L.clear[f]
+	}
+}
+
+/*
+reaction affix_error
+when
+	L.affix[f,c]
+where
+	f not in T.accessible
+then
+	error
+*/
+
+sig Affix_Error extends Reaction { }
+fact {
+	all x,y : Affix_Error | x = y
+}
+fact {
+	always {
+		(some Affix_Error & reactions_to_add) iff (some f : File, c : Color | L.affix[f,c] and f not in T.accessible)
+		(some Affix_Error & reactions_to_remove) iff error
 	}
 }
