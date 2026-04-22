@@ -24,4 +24,4 @@
         * **effects**: removes `r` from `available`
 * **invariants**:
     * a resource can only be reserved by at most one user at a time
-* **formalizations**: [Alloy](Reservation.als)
+* **formalizations**: [Alloy](Reservation.als), [TLA+](Reservation.tla)
