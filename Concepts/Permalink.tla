@@ -4,6 +4,11 @@ CONSTANT Permalink, Resource, URL
 
 VARIABLES action, urls, revoked, accessed
 
+TypeOK ==
+    /\ urls \in [ Permalink -> [ Resource -> SUBSET URL ] ]
+    /\ revoked \in [ Permalink -> SUBSET URL ]
+    /\ accessed \in [ Permalink -> SUBSET URL ]
+
 Actions == Permalink \X {"share"} \X Resource \X URL \cup Permalink \X {"revoke", "access"} \X URL
 
 InitAction == action \in Actions
@@ -45,11 +50,6 @@ Next == \E p \in Permalink:
     \/ stutter(p)
 
 Spec == InitAction /\ Init /\ [][NextAction /\ Next]_<<urls, revoked, accessed, action>>
-
-TypeOK ==
-    /\ urls \in [ Permalink -> [ Resource -> SUBSET URL ] ]
-    /\ revoked \in [ Permalink -> SUBSET URL ]
-    /\ accessed \in [ Permalink -> SUBSET URL ]
 
 Invariant ==
     /\ \A p \in Permalink: revoked[p] \subseteq UNION { urls[p][r] : r \in Resource }
