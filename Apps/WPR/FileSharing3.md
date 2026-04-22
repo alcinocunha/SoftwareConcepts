@@ -66,4 +66,4 @@ where
 then
 	error
 ```
-* **formalizations**: [Alloy](FileSharing3.als)
+* **formalizations**: [Alloy](FileSharing3.als), [TLA+](FileSharing3.tla)
