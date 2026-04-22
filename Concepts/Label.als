@@ -71,6 +71,13 @@ check Principle {
 	all i : Item, t : Tag | always (Label.affix[i,t] implies after ((Label.detach[i,t] or Label.clear[i]) releases t in Label.labels[i]))
 } for 3 but 10 Action, exactly 1 Label expect 0
 
+// Expected value of labels
+check Labels {
+	all l : Label | always {
+		l.labels = { i : Item, t : Tag | before (not (l.detach[i,t] or l.clear[i]) since l.affix[i,t]) }
+	}
+} for 2 but 10 Action, exactly 1 Label expect 0
+
 // Scenarios
 
 // All labels affixed in one item and then cleared
