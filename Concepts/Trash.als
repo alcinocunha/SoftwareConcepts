@@ -79,7 +79,7 @@ fact Actions {
 		(some i : Item | c.create[i]) or 
 		(some i : Item | c.delete[i]) or 
 		(some i : Item | c.restore[i]) or 
-		(some c : Trash | c.empty[]) or 
+		c.empty[] or 
 		c.stutter[]
 	}
 }

@@ -8,9 +8,15 @@
 <defaultedge/>
 
 <node>
-   <type name="DeleteRelease"/>
+   <type name="Acquire_Error"/>
+   <type name="Create_Error"/>
+   <type name="Delete_Error"/>
+   <type name="Delete_Release"/>
+   <type name="Empty_Error"/>
    <type name="Int"/>
-   <type name="RegisterAcquire"/>
+   <type name="Register_Acquire"/>
+   <type name="Release_Error"/>
+   <type name="Restore_Error"/>
    <type name="String"/>
    <type name="univ"/>
    <type name="Action/Concept"/>
@@ -36,14 +42,6 @@
    <type name="User"/>
 </node>
 
-<node numberatoms="no" color="Gray">
-   <type name="Action/Action"/>
-</node>
-
-<node shape="Dbl Octagon" color="Red">
-   <type name="Reaction/Reaction"/>
-</node>
-
 <node shape="Ellipse">
    <type name="File"/>
 </node>
@@ -52,17 +50,35 @@
    <type name="Trash/Trash"/>
 </node>
 
-<node showlabel="no" color="Yellow" label="registered">
-   <set name="$registered" type="User"/>
+<node showlabel="no">
+   <set name="reactions_to_add" type="Reaction/Reaction"/>
+   <set name="reactions_to_remove" type="Reaction/Reaction"/>
 </node>
 
-<node showlabel="no" shape="Hexagon" color="Yellow" label="loggedin">
+<node showlabel="no" color="Green" label="loggedin">
    <set name="$loggedin" type="User"/>
+</node>
+
+<node showlabel="no" color="Yellow" label="registered">
+   <set name="$registered" type="User"/>
 </node>
 
 <node visible="no">
    <type name="A"/>
    <type name="O"/>
+</node>
+
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="no" shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="action" type="Action/Action"/>
+   <set name="reactions" type="Reaction/Reaction"/>
 </node>
 
 <edge style="inherit">
@@ -72,24 +88,13 @@
    <relation name="trashed"> <type name="Trash/Trash"/> <type name="File"/> </relation>
 </edge>
 
-<edge style="inherit" visible="no" attribute="yes">
-   <relation name="i"> <type name="Trash/Create"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Delete"/> <type name="File"/> </relation>
-   <relation name="i"> <type name="Trash/Restore"/> <type name="File"/> </relation>
-   <relation name="u"> <type name="WebApp/WebAppAction"/> <type name="User"/> </relation>
-</edge>
-
-<edge visible="no" attribute="no">
-   <relation name="c"> <type name="Action/Action"/> <type name="Action/Concept"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
-   <relation name="t"> <type name="Owning/OwningAction"/> <type name="Trash/Trash"/> </relation>
-   <relation name="u"> <type name="Owning/OwningAction"/> <type name="User"/> </relation>
-</edge>
-
-<edge visible="yes" attribute="no">
-   <relation name="u"> <type name="DeleteRelease"/> <type name="User"/> </relation>
+   <relation name="item"> <type name="Trash/Create"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Delete"/> <type name="File"/> </relation>
+   <relation name="item"> <type name="Trash/Restore"/> <type name="File"/> </relation>
+   <relation name="thing"> <type name="Owning/OwningAction"/> <type name="Trash/Trash"/> </relation>
+   <relation name="user"> <type name="Owning/OwningAction"/> <type name="User"/> </relation>
+   <relation name="user"> <type name="WebApp/WebAppAction"/> <type name="User"/> </relation>
 </edge>
 
 </view>

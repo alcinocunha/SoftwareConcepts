@@ -25,12 +25,12 @@ fact {
 	PriorityToReactions
 }
 
-// The app invariant
+// The design goal
 
 // Secret files cannot be in the trash
 // Accessible files were created or restored by a normal user
 // Trashed non-secret files were deleted by a normal user
-check Invariant {
+check Design {
 	always {
 		no reactions iff {
 			trashed = { f : File - Secret | before (not ((T.empty[] or T.restore[f]) and no Secret & trashed) since T.delete[f]) }
@@ -55,7 +55,7 @@ run Scenario1 {
 	one Secret
 	eventually (File - Secret in trashed and T.delete[Secret])
 	eventually always no reactions		
-} for exactly 3 File, 10 Action, 10 Reaction, 13 steps expect 1
+} for exactly 3 File, 10 Action, 10 Reaction, 12 steps expect 1
 
 // Without concurrent requests we cannot have more than one secret
 // file in the trash, so the following scenario is impossible

@@ -9,15 +9,9 @@
 
 <node>
    <type name="Affix_Error"/>
-   <type name="Affix_Red_Error"/>
-   <type name="Clear_Red_Error"/>
-   <type name="Delete_Affix"/>
-   <type name="Detach_Red_Error"/>
    <type name="Empty_Clear"/>
    <type name="Int"/>
    <type name="L"/>
-   <type name="Red"/>
-   <type name="Restore_Detach"/>
    <type name="String"/>
    <type name="T"/>
    <type name="univ"/>
@@ -44,7 +38,6 @@
 </node>
 
 <node showlabel="no">
-   <set name="occurred" type="Action/Action"/>
    <set name="reactions_to_add" type="Reaction/Reaction"/>
    <set name="reactions_to_remove" type="Reaction/Reaction"/>
 </node>
@@ -70,7 +63,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="$action" type="Action/Action"/>
+   <set name="action" type="Action/Action"/>
    <set name="reactions" type="Reaction/Reaction"/>
 </node>
 

@@ -52,7 +52,6 @@
 </node>
 
 <node showlabel="no">
-   <set name="occurred" type="Action/Action"/>
    <set name="reactions_to_add" type="Reaction/Reaction"/>
    <set name="reactions_to_remove" type="Reaction/Reaction"/>
 </node>
@@ -70,7 +69,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="$action" type="Action/Action"/>
+   <set name="action" type="Action/Action"/>
    <set name="reactions" type="Reaction/Reaction"/>
 </node>
 

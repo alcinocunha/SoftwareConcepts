@@ -42,7 +42,7 @@ fact {
 // The design goal
 
 // The outbox of the restaurant contains one message per active reservation
-check Goal {
+check Design {
     always {
         no reactions iff {
             reservations = ~(Restaurant.outbox <: to).content
@@ -56,7 +56,7 @@ check Goal {
 run Scenario {
     some c : Client | all t : Table | eventually R.use[c,t]
     eventually always no reactions
-} for 3 but exactly 2 Table, 10 Action, 10 Reaction, 12 steps expect 1
+} for 3 but exactly 2 Table, 10 Action, 10 Reaction, 11 steps expect 1
 
 // Reactions
 

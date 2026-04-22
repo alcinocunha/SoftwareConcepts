@@ -8,11 +8,8 @@
 <defaultedge/>
 
 <node>
-   <type name="Access_Delete"/>
-   <type name="Access_Empty"/>
    <type name="Access_Revoke"/>
-   <type name="Create_Share"/>
-   <type name="Delete_Error"/>
+   <type name="Delete_Revoke"/>
    <type name="Int"/>
    <type name="P"/>
    <type name="Revoke_Error"/>
@@ -33,6 +30,7 @@
    <type name="Trash/TrashAction"/>
    <set name="$Scenario1_f" type="File"/>
    <set name="$Scenario1_t" type="Token"/>
+   <set name="$Scenario1_u" type="Token"/>
 </node>
 
 <node color="White">
@@ -45,7 +43,6 @@
 
 <node showlabel="no">
    <set name="$create_a" type="Trash/Create"/>
-   <set name="occurred" type="Action/Action"/>
    <set name="reactions_to_add" type="Reaction/Reaction"/>
    <set name="reactions_to_remove" type="Reaction/Reaction"/>
 </node>
@@ -72,7 +69,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="$action" type="Action/Action"/>
+   <set name="action" type="Action/Action"/>
    <set name="reactions" type="Reaction/Reaction"/>
 </node>
 

@@ -51,7 +51,7 @@ check Design {
 run Scenario {
 	eventually always no reactions
 	all t : Table | eventually R.use[Client,t]
-} for exactly 1 Client, exactly 2 Table, 11 Action, 6 Reaction, 12 steps expect 1
+} for exactly 1 Client, exactly 2 Table, 10 Action, 10 Reaction, 11 steps expect 1
 
 // Reactions
 

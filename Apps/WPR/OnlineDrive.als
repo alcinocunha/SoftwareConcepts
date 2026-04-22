@@ -51,12 +51,12 @@ check Design {
 run Scenario1 {
     all u : User | eventually (File in u.trash.trashed and u.trash.empty[])
     eventually always no reactions
-} for exactly 1 File, exactly 2 User, 2 Trash, 13 Action, 6 Reaction, 14 steps expect 1
+} for exactly 1 File, exactly 2 User, 2 Trash, 13 Action, 6 Reaction, 13 steps expect 1
 
 run Scenario2 {
     eventually { User in registered and eventually no User & registered }
     eventually always no reactions
-} for exactly 0 File, exactly 2 User, 2 Trash, 10 Action, 10 Reaction, 12 steps expect 1
+} for exactly 0 File, exactly 2 User, 2 Trash, 10 Action, 6 Reaction, 11 steps expect 1
     
 // Reactions
 

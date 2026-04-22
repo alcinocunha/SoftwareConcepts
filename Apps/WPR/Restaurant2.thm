@@ -36,6 +36,7 @@
    <type name="Reservation/Use"/>
    <type name="seq/Int"/>
    <type name="Messaging/ordering/Ord"/>
+   <set name="$Scenario_c" type="Client"/>
 </node>
 
 <node color="Green" label="tables">
@@ -53,7 +54,6 @@
 <node showlabel="no">
    <set name="$first" type="Messaging/Time"/>
    <set name="$last" type="Messaging/Time"/>
-   <set name="occurred" type="Action/Action"/>
    <set name="reactions_to_add" type="Reaction/Reaction"/>
    <set name="reactions_to_remove" type="Reaction/Reaction"/>
 </node>
@@ -75,7 +75,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="$action" type="Action/Action"/>
+   <set name="action" type="Action/Action"/>
    <set name="reactions" type="Reaction/Reaction"/>
 </node>
 
