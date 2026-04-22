@@ -23,42 +23,42 @@ sig Content {}
 fun scheduled : User -> Meeting { OM.owns }
 fun chat : Meeting -> Chat { OC.owns }
 
-// Priority of reactions over requests
+// This app assumes reactions have priority over requests
 
 fact {
     PriorityToReactions
 }
 
-// The app invariant
+// The design goal
 
-check Invariant {
+check Design {
     always {
-        no Reaction iff {
+        no reactions iff {
             host in ~scheduled
-            chat in host.User -> one Chat
+            Meeting <: chat in host.User -> one Chat
 			joined.Time = ~chat.participants
         }
     }
-} for 2 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 14 steps expect 0
+} for 2 but 12 Action, 6 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
 
 // The following does not hold but there is no problem because one can only read messages sent after joining
 check AcquireNoMessage {
     always {
         all m : Meeting, c : Chat | OC.acquire[m,c] implies no c.messages
     }
-} for 1 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 1
+} for 1 but 12 Action, 6 Reaction, 1 Meeting, 1 Chat, 12 steps expect 1
 
 check AcquireNoJoined {
     always {
         all m : Meeting, c : Chat | OC.acquire[m,c] implies no c.joined
     }
-} for 1 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
+} for 1 but 12 Action, 6 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
 
-check SendSafe {
+check SenderIsParticipant {
     always {
         all c : Chat, u : User, m : Message | c.send[u,m] implies u in (chat.c).participants
     }
-} for 1 but 13 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
+} for 1 but 12 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
 
 // Scenarios
 
@@ -68,61 +68,51 @@ run Scenario {
         c.send[u,m]
         eventually (chat.c).end[u]
     }
-    eventually always no Reaction
-} for 2 but 11 Action, 5 Reaction, 1 Meeting, 1 Chat, 11 steps expect 1
+    eventually always no reactions
+} for 2 but 10 Action, 5 Reaction, 1 Meeting, 1 Chat expect 1
 
 // Reactions
 
 /*
-reaction StartMeeting[m]
+reaction start_acquire
 when
     m.start[u]
 then
     some c : Chat | OC.acquire[m,c]
 */
 
-var sig StartMeeting extends Reaction { var m : Meeting }
+sig Start_Acquire extends Reaction { meeting : Meeting }
 fact {
-	always all r : StartMeeting {
-		all d : StartMeeting' | d.m' = r.m implies d = r
-	}    
+    all x,y : Start_Acquire | x.meeting = y.meeting implies x = y
 }
-pred StartMeeting [x : Meeting] { some r : StartMeeting | r.m = x }
-
 fact {
     all m : Meeting | always {
-        StartMeeting[m] iff some u : User | before {
-            not (some c : Chat | OC.acquire[m,c]) since m.start[u]
-        }
+        (some r : Start_Acquire & reactions_to_add | r.meeting = m) iff (some u : User | m.start[u])
+        (some r : Start_Acquire & reactions_to_remove | r.meeting = m) iff (some c : Chat | OC.acquire[m,c])
     }
 }
 
 /*
-reaction EndMeeting[m]
+reaction end_release
 when
     m.end[u]
 then
-    OC.release[m,c]
+    OC.release[m,m.chat]
 */
 
-var sig EndMeeting extends Reaction { var m : Meeting }
+sig End_Release extends Reaction { meeting : Meeting }
 fact {
-    always all r : EndMeeting {
-        all d : EndMeeting' | d.m' = r.m implies d = r
-    }    
+    all x,y : End_Release | x.meeting = y.meeting implies x = y
 }
-pred EndMeeting [x : Meeting] { some r : EndMeeting | r.m = x }
-
 fact {
     all m : Meeting | always {
-        EndMeeting[m] iff some u : User, c : Chat | before {
-            not OC.release[m,c] since m.end[u]
-        }
+        (some r : End_Release & reactions_to_add | r.meeting = m) iff (some u : User | m.end[u])
+        (some r : End_Release & reactions_to_remove | r.meeting = m) iff (OC.release[m,m.chat])
     }
 }
 
 /*
-reaction EndMeetingForceLeaving[m,u]
+reaction end_leave
 when
     m.end[h]
 where
@@ -131,24 +121,19 @@ then
     c.leave[u]
 */
 
-var sig EndMeetingForceLeaving extends Reaction { var m : Meeting, var u : User }
+sig End_Leave extends Reaction { chat : Chat, user : User }
 fact {
-    always all r : EndMeetingForceLeaving {
-        all d : EndMeetingForceLeaving' | d.m' = r.m and d.u' = r.u implies d = r
-    }    
+    all x,y : End_Leave | x.chat = y.chat and x.user = y.user implies x = y
 }
-pred EndMeetingForceLeaving [x : Meeting, y : User] { some r : EndMeetingForceLeaving | r.m = x and r.u = y }
-
 fact {
-    all m : Meeting, u : User | always {
-        EndMeetingForceLeaving[m,u] iff some h : User, c : Chat | before {
-            not c.leave[u] since (m.end[h] and c in m.chat and u in c.joined.Time)
-        }
+    all c : Chat, u : User | always {
+        (some r : End_Leave & reactions_to_add | r.chat = c and r.user = u) iff (some m : Meeting, h : User | m.end[h] and c in m.chat and u in c.joined.Time)
+        (some r : End_Leave & reactions_to_remove | r.chat = c and r.user = u) iff (c.leave[u])
     }
 }
 
 /*
-reaction JoinMeeting[m,u]
+reaction join_join
 when
     m.join[u]
 where
@@ -157,24 +142,19 @@ then
     c.join[u]
 */
 
-var sig JoinMeeting extends Reaction { var m : Meeting, var u : User }
+sig Join_Join extends Reaction { chat : Chat, user : User }
 fact {
-    always all r : JoinMeeting {
-        all d : JoinMeeting' | d.m' = r.m and d.u' = r.u implies d = r
-    }
+    all x,y : Join_Join | x.chat = y.chat and x.user = y.user implies x = y
 }
-pred JoinMeeting [x : Meeting, y : User] { some r : JoinMeeting | r.m = x and r.u = y }
-
 fact {
-    all m : Meeting, u : User | always {
-        JoinMeeting[m,u] iff some c : Chat | before {
-            not c.join[u] since (m.join[u] and c in m.chat)
-        }
-    }
+    all c : Chat, u : User | always {
+        (some r : Join_Join & reactions_to_add | r.chat = c and r.user = u) iff (some m : Meeting | m.join[u] and c in m.chat)
+        (some r : Join_Join & reactions_to_remove | r.chat = c and r.user = u) iff (c.join[u])
+    }  
 }
 
 /*
-reaction LeaveMeeting[m,u]
+reaction leave_leave
 when
     m.leave[u]
 where
@@ -183,100 +163,141 @@ then
     c.leave[u]
 */
 
-var sig LeaveMeeting extends Reaction { var m : Meeting, var u : User }
+sig Leave_Leave extends Reaction { chat : Chat, user : User }
 fact {
-    always all r : LeaveMeeting {
-        all d : LeaveMeeting' | d.m' = r.m and d.u' = r.u implies d = r
-    }
+    all x,y : Leave_Leave | x.chat = y.chat and x.user = y.user implies x = y
 }
-pred LeaveMeeting [x : Meeting, y : User] { some r : LeaveMeeting | r.m = x and r.u = y }
-
 fact {
-    all m : Meeting, u : User | always {
-        LeaveMeeting[m,u] iff some c : Chat | before {
-            not c.leave[u] since (m.leave[u] and c in m.chat)
-        }
+    all c : Chat, u : User | always {
+        (some r : Leave_Leave & reactions_to_add | r.chat = c and r.user = u) iff (some m : Meeting | m.leave[u] and c in m.chat)
+        (some r : Leave_Leave & reactions_to_remove | r.chat = c and r.user = u) iff (c.leave[u])
     }
 }
 
-
-// Preventions
 
 /*
+reaction start_error
 when
     m.start[u]
-require
-    m in u.scheduled
+where
+    m not in u.scheduled
+then
+    error
 */
 
+sig Start_Error extends Reaction { }
 fact {
-    all m : Meeting, u : User | always {
-        m.start[u] implies m in u.scheduled
-    }
+    all x,y : Start_Error | x = y
+}
+fact {
+    always {
+        (some Start_Error & reactions_to_add) iff (some m : Meeting, u : User | m.start[u] and m not in u.scheduled)
+        (some Start_Error & reactions_to_remove) iff error
+    }  
 }
 
 /*
+reaction release_meeting_error
 when
     OM.release[u,m]
-require
-    no m.host
+where
+    some m.host
+then
+    error
 */
 
+sig Release_Meeting_Error extends Reaction { }
 fact {
-    all m : Meeting, u : User | always {
-        OM.release[u,m] implies no m.host
+    all x,y : Release_Meeting_Error | x = y
+}
+fact {
+    always {
+        (some Release_Meeting_Error & reactions_to_add) iff (some u : User, m : Meeting | OM.release[u,m] and some m.host)
+        (some Release_Meeting_Error & reactions_to_remove) iff error
     }
 }
 
 /*
+reaction join_error
 when
     c.join[u]
-require
-    some (chat.c).host and u in (chat.c).participants
+where
+    no (chat.c).host or u not in (chat.c).participants
+then
+    error
 */
 
+sig Join_Error extends Reaction { }
 fact {
-    all c : Chat, u : User | always {
-        c.join[u] implies some (chat.c).host and u in (chat.c).participants
+    all x,y : Join_Error | x = y
+}
+fact {
+    always {
+        (some Join_Error & reactions_to_add) iff (some c : Chat, u : User | c.join[u] and (no (chat.c).host or u not in (chat.c).participants))
+        (some Join_Error & reactions_to_remove) iff error
     }
 }
 
 /*
+reaction leave_error
 when
     c.leave[u]
-require
-    u not in (chat.c).participants
+where
+    u in (chat.c).participants
+then
+    error
 */
 
+sig Leave_Error extends Reaction { }
 fact {
-    all c : Chat, u : User | always {
-        c.leave[u] implies u not in (chat.c).participants
+    all x,y : Leave_Error | x = y
+}
+fact {
+    always {
+        (some Leave_Error & reactions_to_add) iff (some c : Chat, u : User | c.leave[u] and u in (chat.c).participants)
+        (some Leave_Error & reactions_to_remove) iff error
     }
 }
 
 /*
+reaction acquire_chat_error
 when
     OC.acquire[m,c]
-require
-    some m.host and no m.chat
+where
+    no m.host or some m.chat
+then
+    error
 */
 
+sig Acquire_Chat_Error extends Reaction { }
 fact {
-    all m : Meeting, c : Chat | always {
-        OC.acquire[m,c] implies some m.host and no m.chat
+    all x,y : Acquire_Chat_Error | x = y
+}
+fact {
+    always {
+        (some Acquire_Chat_Error & reactions_to_add) iff (some m : Meeting, c : Chat | OC.acquire[m,c] and (no m.host or some m.chat))
+        (some Acquire_Chat_Error & reactions_to_remove) iff error
     }
 }
 
 /*
+reaction release_chat_error
 when
     OC.release[m,c]
-require
-    no m.host
+where
+    some m.host
+then
+    error
 */
 
+sig Release_Chat_Error extends Reaction { }
 fact {
-    all m : Meeting, c : Chat | always {
-        OC.release[m,c] implies no m.host
+    all x,y : Release_Chat_Error | x = y
+}
+fact {
+    always {
+        (some Release_Chat_Error & reactions_to_add) iff (some m : Meeting, c : Chat | OC.release[m,c] and some m.host)
+        (some Release_Chat_Error & reactions_to_remove) iff error
     }
 }
 
