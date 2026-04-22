@@ -18,15 +18,15 @@ fact Init {
 // Actions
 
 abstract sig TrashAction extends Action { } { concept in Trash }
-sig Create extends TrashAction { item : one Item }
+sig Create extends TrashAction { item : Item }
 fact {
 	all x,y : Create | x.concept = y.concept and x.item = y.item implies x = y
 }
-sig Delete extends TrashAction { item : one Item }
+sig Delete extends TrashAction { item : Item }
 fact {
 	all x,y : Delete | x.concept = y.concept and x.item = y.item implies x = y
 }
-sig Restore extends TrashAction { item : one Item }
+sig Restore extends TrashAction { item : Item }
 fact {
 	all x,y : Restore | x.concept = y.concept and x.item = y.item implies x = y
 }
@@ -37,50 +37,50 @@ fact {
 
 pred create [c : Trash, i : Item] { 
 	i not in c.(accessible+trashed)
-	accessible' = accessible + c->i
-	trashed' = trashed
+	c.accessible' = c.accessible + i
+	c.trashed' = c.trashed
 
-	some a : Create | a.concept = c and a.item = i and occurred' = a
+	some a : Create & action | a.concept = c and a.item = i
 }
 
 pred delete [c : Trash, i : Item] {
 	i in c.accessible
-	accessible' = accessible - c->i
-	trashed' = trashed + c->i
+	c.accessible' = c.accessible - i
+	c.trashed' = c.trashed + i
 
-	some a : Delete | a.concept = c and a.item = i and occurred' = a
+	some a : Delete & action | a.concept = c and a.item = i
 }
 
 pred restore [c : Trash, i : Item] {
 	i in c.trashed
-	accessible' = accessible + c->i
-	trashed' = trashed - c->i
+	c.accessible' = c.accessible + i
+	c.trashed' = c.trashed - i
 
-	some a : Restore | a.concept = c and a.item = i and occurred' = a	
+	some a : Restore & action | a.concept = c and a.item = i
 }
 
 pred empty [c : Trash] {
 	some c.trashed
-	trashed' = trashed - c->Item
-	accessible' = accessible
+	no c.trashed'
+	c.accessible' = c.accessible
 
-	some a : Empty | a.concept = c and occurred' = a
+	some a : Empty & action | a.concept = c
 }
 
-pred stutter {
-	accessible' = accessible
-	trashed' = trashed
+pred stutter [c : Trash] {
+	c.accessible' = c.accessible
+	c.trashed' = c.trashed
 
-	no occurred' & TrashAction
+	no a : action | a.concept = c
 }
 
 fact Actions {
-	always { 
-		(some c : Trash, i : Item | create[c, i]) or 
-		(some c : Trash, i : Item | delete[c, i]) or 
-		(some c : Trash, i : Item | restore[c, i]) or 
-		(some c : Trash | empty[c]) or 
-		stutter
+	all c : Trash | always { 
+		(some i : Item | c.create[i]) or 
+		(some i : Item | c.delete[i]) or 
+		(some i : Item | c.restore[i]) or 
+		(some c : Trash | c.empty[]) or 
+		c.stutter[]
 	}
 }
 

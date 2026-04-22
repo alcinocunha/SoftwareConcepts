@@ -35,7 +35,6 @@
    <set name="$first" type="Time"/>
    <set name="$last" type="Time"/>
    <set name="concept" type="Action/Action"/>
-   <set name="occurred" type="Action/Action"/>
 </node>
 
 <node visible="no" numberatoms="no" color="Gray">
@@ -47,7 +46,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="$action" type="Action/Action"/>
+   <set name="action" type="Action/Action"/>
    <set name="time" type="Time"/>
 </node>
 

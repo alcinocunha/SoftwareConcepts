@@ -41,63 +41,63 @@ fact {
 
 pred provide [c : Reservation, r : Resource] {
 	r not in c.available
-	available' = available + c->r
-	reservations' = reservations - c->User->r
+	c.available' = c.available + r
+	c.reservations' = c.reservations - User->r
 
-	some a : Provide | a.concept = c and a.resource = r and occurred' = a
+	some a : Provide & action | a.concept = c and a.resource = r
 }
 
 pred retract [c : Reservation, r : Resource] {
 	r in c.available
 	r not in c.reservations[User]
-	available' = available - c->r
-	reservations' = reservations
+	c.available' = c.available - r
+	c.reservations' = c.reservations
 
-	some a : Retract | a.concept = c and a.resource = r and occurred' = a
+	some a : Retract & action | a.concept = c and a.resource = r
 }
 
 pred reserve [c : Reservation, u : User, r : Resource] {
 	r in c.available
 	r not in c.reservations[User]
-	available' = available
-	reservations' = reservations + c->u->r
+	c.available' = c.available
+	c.reservations' = c.reservations + u->r
 
-	some a : Reserve | a.concept = c and a.user = u and a.resource = r and occurred' = a
+	some a : Reserve & action | a.concept = c and a.user = u and a.resource = r
 }
 
 pred cancel [c : Reservation, u : User, r : Resource] {
 	r in c.available
 	r in c.reservations[u]
-	available' = available
-	reservations' = reservations - c->u->r
+	c.available' = c.available
+	c.reservations' = c.reservations - u->r
 
-	some a : Cancel | a.concept = c and a.user = u and a.resource = r and occurred' = a
+	some a : Cancel & action | a.concept = c and a.user = u and a.resource = r
 }
 
 pred use [c : Reservation, u : User, r : Resource] {
 	r in c.available
 	r in c.reservations[u]
-	available' = available - c->r
-	reservations' = reservations
+	c.available' = c.available - r
+	c.reservations' = c.reservations
 
-	some a : Use | a.concept = c and a.user = u and a.resource = r and occurred' = a
+	some a : Use & action | a.concept = c and a.user = u and a.resource = r
 }
 
-pred stutter {
-	available' = available
-	reservations' = reservations
+pred stutter[c : Reservation] {
+	c.available' = c.available
+	c.reservations' = c.reservations
 
-	no occurred' & ReservationAction
+	no a : action | a.concept = c
 }
 
 fact Actions {
-	always {
-		(some c : Reservation, r : Resource | provide[c,r]) or 
-		(some c : Reservation, r : Resource | retract[c,r]) or 
-		(some c : Reservation, u : User, r : Resource | reserve[c,u,r]) or 
-		(some c : Reservation, u : User, r : Resource | cancel[c,u,r]) or 
-		(some c : Reservation, u : User, r : Resource | use[c,u,r]) or 
-		stutter
+	all c : Reservation | always {
+		(some r : Resource | c.provide[r]) or 
+		(some r : Resource | c.retract[r]) or 
+		(some u : User, r : Resource | c.reserve[u,r]) or 
+		(some u : User, r : Resource | c.cancel[u,r]) or 
+		(some u : User, r : Resource | c.use[u,r]) or 
+		c.stutter[]
 	}
 }
 

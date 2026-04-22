@@ -34,47 +34,47 @@ fact {	all x,y : Access | x.concept = y.concept and x.url = y.url implies x = y 
 
 pred share [c : Permalink, r : Resource, l : URL] {
 	l not in c.urls[Resource]
-	urls' = urls + c->r->l
-	revoked' = revoked
-	accessed' = accessed
+	c.urls' = c.urls + (r -> l)
+	c.revoked' = c.revoked
+	c.accessed' = c.accessed
 
-	some a : Share | a.concept = c and a.resource = r and a.url = l and occurred' = a
+	some a : Share & action | a.concept = c and a.resource = r and a.url = l
 }
 
 pred revoke [c : Permalink, l : URL] {
 	l in c.urls[Resource]
 	l not in c.revoked
-	urls' = urls
-	revoked' = revoked + c->l
-	accessed' = accessed
+	c.urls' = c.urls
+	c.revoked' = c.revoked + l
+	c.accessed' = c.accessed
 
-	some a : Revoke | a.concept = c and a.url = l and occurred' = a
+	some a : Revoke & action | a.concept = c and a.url = l
 }
 
 pred access [c : Permalink, l : URL] {
 	some c.urls.l
 	l not in c.revoked
-	urls' = urls
-	revoked' = revoked
-	accessed' = accessed + c->l
+	c.urls' = c.urls
+	c.revoked' = c.revoked
+	c.accessed' = c.accessed + l
 
-	some a : Access | a.concept = c and a.url = l and occurred' = a
+	some a : Access & action | a.concept = c and a.url = l
 }
 
-pred stutter {
-	urls' = urls
-	revoked' = revoked
-	accessed' = accessed
+pred stutter[c : Permalink] {
+	c.urls' = c.urls
+	c.revoked' = c.revoked
+	c.accessed' = c.accessed
 
-	no occurred' & PermalinkAction
+	no a : action | a.concept = c
 }
 
 fact Actions {
-	always {
-		(some c : Permalink, r : Resource, l : URL | share[c,r,l]) or 
-		(some c : Permalink, l : URL | revoke[c,l]) or 
-		(some c : Permalink, l : URL | access[c,l]) or 
-		stutter
+	all c : Permalink | always {
+		(some r : Resource, l : URL | c.share[r,l]) or 
+		(some l : URL | c.revoke[l]) or 
+		(some l : URL | c.access[l]) or 
+		c.stutter[]
 	}
 }
 

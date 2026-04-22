@@ -31,36 +31,36 @@ fact {
 
 pred affix [c : Label, i : Item, t : Tag] {
 	i->t not in c.labels
-	labels' = labels + c->i->t
+	c.labels' = c.labels + i->t
 
-	some a : Affix | a.concept = c and a.item = i and a.label = t and occurred' = a
+	some a : Affix & action | a.concept = c and a.item = i and a.label = t
 }
 pred detach [c : Label, i : Item, t : Tag] {
 	i->t in c.labels
-	labels' = labels - c->i->t
+	c.labels' = c.labels - i->t
 
-	some a : Detach | a.concept = c and a.item = i and a.label = t and occurred' = a
+	some a : Detach & action | a.concept = c and a.item = i and a.label = t
 }
 
 pred clear [c : Label, i : Item] {
 	some c.labels[i]
-	labels' = labels - c->i->Tag
+	c.labels' = c.labels - i->Tag
 
-	some a : Clear | a.concept = c and a.item = i and occurred' = a
+	some a : Clear & action | a.concept = c and a.item = i
 }
 
-pred stutter {
-	labels' = labels
+pred stutter [c : Label] {
+	c.labels' = c.labels
 
-	no occurred' & LabelAction
+	no a : action | a.concept = c
 }
 
 fact Actions {
-	always {
-		(some c : Label, i : Item, t : Tag | affix[c,i,t]) or
-		(some c : Label, i : Item, t : Tag | detach[c,i,t]) or
-		(some c : Label, i : Item | clear[c,i]) or
-		stutter
+	all c : Label | always {
+		(some i : Item, t : Tag | c.affix[i,t]) or
+		(some i : Item, t : Tag | c.detach[i,t]) or
+		(some i : Item | c.clear[i]) or
+		c.stutter[]
 	}
 }
 

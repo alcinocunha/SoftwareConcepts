@@ -40,7 +40,6 @@
 <node showlabel="no">
    <set name="$register_a" type="Register"/>
    <set name="concept" type="Action/Action"/>
-   <set name="occurred" type="Action/Action"/>
 </node>
 
 <node visible="no" numberatoms="no" color="Gray">
@@ -48,7 +47,7 @@
 </node>
 
 <node visible="yes" showlabel="no">
-   <set name="$action" type="Action/Action"/>
+   <set name="action" type="Action/Action"/>
 </node>
 
 <edge visible="no" attribute="yes">

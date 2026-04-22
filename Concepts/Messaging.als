@@ -51,61 +51,61 @@ fact {
 pred send [c : Messaging, u : User, m : Message] {
     m.from = u
     m.when = c.time
-    outbox' = outbox + (c -> u -> m)
-    inbox' = inbox + (c -> m.to -> m)
-    read' = read
-    time' = time - (c -> Time) + (c -> c.time.next)
+    c.outbox' = c.outbox + (u -> m)
+    c.inbox' = c.inbox + (m.to -> m)
+    c.read' = c.read
+    c.time' = c.time.next
 
-    some a : Send | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : Send & action | a.concept = c and a.user = u and a.message = m
 }
 
 pred read [c : Messaging, u : User, m : Message] {
     m in c.inbox[u]
     m not in c.read[u]
-    read' = read + (c -> u-> m)
-    inbox' = inbox
-    outbox' = outbox
-    time' = time
+    c.read' = c.read + (u -> m)
+    c.inbox' = c.inbox
+    c.outbox' = c.outbox
+    c.time' = c.time
 
-    some a : Read | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : Read & action | a.concept = c and a.user = u and a.message = m
 }
 
 pred deleteFromInbox [c : Messaging, u : User, m : Message] {
     m in c.inbox[u]
-    inbox' = inbox - (c -> u -> m)
-    read' = read - (c -> u -> m)
-    outbox' = outbox
-    time' = time
+    c.inbox' = c.inbox - (u -> m)
+    c.read' = c.read - (u -> m)
+    c.outbox' = c.outbox
+    c.time' = c.time
 
-    some a : DeleteFromInbox | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : DeleteFromInbox & action | a.concept = c and a.user = u and a.message = m
 }
 
 pred deleteFromOutbox [c : Messaging, u : User, m : Message] {
     m in c.outbox[u]
-    outbox' = outbox - (c -> u -> m)
-    inbox' = inbox
-    read' = read
-    time' = time
+    c.outbox' = c.outbox - (u -> m)
+    c.inbox' = c.inbox
+    c.read' = c.read
+    c.time' = c.time
 
-    some a : DeleteFromOutbox | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : DeleteFromOutbox & action | a.concept = c and a.user = u and a.message = m
 }
 
-pred stutter {
-    inbox' = inbox
-    read' = read
-    outbox' = outbox
-    time' = time
+pred stutter [c : Messaging] {
+    c.inbox' = c.inbox
+    c.read' = c.read
+    c.outbox' = c.outbox
+    c.time' = c.time
 
-    no occurred' & MessagingAction
+    no a : action | a.concept = c
 }
 
 fact Actions {
-    always {
-        (some c : Messaging, u : User, m : Message | c.send[u,m]) or
-        (some c : Messaging, u : User, m : Message | c.read[u,m]) or
-        (some c : Messaging, u : User, m : Message | c.deleteFromInbox[u,m]) or
-        (some c : Messaging, u : User, m : Message | c.deleteFromOutbox[u,m]) or
-        stutter
+    all c : Messaging | always {
+        (some u : User, m : Message | c.send[u,m]) or
+        (some u : User, m : Message | c.read[u,m]) or
+        (some u : User, m : Message | c.deleteFromInbox[u,m]) or
+        (some u : User, m : Message | c.deleteFromOutbox[u,m]) or
+        stutter[c]
     }
 }
 

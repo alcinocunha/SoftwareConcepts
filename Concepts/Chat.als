@@ -53,46 +53,46 @@ fact {
 pred join [c : Chat, u : User] {
     u not in c.joined.Time
     some c.time
-    joined' = joined + c->u->c.time
-    messages' = messages
-    read' = read
-    time' = time
+    c.joined' = c.joined + u->c.time
+    c.messages' = c.messages
+    c.read' = c.read
+    c.time' = c.time
 
-    some a : Join | a.concept = c and a.user = u and occurred' = a
+    some a : Join & action | a.concept = c and a.user = u
 }
 
 pred leave [c : Chat, u : User] {
     u in c.joined.Time
-    joined' = joined - c->u->Time
-    messages' = messages
-    read' = read - c->u->Message
-    time' = time
+    c.joined' = c.joined - u->Time
+    c.messages' = c.messages
+    c.read' = c.read - u->Message
+    c.time' = c.time
 
-    some a : Leave | a.concept = c and a.user = u and occurred' = a
+    some a : Leave & action | a.concept = c and a.user = u
 }
 
 pred send [c : Chat, u : User, m : Message] {
     u in c.joined.Time
     m.from = u
     m.when = c.time
-    messages' = messages + c->m
-    joined' = joined
-    read' = read + c->u->m
-    time' = time - (c -> Time) + (c -> c.time.next)
+    c.messages' = c.messages + m
+    c.joined' = c.joined
+    c.read' = c.read + u->m
+    c.time' = c.time.next
 
-    some a : Send | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : Send & action | a.concept = c and a.user = u and a.message = m
 }
 
 pred delete [c : Chat, u : User, m : Message] {
     u in c.joined.Time
     m in c.messages
     m.from = u
-    messages' = messages - c->m
-    joined' = joined
-    read' = read - c->User->m
-    time' = time
+    c.messages' = c.messages - m
+    c.joined' = c.joined
+    c.read' = c.read - User->m
+    c.time' = c.time
 
-    some a : Delete | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : Delete & action | a.concept = c and a.user = u and a.message = m
 }
 
 pred read [c : Chat, u : User, m : Message] {
@@ -100,31 +100,31 @@ pred read [c : Chat, u : User, m : Message] {
     m in c.messages
     m not in c.read[u]
     gte[m.when, c.joined[u]]
-    read' = read + c->u->m
-    joined' = joined
-    messages' = messages
-    time' = time
+    c.read' = c.read + u->m
+    c.joined' = c.joined
+    c.messages' = c.messages
+    c.time' = c.time
 
-    some a : Read | a.concept = c and a.user = u and a.message = m and occurred' = a
+    some a : Read & action | a.concept = c and a.user = u and a.message = m
 }
 
-pred stutter {
-    joined' = joined
-    messages' = messages
-    read' = read
-    time' = time
+pred stutter [c : Chat] {
+    c.joined' = c.joined
+    c.messages' = c.messages
+    c.read' = c.read
+    c.time' = c.time
 
-    no occurred' & ChatAction
+    no a : action | a.concept = c
 }
 
 fact Actions {
-    always {
-        (some c : Chat, u : User | c.join[u]) or
-        (some c : Chat, u : User | c.leave[u]) or
-        (some c : Chat, u : User, m : Message | c.send[u,m]) or
-        (some c : Chat, u : User, m : Message | c.delete[u,m]) or
-        (some c : Chat, u : User, m : Message | c.read[u,m]) or
-        stutter
+    all c : Chat | always {
+        (some u : User | c.join[u]) or
+        (some u : User | c.leave[u]) or
+        (some u : User, m : Message | c.send[u,m]) or
+        (some u : User, m : Message | c.delete[u,m]) or
+        (some u : User, m : Message | c.read[u,m]) or
+        c.stutter[]
     }
 }
 

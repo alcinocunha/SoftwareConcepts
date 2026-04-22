@@ -36,51 +36,51 @@ fact {
 
 pred start [c : Meeting, u : User] {
     no c.host
-    host' = host + c->u
-    participants' = participants
+    c.host' = c.host + u
+    c.participants' = c.participants
 
-    some a : Start | a.concept = c and a.user = u and occurred' = a
+    some a : Start & action | a.concept = c and a.user = u
 }
 
 pred join [c : Meeting, u : User] {
     some c.host
     u not in c.participants
-    participants' = participants + c->u
-    host' = host
+    c.participants' = c.participants + u
+    c.host' = c.host
 
-    some a : Join | a.concept = c and a.user = u and occurred' = a
+    some a : Join & action | a.concept = c and a.user = u
 }
 
 pred leave [c : Meeting, u : User] {
     u in c.participants
-    participants' = participants - c->u
-    host' = host
+    c.participants' = c.participants - u
+    c.host' = c.host
 
-    some a : Leave | a.concept = c and a.user = u and occurred' = a
+    some a : Leave & action | a.concept = c and a.user = u
 }
 
 pred end [c : Meeting, u : User] {
     u in c.host
-    host' = host - c->u
-    participants' = participants - c->User
+    c.host' = c.host - u
+    c.participants' = c.participants - User
 
-    some a : End | a.concept = c and a.user = u and occurred' = a
+    some a : End & action | a.concept = c and a.user = u
 }
 
-pred stutter {
-    host' = host
-    participants' = participants
+pred stutter[c : Meeting] {
+    c.host' = c.host
+    c.participants' = c.participants
 
-    no occurred' & MeetingAction
+    no a : action | a.concept = c
 }
 
 fact Actions {
-    always {
-        (some c : Meeting, u : User | start[c,u]) or
-        (some c : Meeting, u : User | join[c,u]) or
-        (some c : Meeting, u : User | leave[c,u]) or
-        (some c : Meeting, u : User | end[c,u]) or
-        stutter
+    all c : Meeting | always {
+        (some u : User | c.start[u]) or
+        (some u : User | c.join[u]) or
+        (some u : User | c.leave[u]) or
+        (some u : User | c.end[u]) or
+        c.stutter[]
     }
 }
 

@@ -37,51 +37,51 @@ fact {
 
 pred register [c : WebApp, u : User] {
     u not in c.registered
-    registered' = registered + c->u
-    loggedin' = loggedin
+    c.registered' = c.registered + u
+    c.loggedin' = c.loggedin
 
-    some a : Register | a.concept = c and a.user = u and occurred' = a
+    some a : Register & action | a.concept = c and a.user = u
 }
 
 pred login [c : WebApp, u : User] {
     no c.loggedin
     u in c.registered
-    registered' = registered
-    loggedin' = loggedin + c->u
+    c.registered' = c.registered
+    c.loggedin' = c.loggedin + u
 
-    some a : Login | a.concept = c and a.user = u and occurred' = a
+    some a : Login & action | a.concept = c and a.user = u
 }
 
 pred logout [c : WebApp, u : User] {
     u in c.loggedin
-    registered' = registered
-    loggedin' = loggedin - c->u
+    c.registered' = c.registered
+    c.loggedin' = c.loggedin - u
 
-    some a : Logout | a.concept = c and a.user = u and occurred' = a
+    some a : Logout & action | a.concept = c and a.user = u
 }
 
 pred delete [c : WebApp, u : User] {
     u in c.loggedin
-    registered' = registered - c->u
-    loggedin' = loggedin - c->u
+    c.registered' = c.registered - u
+    c.loggedin' = c.loggedin - u
 
-    some a : Delete | a.concept = c and a.user = u and occurred' = a
+    some a : Delete & action | a.concept = c and a.user = u
 }
 
-pred stutter {
-    registered' = registered
-    loggedin' = loggedin
+pred stutter[c : WebApp] {
+    c.registered' = c.registered
+    c.loggedin' = c.loggedin
 
-    no occurred' & WebAppAction
+    no a : action | a.concept = c
 }
 
 fact Actions {
-    always {
-        (some c : WebApp, u : User | c.register[u]) or
-        (some c : WebApp, u : User | c.login[u]) or
-        (some c : WebApp, u : User | c.logout[u]) or
-        (some c : WebApp, u : User | c.delete[u]) or
-        stutter
+    all c : WebApp | always {
+        (some u : User | c.register[u]) or
+        (some u : User | c.login[u]) or
+        (some u : User | c.logout[u]) or
+        (some u : User | c.delete[u]) or
+        c.stutter[]
     }
 }
 

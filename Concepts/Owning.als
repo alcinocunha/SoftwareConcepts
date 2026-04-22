@@ -27,29 +27,29 @@ fact {
 
 pred acquire [c : Owning, u : User, t : Thing] {
     no c.owns.t
-    owns' = owns + c->u->t
+    c.owns' = c.owns + (u -> t)
 
-    some a : Acquire | a.concept = c and a.user = u and a.thing = t and occurred' = a
+    some a : Acquire & action | a.concept = c and a.user = u and a.thing = t
 }
 
 pred release [c : Owning, u : User, t : Thing] {
      c.owns.t = u
-     owns' = owns - c->u->t
+     c.owns' = c.owns - (u -> t)
 
-    some a : Release | a.concept = c and a.user = u and a.thing = t and occurred' = a
+    some a : Release & action | a.concept = c and a.user = u and a.thing = t
 }
 
-pred stutter {
-    owns' = owns
+pred stutter [c : Owning] {
+    c.owns' = c.owns
 
-    no occurred' & OwningAction
+    no a : action | a.concept = c
 }
 
 fact Actions {
-    always {
-        (some c : Owning, u : User, t : Thing | acquire[c,u,t]) or
-        (some c : Owning, u : User, t : Thing | release[c,u,t]) or
-        stutter
+    all c : Owning | always {
+        (some u : User, t : Thing | c.acquire[u,t]) or
+        (some u : User, t : Thing | c.release[u,t]) or
+        c.stutter[]
     }
 }
 
@@ -67,7 +67,7 @@ check Principle {
 	all t : Thing, u,v : User | always {
 		Owning.acquire[u,t] implies after (Owning.release[u,t] releases not Owning.acquire[v,t])
 	}
-} for 3 but 10 Action, exactly 1 Owning
+} for 3 but 10 Action, exactly 1 Owning expect 0
 
 // Scenarios
 
