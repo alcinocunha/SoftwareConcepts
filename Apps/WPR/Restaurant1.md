@@ -58,4 +58,4 @@ where
 then
 	error
 ```
-* **formalizations**: [Alloy](Restaurant1.als)
+* **formalizations**: [Alloy](Restaurant1.als), [TLA+](Restaurant1.tla)
