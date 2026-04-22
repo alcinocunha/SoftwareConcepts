@@ -54,7 +54,7 @@ reaction delete_error
 when
 	T.delete[f]
 where
-	some f.shared and s.shared not in P.accessed
+	some f.shared and f.shared not in P.accessed
 then
 	error
 

@@ -52,8 +52,11 @@ Next == \E t \in Trash:
 
 Spec == InitAction /\ Init /\ [][NextAction /\ Next]_<<accessible, trashed, action>>
 
+TypeOK ==
+    /\ accessible \in [ Trash -> SUBSET Item ]
+    /\ trashed \in [ Trash -> SUBSET Item ]
+
 Invariant == \A t \in Trash:
-    /\ accessible[t] \cup trashed[t] \subseteq Item
     /\ accessible[t] \cap trashed[t] = {}
 
 ========================================
