@@ -26,8 +26,8 @@ InitConcepts ==
     /\ Label!Init
 
 NextConcepts ==
-    \/ Trash!Next /\ UNCHANGED <<labels>> 
-    \/ Label!Next /\ UNCHANGED <<accessible, trashed>>
+    /\ Trash!Next
+    /\ Label!Next
 
 Invariant == 
     /\ \A f \in File: labels[L][f] # {} => f \in accessible[T] \/ f \in trashed[T]
@@ -104,7 +104,7 @@ then
 *)
 
 detach_red_error_add == { <<"detach_red_error">> : t \in { t \in {<<>>} : \E f \in File : Label!detach(L,f,"Red") /\ f \in trashed[T] } }
-detach_red_error_remove == { <<"detach_red_error">> : t \in { t \in File : Label!detach(L,f,"Red") } }
+detach_red_error_remove == { <<"detach_red_error">> : t \in { t \in {<<>>} : error } }
 
 (*
 reaction clear_red_error

@@ -1,2 +1,7 @@
 Concepts/*.out
 Concepts/states
+Concepts/*.tlc
+Apps/WPR/.vscode/
+Apps/WPR/*.out
+Apps/WPR/states
+Apps/WPR/*.tlc

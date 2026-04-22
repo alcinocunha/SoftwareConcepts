@@ -2,45 +2,55 @@
 
 CONSTANT Trash, Item
 
-VARIABLE accessible, trashed, occurred
+VARIABLE accessible, trashed, action
+
+Actions == Trash \X {"create", "delete", "restore"} \X Item \cup Trash \X {"empty"}
+
+InitAction == action \in Actions
+NextAction == action' \in Actions
 
 Init ==
     /\ accessible = [ t \in Trash |-> {} ]
     /\ trashed = [ t \in Trash |-> {} ]
-    /\ occurred = <<>>
 
 create(t,i) ==
+    /\ action = <<t, "create", i>>
     /\ i \notin accessible[t]
     /\ i \notin trashed[t]
     /\ accessible' = [ accessible EXCEPT ![t] = @ \cup {i} ]
     /\ trashed' = trashed
-    /\ occurred' = <<t, "create", i>>
 
 delete(t,i) ==
+    /\ action = <<t, "delete", i>>
     /\ i \in accessible[t]
     /\ accessible' = [ accessible EXCEPT ![t] = @ \ {i} ]
     /\ trashed' = [ trashed EXCEPT ![t] = @ \cup {i} ]
-    /\ occurred' = <<t, "delete", i>>
 
 restore(t,i) ==
+    /\ action = <<t, "restore", i>>
     /\ i \in trashed[t]
     /\ accessible' = [ accessible EXCEPT ![t] = @ \cup {i} ]
     /\ trashed' = [ trashed EXCEPT ![t] = @ \ {i} ]
-    /\ occurred' = <<t, "restore", i>>
 
 empty(t) ==
+    /\ action = <<t, "empty">>
     /\ trashed[t] # {}
     /\ accessible' = accessible
     /\ trashed' = [ trashed EXCEPT ![t] = {}]
-    /\ occurred' = <<t, "empty">>
 
-Next == 
-    \/ \E t \in Trash, i \in Item: create(t, i)
-    \/ \E t \in Trash, i \in Item: delete(t, i)
-    \/ \E t \in Trash, i \in Item: restore(t, i)
-    \/ \E t \in Trash: empty(t)
+stutter(t) ==
+    /\ action[1] # t
+    /\ accessible' = accessible
+    /\ trashed' = trashed
 
-Spec == Init /\ [][Next]_<<accessible, trashed, occurred>>
+Next == \E t \in Trash:
+    \/ \E i \in Item: create(t, i)
+    \/ \E i \in Item: delete(t, i)
+    \/ \E i \in Item: restore(t, i)
+    \/ empty(t)
+    \/ stutter(t)
+
+Spec == InitAction /\ Init /\ [][NextAction /\ Next]_<<accessible, trashed, action>>
 
 Invariant == \A t \in Trash:
     /\ accessible[t] \cup trashed[t] \subseteq Item
