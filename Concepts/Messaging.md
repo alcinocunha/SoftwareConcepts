@@ -24,4 +24,4 @@
     * the `inbox` of a user only contains messages sent to that user
     * the `outbox` of a user only contains messages sent by that user
     * the `read` of a user only contains messages that are in the `inbox` of that user
-* **formalizations**: [Alloy](Messaging.als)
+* **formalizations**: [Alloy](Messaging.als), [TLA+](Messaging.tla)
