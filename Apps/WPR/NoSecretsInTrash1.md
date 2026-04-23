@@ -18,4 +18,4 @@ where
 then
 	T.empty[]
 ```
-* **formalizations**: [Alloy](NoSecretsInTrash1.als)
+* **formalizations**: [Alloy](NoSecretsInTrash1.als), [TLA+](NoSecretsInTrash1.tla)
