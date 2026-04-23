@@ -29,4 +29,4 @@ when
 then
 	error
 ```
-* **formalizations**: [Alloy](ColoredFiles2.als)
+* **formalizations**: [Alloy](ColoredFiles2.als), [TLA+](ColoredFiles2.tla)

@@ -29,4 +29,4 @@ where
 then
 	error
 ```
-* **formalizations**: [Alloy](ColoredFiles1.als)
+* **formalizations**: [Alloy](ColoredFiles1.als), [TLA+](ColoredFiles1.tla)
