@@ -102,4 +102,4 @@ where
 then
     error
 ```
-* **formalizations**: [Alloy](Zoomy.als)
+* **formalizations**: [Alloy](Zoomy.als), [TLA+](Zoomy.tla)

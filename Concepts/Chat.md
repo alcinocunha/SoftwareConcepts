@@ -28,4 +28,4 @@
     * the `read` of a user only contains messages that are in `messages`
     * at most one message can be sent at a time
     * users cannot read messages sent before they joined
-* **formalizations**: [Alloy](Chat.als)
+* **formalizations**: [Alloy](Chat.als), [TLA+](Chat.tla)

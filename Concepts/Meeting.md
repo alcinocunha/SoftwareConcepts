@@ -21,4 +21,4 @@
 * **invariants**:
     * at most one user can be the host of the meeting
     * if there is a host, then there are participants
-* **formalizations**: [Alloy](Meeting.als)
+* **formalizations**: [Alloy](Meeting.als), [TLA+](Meeting.tla)
