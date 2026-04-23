@@ -92,7 +92,7 @@
    <relation name="item"> <type name="Trash/Create"/> <type name="File"/> </relation>
    <relation name="item"> <type name="Trash/Delete"/> <type name="File"/> </relation>
    <relation name="item"> <type name="Trash/Restore"/> <type name="File"/> </relation>
-   <relation name="thing"> <type name="Owning/OwningAction"/> <type name="Trash/Trash"/> </relation>
+   <relation name="resource"> <type name="Owning/OwningAction"/> <type name="Trash/Trash"/> </relation>
    <relation name="user"> <type name="Owning/OwningAction"/> <type name="User"/> </relation>
    <relation name="user"> <type name="WebApp/WebAppAction"/> <type name="User"/> </relation>
 </edge>

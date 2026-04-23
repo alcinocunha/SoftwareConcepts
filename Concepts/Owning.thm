@@ -15,6 +15,7 @@
    <type name="Owning"/>
    <type name="OwningAction"/>
    <type name="Release"/>
+   <type name="Resource"/>
    <type name="String"/>
    <type name="univ"/>
    <type name="Action/Concept"/>
@@ -23,10 +24,6 @@
 
 <node color="Yellow">
    <type name="User"/>
-</node>
-
-<node shape="Ellipse">
-   <type name="Thing"/>
 </node>
 
 <node showlabel="no">
@@ -41,12 +38,8 @@
    <set name="action" type="Action/Action"/>
 </node>
 
-<edge attribute="no">
-   <relation name="owns"> <type name="User"/> <type name="Thing"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
-   <relation name="thing"> <type name="Action/Action"/> <type name="Thing"/> </relation>
+   <relation name="resource"> <type name="Action/Action"/> <type name="Resource"/> </relation>
    <relation name="user"> <type name="Action/Action"/> <type name="User"/> </relation>
 </edge>
 

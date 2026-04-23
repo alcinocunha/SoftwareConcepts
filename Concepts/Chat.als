@@ -141,7 +141,7 @@ check Invariant {
         // Users cannot read messages sent before they joined
         all u : User, m : Chat.read[u] | gte[m.when, Chat.joined[u]]
     }
-} for 2 but 3 Time, exactly 1 Chat, 10 Action steps expect 0
+} for 2 but 3 Time, exactly 1 Chat, 10 Action expect 0
 
 // Expected value of joined
 check Joined {

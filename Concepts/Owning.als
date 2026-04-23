@@ -1,10 +1,10 @@
-module Concepts/Owning[User,Thing]
+module Concepts/Owning[User,Resource]
 open Action
 
 // State
 
 abstract sig Owning extends Concept {
-    var owns : User -> Thing
+    var owns : User -> Resource
 }
 
 // Initial state
@@ -15,28 +15,28 @@ fact Init {
 
 // Actions
 
-abstract sig OwningAction extends Action { user : User, thing : Thing } { concept in Owning }
+abstract sig OwningAction extends Action { user : User, resource : Resource } { concept in Owning }
 sig Acquire extends OwningAction {}
 fact {
-    all x,y : Acquire | x.concept = y.concept and x.user = y.user and x.thing = y.thing implies x = y
+    all x,y : Acquire | x.concept = y.concept and x.user = y.user and x.resource = y.resource implies x = y
 }
 sig Release extends OwningAction {}
 fact {    
-    all x,y : Release | x.concept = y.concept and x.user = y.user and x.thing = y.thing implies x = y 
+    all x,y : Release | x.concept = y.concept and x.user = y.user and x.resource = y.resource implies x = y 
 }
 
-pred acquire [c : Owning, u : User, t : Thing] {
+pred acquire [c : Owning, u : User, t : Resource] {
     no c.owns.t
     c.owns' = c.owns + (u -> t)
 
-    some a : Acquire & action | a.concept = c and a.user = u and a.thing = t
+    some a : Acquire & action | a.concept = c and a.user = u and a.resource = t
 }
 
-pred release [c : Owning, u : User, t : Thing] {
+pred release [c : Owning, u : User, t : Resource] {
      c.owns.t = u
      c.owns' = c.owns - (u -> t)
 
-    some a : Release & action | a.concept = c and a.user = u and a.thing = t
+    some a : Release & action | a.concept = c and a.user = u and a.resource = t
 }
 
 pred stutter [c : Owning] {
@@ -47,24 +47,24 @@ pred stutter [c : Owning] {
 
 fact Actions {
     all c : Owning | always {
-        (some u : User, t : Thing | c.acquire[u,t]) or
-        (some u : User, t : Thing | c.release[u,t]) or
+        (some u : User, t : Resource | c.acquire[u,t]) or
+        (some u : User, t : Resource | c.release[u,t]) or
         c.stutter[]
     }
 }
 
 // Properties
 
-// A thing can only be owned by one user at a time
+// A Resource can only be owned by one user at a time
 check Invariant {
     always {
-        all t : Thing | lone owns.t
+        all t : Resource | lone owns.t
     }
 } for 3 but 10 Action, exactly 1 Owning expect 0
 
-// After a thing is acquired it can only be acquired again after it is released
+// After a Resource is acquired it can only be acquired again after it is released
 check Principle {
-	all t : Thing, u,v : User | always {
+	all t : Resource, u,v : User | always {
 		Owning.acquire[u,t] implies after (Owning.release[u,t] releases not Owning.acquire[v,t])
 	}
 } for 3 but 10 Action, exactly 1 Owning expect 0
@@ -73,7 +73,7 @@ check Principle {
 
 run Scenario {
 	eventually {
-        Owning.owns = User->Thing
+        Owning.owns = User->Resource
 		eventually no owns
 	}
-} for exactly 1 User, exactly 3 Thing, 10 Action, exactly 1 Owning expect 1
+} for exactly 1 User, exactly 3 Resource, 10 Action, exactly 1 Owning expect 1
