@@ -1,23 +1,23 @@
-# concept: `Trash[File]`
+# concept: `Trash[Item]`
 
-* **purpose**: To allow undoing the deletion of files.
-* **principle**: If a file is deleted, it can be restored, and if restored becomes accessible again.
+* **purpose**: To allow undoing the deletion of items.
+* **principle**: If an item is deleted, it can be restored, and if restored becomes accessible again.
 * **state**:
-    * an `accessible` set of `File`s
-    * a `trashed` set of `File`s
+    * an `accessible` set of `Item`s
+    * a `trashed` set of `Item`s
 * **actions**:
-    * `create(f:File)`
+    * `create(f:Item)`
         * **requires**: `f` is not in `accessible` or `trashed`
         * **effects**: adds `f` to `accessible`
-    * `delete(f:File)`
+    * `delete(f:Item)`
         * **requires**: `f` is in `accessible`
         * **effects**: moves `f` from `accessible` to `trashed`
-    * `restore(f:File)`
+    * `restore(f:Item)`
         * **requires**: `f` is in `trashed`
         * **effects**: moves `f` from `trashed` to `accessible`
     * `empty()`
         * **requires**: `trashed` is not empty
-        * **effects**: removes all files in `trashed`
+        * **effects**: removes all items in `trashed`
 * **invariants**:
     * `accessible` and `trashed` are disjoint
 * **formalizations**: [Alloy](Trash.als), [TLA+](Trash.tla)
