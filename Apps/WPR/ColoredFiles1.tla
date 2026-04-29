@@ -55,7 +55,7 @@ then
 *)
 
 affix_error_add == { <<r>> \in {<<"affix_error">>} : \E f \in File, c \in Color : Label!affix(L,f,c) /\ f \notin accessible[T] }
-affix_error_remove == { <<r>> \in {<<"affix_error">>} :  error }
+affix_error_remove == { <<r>> \in {<<"affix_error">>} : error }
 
 \* Reaction semantics
 
