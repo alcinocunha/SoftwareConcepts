@@ -66,7 +66,7 @@ stutter(c) ==
     /\ UNCHANGED <<time, inbox, outbox, reads>>
 
 Next == \E c \in Messaging:
-    \/ \E u \in User, \E m \in Message: send(c,u,m)
+    \/ \E u \in User: \E m \in Message: send(c,u,m)
     \/ \E u \in User: \E m \in inbox[c][u]: read(c,u,m)
     \/ \E u \in User: \E m \in inbox[c][u]: deleteFromInbox(c,u,m)
     \/ \E u \in User: \E m \in outbox[c][u]: deleteFromOutbox(c,u,m)

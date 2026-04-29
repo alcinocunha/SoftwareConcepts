@@ -43,8 +43,8 @@ then
 	some t : Token | P.share[f,t]
 *)
 
-create_share_add == { <<"create_share", f>> : f \in { f \in File : Trash!create(T,f) } }
-create_share_remove == { <<"create_share", f>> : f \in { f \in File : \E t \in Token : Permalink!share(P,f,t) } }
+create_share_add == { <<r,f>> \in {"create_share"} \X File : Trash!create(T,f) }
+create_share_remove == { <<r,f>> \in {"create_share"} \X File : \E t \in Token : Permalink!share(P,f,t) }
 
 (*
 reaction access_revoke
@@ -54,8 +54,8 @@ then
 	P.revoke[t]
 *)
 
-access_revoke_add == { <<"access_revoke", t>> : t \in { t \in Token : Permalink!access(P,t) } }
-access_revoke_remove == { <<"access_revoke", t>> : t \in { t \in Token : Permalink!revoke(P,t) } }
+access_revoke_add == { <<r,t>> \in {"access_revoke"} \X Token : Permalink!access(P,t) }
+access_revoke_remove == { <<r,t>> \in {"access_revoke"} \X Token : Permalink!revoke(P,t) }
 
 (*
 reaction access_delete
@@ -67,8 +67,8 @@ then
 	T.delete[f]
 *)
 
-access_delete_add == { <<"access_delete", f>> : f \in { f \in File : \E t \in Token : t \in shared[f] /\ Permalink!access(P,t) } }
-access_delete_remove == { <<"access_delete", f>> : f \in { f \in File : Trash!delete(T,f) } }
+access_delete_add == { <<r,f>> \in {"access_delete"} \X File : \E t \in Token : t \in shared[f] /\ Permalink!access(P,t) }
+access_delete_remove == { <<r,f>> \in {"access_delete"} \X File : Trash!delete(T,f) }
 
 (*
 reaction access_empty
@@ -78,8 +78,8 @@ then
 	T.empty[]
 *)
 
-access_empty_add == { <<"access_empty">> : x \in { x \in {<<>>} : \E t \in Token : Permalink!access(P,t) } }
-access_empty_remove == { <<"access_empty">> : x \in { x \in {<<>>} : Trash!empty(T) } }
+access_empty_add == { <<r>> \in {<<"access_empty">>} : \E t \in Token : Permalink!access(P,t) }
+access_empty_remove == { <<r>> \in {<<"access_empty">>} : Trash!empty(T) }
 
 (*
 reaction share_error
@@ -91,8 +91,8 @@ then
 	error
 *)
 
-share_error_add == { <<"share_error">> : x \in { x \in {<<>>} : \E f \in File, t \in Token : Permalink!share(P,f,t) /\ (f \notin uploaded \/ shared[f] # {}) } }
-share_error_remove == { <<"share_error">> : x \in { x \in {<<>>} : error } }
+share_error_add == { <<r>> \in {<<"share_error">>} : \E f \in File, t \in Token : Permalink!share(P,f,t) /\ (f \notin uploaded \/ shared[f] # {}) }
+share_error_remove == { <<r>> \in {<<"share_error">>} : error }
 
 (*
 reaction delete_error
@@ -104,8 +104,8 @@ then
 	error
 *)
 
-delete_error_add == { <<"delete_error">> : x \in { x \in {<<>>} : \E f \in File : Trash!delete(T,f) /\ shared[f] # {} /\ \A t \in shared[f] : t \notin accessed[P] } }
-delete_error_remove == { <<"delete_error">> : x \in { x \in {<<>>} : error } }
+delete_error_add == { <<r>> \in {<<"delete_error">>} : \E f \in File : Trash!delete(T,f) /\ shared[f] # {} /\ \A t \in shared[f] : t \notin accessed[P] }
+delete_error_remove == { <<r>> \in {<<"delete_error">>} : error }
 
 (*
 reaction revoke_error
@@ -116,9 +116,8 @@ where
 then
 	error
 *)
-
-revoke_error_add == { <<"revoke_error">> : x \in { x \in {<<>>} : \E t \in Token : Permalink!revoke(P,t) /\ t \notin accessed[P] } }
-revoke_error_remove == { <<"revoke_error">> : x \in { x \in {<<>>} : error } }
+revoke_error_add == { <<r>> \in {<<"revoke_error">>} : \E t \in Token : Permalink!revoke(P,t) /\ t \notin accessed[P] }
+revoke_error_remove == { <<r>> \in {<<"revoke_error">>} : error }
 
 \* Reaction semantics
 

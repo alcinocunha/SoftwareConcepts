@@ -43,8 +43,8 @@ then
 	L.clear(f)
 *)
 
-empty_clear_add == { <<"empty_clear", f>> : f \in { f \in File : Trash!empty(T) /\ f \in trashed[T] } }
-empty_clear_remove == { <<"empty_clear", f>> : f \in { f \in File : Label!clear(L,f) } }
+empty_clear_add == { <<r,f>> \in {"empty_clear"} \X File : Trash!empty(T) /\ f \in trashed[T] }
+empty_clear_remove == { <<r,f>> \in {"empty_clear"} \X File : Label!clear(L,f) }
 
 (*
 reaction delete_affix
@@ -54,8 +54,8 @@ then
     L.affix(f, "Red")
 *)
 
-delete_affix_add == { <<"delete_affix", f>> : f \in { f \in File : Trash!delete(T,f) } }
-delete_affix_remove == { <<"delete_affix", f>> : f \in { f \in File : Label!affix(L,f,"Red") } }
+delete_affix_add == { <<r,f>> \in {"delete_affix"} \X File : Trash!delete(T,f) }
+delete_affix_remove == { <<r,f>> \in {"delete_affix"} \X File : Label!affix(L,f,"Red") }
 
 (*
 reaction restore_detach
@@ -65,8 +65,8 @@ then
     L.detach(f, "Red")
 *)
 
-restore_detach_add == { <<"restore_detach", f>> : f \in { f \in File : Trash!restore(T,f) } }
-restore_detach_remove == { <<"restore_detach", f>> : f \in { f \in File : Label!detach(L,f,"Red") } }
+restore_detach_add == { <<r,f>> \in {"restore_detach"} \X File : Trash!restore(T,f) }
+restore_detach_remove == { <<r,f>> \in {"restore_detach"} \X File : Label!detach(L,f,"Red") }
 
 (*
 reaction affix_error
@@ -78,8 +78,8 @@ then
 	error
 *)
 
-affix_error_add == { <<"affix_error">> : t \in { t \in {<<>>} : \E f \in File, c \in Color : Label!affix(L,f,c) /\ f \notin accessible[T] /\ f \notin trashed[T] } }
-affix_error_remove == { <<"affix_error">> : t \in { t \in {<<>>} : error } }
+affix_error_add == { <<r>> \in {<<"affix_error">>} : \E f \in File, c \in Color : Label!affix(L,f,c) /\ f \notin accessible[T] /\ f \notin trashed[T] }
+affix_error_remove == { <<r>> \in {<<"affix_error">>} :  error }
 
 (*
 reaction affix_red_error
@@ -90,8 +90,8 @@ where
 then
 	error
 *)
-affix_red_error_add == { <<"affix_red_error">> : t \in { t \in {<<>>} : \E f \in File : Label!affix(L,f,"Red") /\ f \in accessible[T] } }
-affix_red_error_remove == { <<"affix_red_error">> : t \in { t \in {<<>>} : error } }
+affix_red_error_add == { <<r>> \in {<<"affix_red_error">>} : \E f \in File : Label!affix(L,f,"Red") /\ f \in accessible[T] }
+affix_red_error_remove == { <<r>> \in {<<"affix_red_error">>} :  error }
 
 (*
 reaction detach_red_error
@@ -102,9 +102,8 @@ where
 then
 	error
 *)
-
-detach_red_error_add == { <<"detach_red_error">> : t \in { t \in {<<>>} : \E f \in File : Label!detach(L,f,"Red") /\ f \in trashed[T] } }
-detach_red_error_remove == { <<"detach_red_error">> : t \in { t \in {<<>>} : error } }
+detach_red_error_add == { <<r>> \in {<<"detach_red_error">>} : \E f \in File : Label!detach(L,f,"Red") /\ f \in trashed[T] }
+detach_red_error_remove == { <<r>> \in {<<"detach_red_error">>} :  error }
 
 (*
 reaction clear_red_error

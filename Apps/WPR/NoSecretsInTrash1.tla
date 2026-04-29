@@ -35,8 +35,8 @@ then
 	T.empty[]
 *)
 
-delete_empty_add == { <<"delete_empty">> : x \in { x \in {<<>>} : \E f \in File: Trash!delete(T,f) /\ f \in Secret } }
-delete_empty_remove == { <<"delete_empty">> : x \in { x \in {<<>>} : Trash!empty(T) } }
+delete_empty_add == { <<r>> \in {<<"delete_empty">>} : \E f \in File: Trash!delete(T,f) /\ f \in Secret }
+delete_empty_remove == { <<r>> \in {<<"delete_empty">>} : Trash!empty(T) }
 
 \* Reaction semantics
 

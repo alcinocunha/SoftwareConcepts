@@ -45,8 +45,8 @@ then
 	L.affix[t,Reserved]
 *)
 
-reserve_affix_add == { <<"reserve_affix", t>> : t \in { t \in Table : \E c \in Client : Reservation!reserve(R,c,t) } }
-reserve_affix_remove == { <<"reserve_affix", t>> : t \in { t \in Table : Label!affix(L,t,Reserved) } }
+reserve_affix_add == { <<r, t>> \in {"reserve_affix"} \X Table : \E c \in Client : Reservation!reserve(R,c,t) }
+reserve_affix_remove == { <<r, t>> \in {"reserve_affix"} \X Table : Label!affix(L,t,Reserved) }
 
 (*
 reaction cancel_detach
@@ -56,8 +56,8 @@ then
 	L.detach[t,Reserved] or L.clear[t]
 *)
 
-cancel_detach_add == { <<"cancel_detach", t>> : t \in { t \in Table : \E c \in Client : Reservation!cancel(R,c,t) } }
-cancel_detach_remove == { <<"cancel_detach", t>> : t \in { t \in Table : Label!detach(L,t,Reserved) \/ Label!clear(L,t) } }
+cancel_detach_add == { <<r, t>> \in {"cancel_detach"} \X Table : \E c \in Client : Reservation!cancel(R,c,t) } 
+cancel_detach_remove == { <<r, t>> \in {"cancel_detach"} \X Table : Label!detach(L,t,Reserved) \/ Label!clear(L,t) }
 
 (*
 reaction use_detach
@@ -67,8 +67,8 @@ then
 	L.detach[t,Reserved] or L.clear[t]
 *)
 
-use_detach_add == { <<"use_detach", t>> : t \in { t \in Table : \E c \in Client : Reservation!use(R,c,t) } }
-use_detach_remove == { <<"use_detach", t>> : t \in { t \in Table : Label!detach(L,t,Reserved) \/ Label!clear(L,t) } }
+use_detach_add == { <<r, t>> \in {"use_detach"} \X Table : \E c \in Client : Reservation!use(R,c,t) }
+use_detach_remove == { <<r, t>> \in {"use_detach"} \X Table : Label!detach(L,t,Reserved) \/ Label!clear(L,t) }
 
 (*
 reaction affix_error
@@ -80,8 +80,8 @@ then
 	error
 *)
 
-affix_error_add == { <<"affix_error">> : x \in { x \in {<<>>} : \E t \in Table : Label!affix(L,t,Reserved) /\ \A c \in Client : t \notin active_reservations[c] } }
-affix_error_remove == { <<"affix_error">> : t \in { t \in {<<>>} : error } }
+affix_error_add == { <<r>> \in {<<"affix_error">>} : \E t \in Table : Label!affix(L,t,Reserved) /\ \A c \in Client : t \notin active_reservations[c] }
+affix_error_remove == { <<r>> \in {<<"affix_error">>} : error }
 
 (*
 reaction detach_error
@@ -93,8 +93,8 @@ then
 	error
 *)
 
-detach_error_add == { <<"detach_error">> : x \in { x \in {<<>>} : \E t \in Table : Label!detach(L,t,Reserved) /\ \E c \in Client : t \in active_reservations[c] } }
-detach_error_remove == { <<"detach_error">> : t \in { t \in {<<>>} : error } }
+detach_error_add == { <<r>> \in {<<"detach_error">>} : \E t \in Table : Label!detach(L,t,Reserved) /\ \E c \in Client : t \in active_reservations[c] }
+detach_error_remove == { <<r>> \in {<<"detach_error">>} : error }
 
 (*
 reaction clear_error
@@ -106,8 +106,8 @@ then
 	error
 *)
 
-clear_error_add == { <<"clear_error">> : x \in { x \in {<<>>} : \E t \in Table : Label!clear(L,t) /\ \E c \in Client : t \in active_reservations[c] } }
-clear_error_remove == { <<"clear_error">> : t \in { t \in {<<>>} : error } }
+clear_error_add == { <<r>> \in {<<"clear_error">>} : \E t \in Table : Label!clear(L,t) /\ \E c \in Client : t \in active_reservations[c] }
+clear_error_remove == { <<r>> \in {<<"clear_error">>} : error }
 
 \* Reaction semantics
 

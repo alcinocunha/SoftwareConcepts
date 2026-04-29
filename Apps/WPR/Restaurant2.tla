@@ -54,8 +54,8 @@ then
     some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t
 *)
 
-send_confirmation_add == { <<"send_confirmation", c, t>> : <<c,t>> \in { <<c,t>> \in Client \X Table : Reservation!reserve(R,c,t) } }
-send_confirmation_remove == { <<"send_confirmation", c, t>> : <<c,t>> \in { <<c,t>> \in Client \X Table : \E m \in Message: Messaging!send(M,Restaurant,m) /\ m.to = c /\ m.content = t } }
+send_confirmation_add == { <<r, c, t>> \in {"send_confirmation"} \X Client \X Table : Reservation!reserve(R,c,t) }
+send_confirmation_remove == { <<r, c, t>> \in {"send_confirmation"} \X Client \X Table : \E m \in Message: Messaging!send(M,Restaurant,m) /\ m.to = c /\ m.content = t }
 
 (*
 reaction use_delete
@@ -65,8 +65,8 @@ then
     some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
 *)
 
-use_delete_add == { <<"use_delete", c, t>> : <<c,t>> \in { <<c,t>> \in Client \X Table : Reservation!use(R,c,t) } }
-use_delete_remove == { <<"use_delete", c, t>> : <<c,t>> \in { <<c,t>> \in Client \X Table : \E m \in Message: Messaging!deleteFromOutbox(M,Restaurant,m) /\ m.to = c /\ m.content = t } }
+use_delete_add == { <<r, c, t>> \in {"use_delete"} \X Client \X Table : Reservation!use(R,c,t) }
+use_delete_remove == { <<r, c, t>> \in {"use_delete"} \X Client \X Table : \E m \in Message: Messaging!deleteFromOutbox(M,Restaurant,m) /\ m.to = c /\ m.content = t }
 
 (*
 reaction cancel_delete
@@ -76,8 +76,8 @@ then
     some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
 *)
 
-cancel_delete_add == { <<"cancel_delete", c, t>> : <<c,t>> \in { <<c,t>> \in Client \X Table : Reservation!cancel(R,c,t) } }
-cancel_delete_remove == { <<"cancel_delete", c, t>> : <<c,t>> \in { <<c,t>> \in Client \X Table : \E m \in Message: Messaging!deleteFromOutbox(M,Restaurant,m) /\ m.to = c /\ m.content = t } }
+cancel_delete_add == { <<r, c, t>> \in {"cancel_delete"} \X Client \X Table : Reservation!cancel(R,c,t) }
+cancel_delete_remove == { <<r, c, t>> \in {"cancel_delete"} \X Client \X Table : \E m \in Message: Messaging!deleteFromOutbox(M,Restaurant,m) /\ m.to = c /\ m.content = t }
 
 (*
 reaction send_error
@@ -89,8 +89,8 @@ then
     error
 *)
 
-send_error_add == { <<"send_error">> : x \in { x \in {<<>>} : \E m \in Message : Messaging!send(M,Restaurant,m) /\ (m.content \notin reservations[R][m.to] \/ \E m2 \in Message: m2.content = m.content /\ m2 \in outbox[M][Restaurant]) } }
-send_error_remove == { <<"send_error">> : x \in { x \in {<<>>} : error } }
+send_error_add == { <<r>> \in {<<"send_error">>} : \E m \in Message : Messaging!send(M,Restaurant,m) /\ (m.content \notin reservations[R][m.to] \/ \E m2 \in Message: m2.content = m.content /\ m2 \in outbox[M][Restaurant]) }
+send_error_remove == { <<r>> \in {<<"send_error">>} : error }
 
 (*
 reaction delete_error
@@ -102,8 +102,8 @@ then
     error
 *)
 
-delete_error_add == { <<"delete_error">> : x \in { x \in {<<>>} : \E m \in Message : Messaging!deleteFromOutbox(M,Restaurant,m) /\ (m.content \in reservations[R][m.to]) } }
-delete_error_remove == { <<"delete_error">> : x \in { x \in {<<>>} : error } }
+delete_error_add == { <<r>> \in {<<"delete_error">>} : \E m \in Message : Messaging!deleteFromOutbox(M,Restaurant,m) /\ (m.content \in reservations[R][m.to]) }
+delete_error_remove == { <<r>> \in {<<"delete_error">>} : error }
 
 \* Reaction semantics
 

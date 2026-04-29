@@ -59,8 +59,8 @@ then
     some c : Chat | OC.acquire[m,c]
 *)
 
-start_acquire_add == { <<"start_acquire", m>> : m \in { m \in Meeting : \E u \in User : M!start(m,u) } }
-start_acquire_remove == { <<"start_acquire", m>> : m \in { m \in Meeting : \E c \in Chat : OC!acquire("OC",m,c) } }
+start_acquire_add == { <<r, m>> \in {"start_acquire"} \X Meeting : \E u \in User : M!start(m,u) }
+start_acquire_remove == { <<r, m>> \in {"start_acquire"} \X Meeting : \E c \in Chat : OC!acquire("OC",m,c) }
 
 (*
 reaction end_release
@@ -70,8 +70,8 @@ then
     OC.release[m,m.chat]
 *)
 
-end_release_add == { <<"end_release", m>> : m \in { m \in Meeting : \E u \in User : M!end(m,u) } }
-end_release_remove == { <<"end_release", m>> : m \in { m \in Meeting : \E c \in Chat : c \in chat[m] /\ OC!release("OC",m,c) } }
+end_release_add == { <<r, m>> \in {"end_release"} \X Meeting : \E u \in User : M!end(m,u) }
+end_release_remove == { <<r, m>> \in {"end_release"} \X Meeting : \E c \in Chat : c \in chat[m] /\ OC!release("OC",m,c) }
 
 (*
 reaction end_leave
@@ -83,8 +83,8 @@ then
     c.leave[u]
 *)
 
-end_leave_add == { <<"end_leave",c,u>> : <<c,u>> \in { <<c,u>> \in Chat \X User : \E h \in User, m \in Meeting: M!end(m,h) /\ c \in chat[m] /\ joined[c][u] # {} } }
-end_leave_remove == { <<"end_leave",c,u>> : <<c,u>> \in { <<c,u>> \in Chat \X User : C!leave(c,u) } }
+end_leave_add == { <<r, c, u>> \in {"end_leave"} \X Chat \X User : \E h \in User, m \in Meeting: M!end(m,h) /\ c \in chat[m] /\ joined[c][u] # {} }
+end_leave_remove == { <<r, c, u>> \in {"end_leave"} \X Chat \X User : C!leave(c,u) }
 
 (*
 reaction join_join
@@ -96,8 +96,8 @@ then
     c.join[u]
 *)
 
-join_join_add == { <<"join_join",c,u>> : <<c,u>> \in { <<c,u>> \in Chat \X User : \E m \in Meeting: M!join(m,u) /\ c \in chat[m] } }
-join_join_remove == { <<"join_join",c,u>> : <<c,u>> \in { <<c,u>> \in Chat \X User : C!join(c,u) } }
+join_join_add == { <<r, c, u>> \in {"join_join"} \X Chat \X User : \E m \in Meeting: M!join(m,u) /\ c \in chat[m] }
+join_join_remove == { <<r, c, u>> \in {"join_join"} \X Chat \X User : C!join(c,u) }
 
 (*
 reaction leave_leave
@@ -109,8 +109,8 @@ then
     c.leave[u]
 *)
 
-leave_leave_add == { <<"leave_leave",c,u>> : <<c,u>> \in { <<c,u>> \in Chat \X User : \E m \in Meeting: M!leave(m,u) /\ c \in chat[m] } }
-leave_leave_remove == { <<"leave_leave",c,u>> : <<c,u>> \in { <<c,u>> \in Chat \X User : C!leave(c,u) } }
+leave_leave_add == { <<r, c, u>> \in {"leave_leave"} \X Chat \X User : \E m \in Meeting: M!leave(m,u) /\ c \in chat[m] }
+leave_leave_remove == { <<r, c, u>> \in {"leave_leave"} \X Chat \X User : C!leave(c,u) }
 
 (*
 reaction start_error
@@ -122,8 +122,8 @@ then
     error
 *)
 
-start_error_add == { <<"start_error">> : x \in { x \in {<<>>} : \E m \in Meeting, u \in User : M!start(m,u) /\ m \notin scheduled[u] } }
-start_error_remove == { <<"start_error">> : x \in { x \in {<<>>} : error } }
+start_error_add == { <<r>> \in {<<"start_error">>} : \E m \in Meeting, u \in User : M!start(m,u) /\ m \notin scheduled[u] }
+start_error_remove == { <<r>> \in {<<"start_error">>} : error }
 
 (*
 reaction release_meeting_error
@@ -135,8 +135,8 @@ then
     error
 *)
 
-release_meeting_error_add == { <<"release_meeting_error">> : x \in { x \in {<<>>} : \E m \in Meeting, u \in User : OM!release("OM",u,m) /\ host[m] # {} } }
-release_meeting_error_remove == { <<"release_meeting_error">> : x \in { x \in {<<>>} : error } }
+release_meeting_error_add == { <<r>> \in {<<"release_meeting_error">>} : \E m \in Meeting, u \in User : OM!release("OM",u,m) /\ host[m] # {} }
+release_meeting_error_remove == { <<r>> \in {<<"release_meeting_error">>} : error }
 
 (*
 reaction join_error
@@ -148,8 +148,8 @@ then
     error
 *)
 
-join_error_add == { <<"join_error">> : x \in { x \in {<<>>} : \E c \in Chat, u \in User : C!join(c,u) /\ ((\A m \in Meeting: c \notin chat[m]) \/ (\E m \in Meeting: c \in chat[m] /\ (host[m] = {} \/ u \notin participants[m]))) } }
-join_error_remove == { <<"join_error">> : x \in { x \in {<<>>} : error } }
+join_error_add == { <<r>> \in {<<"join_error">>} : \E c \in Chat, u \in User : C!join(c,u) /\ ((\A m \in Meeting: c \notin chat[m]) \/ (\E m \in Meeting: c \in chat[m] /\ (host[m] = {} \/ u \notin participants[m]))) }
+join_error_remove == { <<r>> \in {<<"join_error">>} : error }
 
 (*
 reaction leave_error
@@ -161,8 +161,8 @@ then
     error
 *)
 
-leave_error_add == { <<"leave_error">> : x \in { x \in {<<>>} : \E c \in Chat, u \in User : C!leave(c,u) /\ (\E m \in Meeting: c \in chat[m] /\ u \in participants[m]) } }
-leave_error_remove == { <<"leave_error">> : x \in { x \in {<<>>} : error } }
+leave_error_add == { <<r>> \in {<<"leave_error">>} : \E c \in Chat, u \in User : C!leave(c,u) /\ (\E m \in Meeting: c \in chat[m] /\ u \in participants[m]) }
+leave_error_remove == { <<r>> \in {<<"leave_error">>} : error }
 
 (*
 reaction acquire_chat_error
@@ -174,8 +174,8 @@ then
     error
 *)
 
-acquire_chat_error_add == { <<"acquire_chat_error">> : x \in { x \in {<<>>} : \E m \in Meeting, c \in Chat : OC!acquire("OC",m,c) /\ (host[m] = {} \/ chat[m] # {}) } }
-acquire_chat_error_remove == { <<"acquire_chat_error">> : x \in { x \in {<<>>} : error } }
+acquire_chat_error_add == { <<r>> \in {<<"acquire_chat_error">>} : \E m \in Meeting, c \in Chat : OC!acquire("OC",m,c) /\ (host[m] = {} \/ chat[m] # {}) }
+acquire_chat_error_remove == { <<r>> \in {<<"acquire_chat_error">>} : error }
 
 (*
 reaction release_chat_error
@@ -187,8 +187,8 @@ then
     error
 *)
 
-release_chat_error_add == { <<"release_chat_error">> : x \in { x \in {<<>>} : \E m \in Meeting, c \in Chat : OC!release("OC",m,c) /\ host[m] # {} } }
-release_chat_error_remove == { <<"release_chat_error">> : x \in { x \in {<<>>} : error } }
+release_chat_error_add == { <<r>> \in {<<"release_chat_error">>} : \E m \in Meeting, c \in Chat : OC!release("OC",m,c) /\ host[m] # {} }
+release_chat_error_remove == { <<r>> \in {<<"release_chat_error">>} : error }
 
 \* Reaction semantics
 

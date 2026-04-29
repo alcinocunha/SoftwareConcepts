@@ -41,8 +41,8 @@ then
 	L.clear[f]
 *)
 
-delete_clear_add == { <<"delete_clear", f>> : f \in { f \in File : Trash!delete(T,f) /\ colors[f] # {} } }
-delete_clear_remove == { <<"delete_clear", f>> : f \in { f \in File : Label!clear(L,f) } }
+delete_clear_add == { <<r,f>> \in {"delete_clear"} \X File : Trash!delete(T,f) /\ colors[f] # {} }
+delete_clear_remove == { <<r,f>> \in {"delete_clear"} \X File : Label!clear(L,f) }
 
 (*
 reaction affix_error
@@ -54,8 +54,8 @@ then
 	error
 *)
 
-affix_error_add == { <<"affix_error">> : t \in { t \in {<<>>} : \E f \in File, c \in Color : Label!affix(L,f,c) /\ f \notin accessible[T] } }
-affix_error_remove == { <<"affix_error">> : t \in { t \in {<<>>} : error } }
+affix_error_add == { <<r>> \in {<<"affix_error">>} : \E f \in File, c \in Color : Label!affix(L,f,c) /\ f \notin accessible[T] }
+affix_error_remove == { <<r>> \in {<<"affix_error">>} :  error }
 
 \* Reaction semantics
 
