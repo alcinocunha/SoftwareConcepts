@@ -25,7 +25,7 @@ actions:
     deleteFromOutbox(u:User, m:Message)
         requires: m is in the outbox of u
         effects: removes m from the outbox of u
-invariants: the messages read by each user are in their inbox, the messages in the outbox are from the user, and the messages in the inbox are to the user, all messages in inboxes and outboxes have a time stamp that is anterior to the current time, there is at most one message in the outbox of each user at any given time, there is at most one message in the inbox of each user at any given time
+invariants: the messages read by each user are in their inbox, the messages in the outbox are from the user, and the messages in the inbox are to the user, all messages in inboxes and outboxes have a time stamp that is strictly anterior to the current time, there is at most one message in the outbox of each user with a given time stamp, there is at most one message in the inbox of each user with a given time stamp
 ```
 
 ## Formalizations

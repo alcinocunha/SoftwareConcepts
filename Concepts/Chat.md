@@ -29,7 +29,7 @@ actions:
     delete(u:User, m:Message)
         requires: u has joined the chat room at some time and m is in sent and u is the sender of m
         effects: removes m from sent and from the read of all users
-invariants: the messages read by each user are in sent, there is at most one message in sent at with a given time stamp, the time stamp of the messages read by an user is posterior to the time of joining the chat room, all sent messages have a time stamp that is anterior to the current time, all joining time stamps are anterior to the current time
+invariants: the messages read by each user are in sent, there is at most one message in sent at with a given time stamp, the time stamp of the messages read by an user is posterior to the time of joining the chat room, all sent messages have a time stamp that is strictly anterior to the current time, all joining time stamps are anterior to the current time
 ```
 
 ## Formalizations

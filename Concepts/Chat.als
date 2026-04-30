@@ -11,18 +11,21 @@ sig Message {
     content : one Content,
     when : one Time
 }
+fact {
+    all x,y : Message | x.from = y.from and x.content = y.content and x.when = y.when implies x = y
+}
 
 abstract sig Chat extends Concept {
-    var joined : User -> Time,
-    var messages : set Message,
+    var joined : User -> lone Time,
+    var sent : set Message,
     var read : User -> Message,
-    var time : lone Time
+    var time : one Time
 }
 
 // Initial state
 fact Init {
     no joined
-    no messages
+    no sent
     no read
     time = Chat->first
 }
@@ -37,9 +40,9 @@ sig Leave extends ChatAction {}
 fact {
     all x,y : Leave | x.concept = y.concept and x.user = y.user implies x = y
 }
-sig Send extends ChatAction { message : Message }
+sig Send extends ChatAction { content : Content }
 fact {
-    all x,y : Send | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
+    all x,y : Send | x.concept = y.concept and x.user = y.user and x.content = y.content implies x = y
 }
 sig Delete extends ChatAction { message : Message }
 fact {
@@ -52,9 +55,8 @@ fact {
 
 pred join [c : Chat, u : User] {
     u not in c.joined.Time
-    some c.time
     c.joined' = c.joined + u->c.time
-    c.messages' = c.messages
+    c.sent' = c.sent
     c.read' = c.read
     c.time' = c.time
 
@@ -64,30 +66,33 @@ pred join [c : Chat, u : User] {
 pred leave [c : Chat, u : User] {
     u in c.joined.Time
     c.joined' = c.joined - u->Time
-    c.messages' = c.messages
+    c.sent' = c.sent
     c.read' = c.read - u->Message
     c.time' = c.time
 
     some a : Leave & action | a.concept = c and a.user = u
 }
 
-pred send [c : Chat, u : User, m : Message] {
+pred send [c : Chat, u : User, x : Content] {
     u in c.joined.Time
-    m.from = u
-    m.when = c.time
-    c.messages' = c.messages + m
-    c.joined' = c.joined
-    c.read' = c.read + u->m
-    c.time' = c.time.next
-
-    some a : Send & action | a.concept = c and a.user = u and a.message = m
+    some c.time.next
+    some m : Message {
+        m.content = x
+        m.from = u
+        m.when = c.time
+        c.sent' = c.sent + m
+        c.joined' = c.joined
+        c.read' = c.read + u->m
+        c.time' = c.time.next
+    }
+    some a : Send & action | a.concept = c and a.user = u and a.content = x
 }
 
 pred delete [c : Chat, u : User, m : Message] {
     u in c.joined.Time
-    m in c.messages
+    m in c.sent
     m.from = u
-    c.messages' = c.messages - m
+    c.sent' = c.sent - m
     c.joined' = c.joined
     c.read' = c.read - User->m
     c.time' = c.time
@@ -97,12 +102,12 @@ pred delete [c : Chat, u : User, m : Message] {
 
 pred read [c : Chat, u : User, m : Message] {
     u in c.joined.Time
-    m in c.messages
+    m in c.sent
     m not in c.read[u]
     gte[m.when, c.joined[u]]
     c.read' = c.read + u->m
     c.joined' = c.joined
-    c.messages' = c.messages
+    c.sent' = c.sent
     c.time' = c.time
 
     some a : Read & action | a.concept = c and a.user = u and a.message = m
@@ -110,7 +115,7 @@ pred read [c : Chat, u : User, m : Message] {
 
 pred stutter [c : Chat] {
     c.joined' = c.joined
-    c.messages' = c.messages
+    c.sent' = c.sent
     c.read' = c.read
     c.time' = c.time
 
@@ -121,7 +126,7 @@ fact Actions {
     all c : Chat | always {
         (some u : User | c.join[u]) or
         (some u : User | c.leave[u]) or
-        (some u : User, m : Message | c.send[u,m]) or
+        (some u : User, x : Content | c.send[u,x]) or
         (some u : User, m : Message | c.delete[u,m]) or
         (some u : User, m : Message | c.read[u,m]) or
         c.stutter[]
@@ -131,40 +136,42 @@ fact Actions {
 // Properties
 
 check Invariant {
-    always {
-        // No double joins
-        all u : User | lone Chat.joined[u]
-        // At most one message was sent at a time
-        all disj m1, m2 : Chat.messages | m1.when != m2.when
-        // Read messages must be in the chat
-        Chat.read[User] in Chat.messages
-        // Users cannot read messages sent before they joined
-        all u : User, m : Chat.read[u] | gte[m.when, Chat.joined[u]]
+    all c : Chat | always {
+        // The messages read by each user are in sent
+        c.read[User] in c.sent
+        
+        // There is at most one message in sent at with a given time stamp
+        all disj m1, m2 : c.sent | m1.when != m2.when
+        
+        // The time stamp of the messages read by an user is posterior to the time of joining the chat room
+        all u : User, m : c.read[u] | gte[m.when, c.joined[u]]
+        
+        // All sent messages have a time stamp that is strictly anterior to the current time
+        all m : c.sent | lt[m.when, c.time]
+
+        // All joining time stamps are anterior to the current time
+        all u : User | lte[c.joined[u], c.time]
     }
 } for 2 but 3 Time, exactly 1 Chat, 10 Action expect 0
 
 // Expected value of joined
 check Joined {
-    all u : User, t : Time | always {
-        u->t in Chat.joined iff before {
-            not Chat.leave[u] since (Chat.join[u] and Chat.time = t)
-        }
+    all c : Chat | always {
+        c.joined = { u : User, t : Time | before (not c.leave[u] since (c.join[u] and c.time = t)) }
     }
 } for 2 but exactly 1 Chat, 10 Action expect 0
 
-// Expected value of messages
-check Messages {
-    always {
-        Chat.messages = { m : Message | before (not Chat.delete[m.from,m] since Chat.send[m.from,m]) }
+// Expected value of sent
+check Sent {
+    all c : Chat | always {
+        c.sent = { m : Message | before (not c.delete[m.from,m] since (c.send[m.from,m.content] and c.time = m.when)) }
     }
 } for 2 but exactly 1 Chat, 10 Action expect 0
 
 // Expected value of read
 check Read {
-    all u : User, m : Message | always {
-        u->m in Chat.read iff before {
-            not (Chat.leave[u] or Chat.delete[m.from,m]) since (Chat.read[u,m] or Chat.send[u,m])
-        }
+    all c : Chat | always {
+        c.read = { u : User, m : Message | before (not (c.leave[u] or c.delete[m.from,m]) since (c.read[u,m] or (u = m.from and c.send[u,m.content] and c.time = m.when))) }
     }
 } for 2 but exactly 1 Chat, 10 Action expect 0
 
@@ -172,8 +179,8 @@ check Read {
 
 // After a user leaves they cannot read or send messages until they join again
 check LeavePreventsReadSend {
-    all u : User, m : Message | always {
-        Chat.leave[u] implies (Chat.join[u] releases not (Chat.read[u,m] or Chat.send[u,m]))
+    all c : Chat, u : User, m : Message, x : Content | always {
+        c.leave[u] implies (c.join[u] releases not (c.read[u,m] or c.send[u,x]))
     }
 } for 2 but exactly 1 Chat, 10 Action expect 0
 
@@ -181,6 +188,8 @@ check LeavePreventsReadSend {
 
 // Someone reads something and everyone leaves the chat
 run Scenario1 {
-    some u : User, m : Message | eventually Chat.read[u, m]
-	eventually always no joined
+    some c : Chat, u : User, m : Message {
+        eventually c.read[u, m]
+	    eventually always no c.joined
+    }
 } for 3 but exactly 1 Chat, 10 Action expect 1

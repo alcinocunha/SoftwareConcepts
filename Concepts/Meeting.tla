@@ -1,11 +1,13 @@
 ------- MODULE Meeting -------
 
-CONSTANTS Meeting, User
+CONSTANTS Meeting, User, None
+
+ASSUME None \notin User
 
 VARIABLES action, host, participants
 
 TypeOK ==
-    /\ host \in [ Meeting -> SUBSET User ]
+    /\ host \in [ Meeting -> User \cup {None} ]
     /\ participants \in [ Meeting -> SUBSET User ]
 
 Actions == Meeting \X {"start", "end", "join", "leave"} \X User
@@ -14,24 +16,24 @@ InitAction == action \in Actions
 NextAction == action' \in Actions
 
 Init ==
-    /\ host = [ m \in Meeting |-> {} ]
+    /\ host = [ m \in Meeting |-> None ]
     /\ participants = [ m \in Meeting |-> {} ]
 
 start(m,u) ==
     /\ action = <<m, "start", u>>
-    /\ host[m] = {}
-    /\ host' = [ host EXCEPT ![m] = {u} ]
+    /\ host[m] = None
+    /\ host' = [ host EXCEPT ![m] = u ]
     /\ UNCHANGED participants
 
 end(m,u) ==
     /\ action = <<m, "end", u>>
-    /\ host[m] = {u}
-    /\ host' = [ host EXCEPT ![m] = {} ]
+    /\ host[m] = u
+    /\ host' = [ host EXCEPT ![m] = None ]
     /\ participants' = [ participants EXCEPT ![m] = {} ]
 
 join(m,u) ==
     /\ action = <<m, "join", u>>
-    /\ host[m] # {}
+    /\ host[m] # None
     /\ u \notin participants[m]
     /\ participants' = [ participants EXCEPT ![m] = @ \cup {u} ]
     /\ UNCHANGED host
@@ -55,8 +57,6 @@ Next == \E m \in Meeting:
 
 Spec == InitAction /\ Init /\ [][NextAction /\ Next]_<<action, host, participants>>
 
-Invariant == \A m \in Meeting:
-    /\ participants[m] # {} => host[m] # {}
-    /\ \A x,y \in User: x \in host[m] /\ y \in host[m] => x = y
+Invariant == \A m \in Meeting: participants[m] # {} => host[m] # None
 
 ==============================

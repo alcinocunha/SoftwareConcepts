@@ -4,7 +4,7 @@ open Action
 // State
 
 abstract sig Meeting extends Concept {
-    var host : set User,
+    var host : lone User,
     var participants : set User
 }
 
@@ -88,8 +88,6 @@ fact Actions {
 
 check Invariant {
     always {
-        // At most one host starts a meeting
-        lone Meeting.host
         // Meetings with participants have started
         some Meeting.participants implies some Meeting.host
     }

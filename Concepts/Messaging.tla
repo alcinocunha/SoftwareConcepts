@@ -20,7 +20,7 @@ TypeOK ==
     /\ outbox \in [ Messaging -> [ User -> SUBSET Message ] ]
     /\ reads  \in [ Messaging -> [ User -> SUBSET Message ] ]
 
-Actions == Messaging \X {"send", "read", "deleteFromInbox", "deleteFromOutbox"} \X User \X Message
+Actions == Messaging \X {"read", "deleteFromInbox", "deleteFromOutbox"} \X User \X Message \cup Messaging \X {"send"} \X User \X User \X Content
 
 InitAction == action \in Actions
 NextAction == action' \in Actions
@@ -31,13 +31,11 @@ Init ==
     /\ outbox = [ m \in Messaging |-> [ u \in User |-> {} ] ]
     /\ reads = [ m \in Messaging |-> [ u \in User |-> {} ] ]
 
-send(c,u,m) == 
-    /\ action = <<c, "send", u, m>>
+send(c,u,t,x) == 
+    /\ action = <<c, "send", u, t, x>>
     /\ time < MaxTime
-    /\ m.from = u
-    /\ m.when = time
-    /\ outbox' = [ outbox EXCEPT ![c][u] = @ \cup {m} ]
-    /\ inbox' = [ inbox EXCEPT ![c][m.to] = @ \cup {m} ]
+    /\ outbox' = [ outbox EXCEPT ![c][u] = @ \cup {[from |-> u, to |-> t, content |-> x, when |-> time]} ]
+    /\ inbox' = [ inbox EXCEPT ![c][t] = @ \cup {[from |-> u, to |-> t, content |-> x, when |-> time]} ]
     /\ time' = time + 1
     /\ UNCHANGED reads
 
@@ -66,7 +64,7 @@ stutter(c) ==
     /\ UNCHANGED <<time, inbox, outbox, reads>>
 
 Next == \E c \in Messaging:
-    \/ \E u \in User: \E m \in Message: send(c,u,m)
+    \/ \E u,t \in User: \E x \in Content: send(c,u,t,x)
     \/ \E u \in User: \E m \in inbox[c][u]: read(c,u,m)
     \/ \E u \in User: \E m \in inbox[c][u]: deleteFromInbox(c,u,m)
     \/ \E u \in User: \E m \in outbox[c][u]: deleteFromOutbox(c,u,m)
@@ -75,11 +73,17 @@ Next == \E c \in Messaging:
 Spec == InitAction /\ Init /\ [][NextAction /\ Next]_<<action, time, inbox, outbox, reads>>
 
 Invariant == \A c \in Messaging:
-    \* Read messages must be in the inbox
+    \* The messages read by each user are in their inbox
     /\ \A u \in User: reads[c][u] \subseteq inbox[c][u]
-    \* Messages in the inbox must be addressed to the user
-    /\ \A u \in User, m \in Message: m \in inbox[c][u] => m.to = u
-    \* Messages in the outbox must be sent by the user
+    \* The messages in the outbox are from the user
     /\ \A u \in User, m \in Message: m \in outbox[c][u] => m.from = u
+    \* The messages in the inbox are to the user
+    /\ \A u \in User, m \in Message: m \in inbox[c][u] => m.to = u
+    \* All messages in inboxes and outboxes have a time stamp that is strictly anterior to the current time
+    /\ \A u \in User, m \in Message: m \in inbox[c][u] \/ m \in outbox[c][u] => m.when < time
+    \* There is at most one message in the outbox of each user with a given time stamp
+    /\ \A u \in User, m1, m2 \in Message: m1 \in outbox[c][u] /\ m2 \in outbox[c][u] /\ m1.when = m2.when => m1 = m2
+    \* There is at most one message in the inbox of each user with a given time stamp    
+    /\ \A u \in User, m1, m2 \in Message: m1 \in inbox[c][u] /\ m2 \in inbox[c][u] /\ m1.when = m2.when => m1 = m2
 
 =============================

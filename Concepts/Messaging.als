@@ -11,12 +11,15 @@ sig Message {
     content : one Content,
     when : one Time
 }
+fact {
+    all x,y : Message | x.from = y.from and x.to = y.to and x.content = y.content and x.when = y.when implies x = y
+}
 
 abstract sig Messaging extends Concept {
     var inbox : User -> Message,
     var read : User -> Message,
     var outbox : User -> Message,
-    var time : lone Time
+    var time : one Time
 }
 
 // Initial state
@@ -30,33 +33,38 @@ fact Init {
 
 // Actions
 
-abstract sig MessagingAction extends Action { user : User, message : Message } { concept in Messaging }
-sig Send extends MessagingAction {}
+abstract sig MessagingAction extends Action { user : User } { concept in Messaging }
+sig Send extends MessagingAction { to : User, content : Content }
 fact {
-    all x,y : Send | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
+    all x,y : Send | x.concept = y.concept and x.user = y.user and x.to = y.to and x.content = y.content implies x = y
 }
-sig Read extends MessagingAction {}
+sig Read extends MessagingAction { message : Message }
 fact {
     all x,y : Read | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
 }
-sig DeleteFromInbox extends MessagingAction {}
+sig DeleteFromInbox extends MessagingAction {message : Message }
 fact {
     all x,y : DeleteFromInbox | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
 }
-sig DeleteFromOutbox extends MessagingAction {}
+sig DeleteFromOutbox extends MessagingAction { message : Message }
 fact {
     all x,y : DeleteFromOutbox | x.concept = y.concept and x.user = y.user and x.message = y.message implies x = y
 }
 
-pred send [c : Messaging, u : User, m : Message] {
-    m.from = u
-    m.when = c.time
-    c.outbox' = c.outbox + (u -> m)
-    c.inbox' = c.inbox + (m.to -> m)
-    c.read' = c.read
-    c.time' = c.time.next
+pred send [c : Messaging, u : User, t : User, x : Content] {
+    some c.time.next
+    some m : Message {
+        m.from = u
+        m.to = t
+        m.content = x
+        m.when = c.time
+        c.outbox' = c.outbox + (u -> m)
+        c.inbox' = c.inbox + (m.to -> m)
+        c.read' = c.read
+        c.time' = c.time.next
+    }
 
-    some a : Send & action | a.concept = c and a.user = u and a.message = m
+    some a : Send & action | a.concept = c and a.user = u and a.to = t and a.content = x
 }
 
 pred read [c : Messaging, u : User, m : Message] {
@@ -101,7 +109,7 @@ pred stutter [c : Messaging] {
 
 fact Actions {
     all c : Messaging | always {
-        (some u : User, m : Message | c.send[u,m]) or
+        (some u : User, t : User, x : Content | c.send[u,t,x]) or
         (some u : User, m : Message | c.read[u,m]) or
         (some u : User, m : Message | c.deleteFromInbox[u,m]) or
         (some u : User, m : Message | c.deleteFromOutbox[u,m]) or
@@ -113,19 +121,30 @@ fact Actions {
 
 check Invariant {
     all c : Messaging | always {
-        // Read messages must be in the inbox
+        // The messages read by each user are in their inbox
         c.read in c.inbox
-        // Messages in a user's inbox must have been sent to that user
-        c.inbox.to in iden
-        // Messages in a user's outbox must have been sent by that user
+
+        // The messages in the outbox are from the user
         c.outbox.from in iden
+
+        // The messages in the inbox are to the user
+        c.inbox.to in iden
+
+        // All messages in inboxes and outboxes have a time stamp that is strictly anterior to the current time
+        all m : c.(outbox+inbox)[User] | lt[m.when, c.time]
+        
+        // There is at most one message in the outbox of each user with a given time stamp
+        all u : User, t : Time | lone c.outbox[u] & when.t
+
+        // There is at most one message in the inbox of each user with a given time stamp
+        all u : User, t : Time | lone c.inbox[u] & when.t        
     }
 } for 3 but 10 Action, exactly 1 Messaging expect 0
 
 // Read messages must have been sent
 check OP1 {
     all c : Messaging, u : User, m : Message | always {
-        c.read[u,m] implies once c.send[m.from,m]
+        c.read[u,m] implies once c.send[m.from,m.to,m.content]
     }
 } for 2 but 10 Action, exactly 1 Messaging expect 0
 
@@ -138,36 +157,36 @@ check OP2 {
 
 // Expected value of inbox
 check Inbox {
-	always {
-		Messaging.inbox = { u : User, m : to.u | before (not Messaging.deleteFromInbox[u,m] since Messaging.send[m.from,m]) }
+	all c : Messaging | always {
+		c.inbox = { u : User, m : Message | before (not c.deleteFromInbox[u,m] since (m.to = u and c.send[m.from,m.to,m.content] and m.when = c.time)) }
 	}
 } for 2 but 10 Action, exactly 1 Messaging expect 0
 
 // Expected value of read
 check Read {
-    always {
-        Messaging.read = { u : User, m : Message | before (not Messaging.deleteFromInbox[u,m] since Messaging.read[u,m]) }
+    all c : Messaging | always {
+        c.read = { u : User, m : Message | before (not c.deleteFromInbox[u,m] since c.read[u,m]) }
     }
 } for 2 but 10 Action, exactly 1 Messaging expect 0
 
 // Expected value of outbox
 check Outbox {
-    always {
-        Messaging.outbox = { u : User, m : Message | before (not Messaging.deleteFromOutbox[u,m] since Messaging.send[u,m]) }
+    all c : Messaging | always {
+        c.outbox = { u : User, m : Message | before (not c.deleteFromOutbox[u,m] since (m.from = u and c.send[m.from,m.to,m.content] and m.when = c.time)) }
     }
 } for 2 but 10 Action, exactly 1 Messaging expect 0
 
 // Scenarios
 
 run Scenario1 {
-    some t : User {
-		all f : User | some m : from.f | eventually Messaging.read[t,m]
-		eventually always no Messaging.inbox[t]
+    some c : Messaging, t : User {
+		all f : User | some m : from.f | eventually c.read[t,m]
+		eventually always no c.inbox[t]
 	}
-} for 3 but 10 Action, exactly 3 User, exactly 1 Messaging, 11 steps expect 1
+} for 3 but 10 Action, exactly 3 User, 4 Time, exactly 1 Messaging expect 1
 
 run Scenario2 {
-	some disj t,f : User, m : to.t {
-		Messaging.send[f,m]; Messaging.read[f,m]
+	some c : Messaging, u : User, m : Message {
+		m.to != u and c.send[u,m.to,m.content]; c.read[u,m]
 	}
 } for 2 but 10 Action, exactly 1 Messaging expect 0

@@ -5,7 +5,7 @@ open Action
 
 abstract sig WebApp extends Concept {
     var registered : set User,
-    var loggedin : set User
+    var loggedin : lone User
 }
 
 // Initial state
@@ -90,7 +90,6 @@ fact Actions {
 // Logged in users are registered
 check Invariant {
     always {
-        lone loggedin
         loggedin in registered
     } 
 } for 2 but exactly 1 WebApp, 10 Action expect 0
