@@ -31,4 +31,4 @@ invariants: a resource can only be reserved by at most one user at a time
 ## Formalizations
 
 * [Alloy](Reservation.als)
-*[TLA+](Reservation.tla)
+* [TLA+](Reservation.tla)
