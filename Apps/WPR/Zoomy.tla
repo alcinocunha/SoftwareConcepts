@@ -1,18 +1,20 @@
 --------- MODULE Zoomy ---------
 
-EXTENDS TLC
+EXTENDS TLC, Naturals
 
 VARIABLES action, reactions
 
 error == FALSE
 
-CONSTANTS Meeting, Chat, User, Content, MaxTime
+CONSTANTS Meeting, Chat, User, Content, MaxTime, None
+
+ASSUME None \notin User /\ None \notin Nat
 
 Symmetry == Permutations(User) \cup Permutations(Content) \cup Permutations(Meeting) \cup Permutations(Chat)
 
-VARIABLES time, messages, joined, reads, host, participants, owns_meeting, owns_chat
+VARIABLES time, sent, joined, reads, host, participants, owns_meeting, owns_chat
 
-vars == <<action, reactions, time, messages, joined, reads, host, participants, owns_meeting, owns_chat>>
+vars == <<action, reactions, time, sent, joined, reads, host, participants, owns_meeting, owns_chat>>
 
 M == INSTANCE Meeting
 C == INSTANCE Chat
@@ -41,13 +43,13 @@ NextConcepts ==
 
 Invariant ==
     \* A user can only host a meeting if they have scheduled it
-    /\ (\A u \in User, m \in Meeting: u \in host[m] => m \in scheduled[u])
+    /\ (\A u \in User, m \in Meeting: u = host[m] => m \in scheduled[u])
     \* Started meetings must have a chat, and the chat must be unique to that meeting
-    /\ \A m \in Meeting: host[m] # {} <=> chat[m] # {}
+    /\ \A m \in Meeting: host[m] # None <=> chat[m] # {}
     /\ \A m \in Meeting, c1, c2 \in Chat: c1 \in chat[m] /\ c2 \in chat[m] => c1 = c2
     \* The users joined in the chat must be exactly the participants of the meeting
-    /\ \A c \in Chat: (\E u \in User: joined[c][u] # {}) => (\E m \in Meeting: c \in chat[m])
-    /\ \A m \in Meeting, c \in Chat: c \in chat[m] => participants[m] = { u \in User: joined[c][u] # {} }
+    /\ \A c \in Chat: (\E u \in User: joined[c][u] # None) => (\E m \in Meeting: c \in chat[m])
+    /\ \A m \in Meeting, c \in Chat: c \in chat[m] => participants[m] = { u \in User: joined[c][u] # None }
 
 \* Reactions
 
@@ -83,7 +85,7 @@ then
     c.leave[u]
 *)
 
-end_leave_add == { <<r, c, u>> \in {"end_leave"} \X Chat \X User : \E h \in User, m \in Meeting: M!end(m,h) /\ c \in chat[m] /\ joined[c][u] # {} }
+end_leave_add == { <<r, c, u>> \in {"end_leave"} \X Chat \X User : \E h \in User, m \in Meeting: M!end(m,h) /\ c \in chat[m] /\ joined[c][u] # None }
 end_leave_remove == { <<r, c, u>> \in {"end_leave"} \X Chat \X User : C!leave(c,u) }
 
 (*
@@ -135,7 +137,7 @@ then
     error
 *)
 
-release_meeting_error_add == { <<r>> \in {<<"release_meeting_error">>} : \E m \in Meeting, u \in User : OM!release("OM",u,m) /\ host[m] # {} }
+release_meeting_error_add == { <<r>> \in {<<"release_meeting_error">>} : \E m \in Meeting, u \in User : OM!release("OM",u,m) /\ host[m] # None }
 release_meeting_error_remove == { <<r>> \in {<<"release_meeting_error">>} : error }
 
 (*
@@ -148,7 +150,7 @@ then
     error
 *)
 
-join_error_add == { <<r>> \in {<<"join_error">>} : \E c \in Chat, u \in User : C!join(c,u) /\ ((\A m \in Meeting: c \notin chat[m]) \/ (\E m \in Meeting: c \in chat[m] /\ (host[m] = {} \/ u \notin participants[m]))) }
+join_error_add == { <<r>> \in {<<"join_error">>} : \E c \in Chat, u \in User : C!join(c,u) /\ ((\A m \in Meeting: c \notin chat[m]) \/ (\E m \in Meeting: c \in chat[m] /\ (host[m] = None \/ u \notin participants[m]))) }
 join_error_remove == { <<r>> \in {<<"join_error">>} : error }
 
 (*
@@ -174,7 +176,7 @@ then
     error
 *)
 
-acquire_chat_error_add == { <<r>> \in {<<"acquire_chat_error">>} : \E m \in Meeting, c \in Chat : OC!acquire("OC",m,c) /\ (host[m] = {} \/ chat[m] # {}) }
+acquire_chat_error_add == { <<r>> \in {<<"acquire_chat_error">>} : \E m \in Meeting, c \in Chat : OC!acquire("OC",m,c) /\ (host[m] = None \/ chat[m] # {}) }
 acquire_chat_error_remove == { <<r>> \in {<<"acquire_chat_error">>} : error }
 
 (*
@@ -187,7 +189,7 @@ then
     error
 *)
 
-release_chat_error_add == { <<r>> \in {<<"release_chat_error">>} : \E m \in Meeting, c \in Chat : OC!release("OC",m,c) /\ host[m] # {} }
+release_chat_error_add == { <<r>> \in {<<"release_chat_error">>} : \E m \in Meeting, c \in Chat : OC!release("OC",m,c) /\ host[m] # None }
 release_chat_error_remove == { <<r>> \in {<<"release_chat_error">>} : error }
 
 \* Reaction semantics

@@ -23,6 +23,7 @@
    <type name="Action/Concept"/>
    <type name="ordering/Ord"/>
    <type name="seq/Int"/>
+   <set name="$Scenario1_c" type="Action/Concept"/>
    <set name="$Scenario1_t" type="User"/>
 </node>
 
@@ -56,9 +57,10 @@
 
 <edge visible="no" attribute="yes">
    <relation name="content"> <type name="Message"/> <type name="Content"/> </relation>
+   <relation name="content"> <type name="Send"/> <type name="Content"/> </relation>
    <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
-   <relation name="message"> <type name="Action/Action"/> <type name="Message"/> </relation>
    <relation name="to"> <type name="Message"/> <type name="User"/> </relation>
+   <relation name="to"> <type name="Send"/> <type name="User"/> </relation>
    <relation name="user"> <type name="Action/Action"/> <type name="User"/> </relation>
    <relation name="when"> <type name="Message"/> <type name="Time"/> </relation>
 </edge>

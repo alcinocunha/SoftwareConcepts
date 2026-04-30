@@ -44,7 +44,7 @@ check Design {
 // The following does not hold but there is no problem because one can only read messages sent after joining
 check AcquireNoMessage {
     always {
-        all m : Meeting, c : Chat | OC.acquire[m,c] implies no c.messages
+        all m : Meeting, c : Chat | OC.acquire[m,c] implies no c.sent
     }
 } for 1 but 12 Action, 6 Reaction, 1 Meeting, 1 Chat, 12 steps expect 1
 
@@ -56,7 +56,7 @@ check AcquireNoJoined {
 
 check SenderIsParticipant {
     always {
-        all c : Chat, u : User, m : Message | c.send[u,m] implies u in (chat.c).participants
+        all c : Chat, u : User, m : Content | c.send[u,m] implies u in (chat.c).participants
     }
 } for 1 but 12 Action, 5 Reaction, 1 Meeting, 1 Chat, 12 steps expect 0
 
@@ -64,7 +64,7 @@ check SenderIsParticipant {
 
 run Scenario {
     // Eventually an user sends a message and later the respective meeting ends
-    some c : Chat, u : User, m : Message | eventually {
+    some c : Chat, u : User, m : Content | eventually {
         c.send[u,m]
         eventually (chat.c).end[u]
     }

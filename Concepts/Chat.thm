@@ -24,51 +24,45 @@
    <type name="Action/Concept"/>
    <type name="ordering/Ord"/>
    <type name="seq/Int"/>
-</node>
-
-<node color="Yellow">
-   <set name="messages" type="Message"/>
+   <set name="$Scenario1_c" type="Action/Concept"/>
+   <set name="$Scenario1_m" type="Message"/>
+   <set name="$Scenario1_u" type="User"/>
+   <set name="sent" type="Message"/>
 </node>
 
 <node hideunconnected="yes">
    <type name="Content"/>
-</node>
-
-<node hideunconnected="yes" color="White">
    <type name="Message"/>
 </node>
 
 <node showlabel="no">
    <set name="$first" type="Time"/>
    <set name="$last" type="Time"/>
-   <set name="$Scenario1_m" type="Message"/>
-   <set name="$Scenario1_u" type="User"/>
    <set name="concept" type="Action/Action"/>
 </node>
 
-<node visible="no">
-   <type name="Time"/>
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
 </node>
 
-<node visible="no" color="Gray">
-   <type name="Action/Action"/>
+<node visible="no" shape="Ellipse" color="Red">
+   <type name="Time"/>
 </node>
 
 <node visible="yes" showlabel="no">
    <set name="action" type="Action/Action"/>
-</node>
-
-<node visible="yes" showlabel="no" shape="Ellipse" color="Green">
    <set name="time" type="Time"/>
 </node>
 
+<edge style="inherit">
+   <relation name="joined"> <type name="Action/Concept"/> <type name="User"/> <type name="Time"/> </relation>
+   <relation name="sent"> <type name="Action/Concept"/> <type name="Message"/> </relation>
+</edge>
+
 <edge visible="no" attribute="yes">
    <relation name="content"> <type name="Message"/> <type name="Content"/> </relation>
+   <relation name="content"> <type name="Send"/> <type name="Content"/> </relation>
    <relation name="from"> <type name="Message"/> <type name="User"/> </relation>
-   <relation name="joined"> <type name="User"/> <type name="Time"/> </relation>
-   <relation name="message"> <type name="Delete"/> <type name="Message"/> </relation>
-   <relation name="message"> <type name="Read"/> <type name="Message"/> </relation>
-   <relation name="message"> <type name="Send"/> <type name="Message"/> </relation>
    <relation name="user"> <type name="Action/Action"/> <type name="User"/> </relation>
    <relation name="when"> <type name="Message"/> <type name="Time"/> </relation>
 </edge>

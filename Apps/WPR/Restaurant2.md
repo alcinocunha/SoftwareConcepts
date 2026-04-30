@@ -21,25 +21,29 @@ reaction send_confirmation
 when
     R.reserve[c,t]
 then
-    some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t
+    M.send[Restaurant,c,t]
 
 reaction use_delete
 when
     R.use[c,t]
+where
+    m in M.outbox[Restaurant] and m.to = c and m.content = t
 then
-    some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
+    M.deleteFromOutbox[Restaurant,m]
 
 reaction cancel_delete
 when
     R.cancel[c,t]
+where
+    m in M.outbox[Restaurant] and m.to = c and m.content = t
 then
-    some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
+    M.deleteFromOutbox[Restaurant,m]
 
 reaction send_error
 when
-	M.send[Restaurant,m]
+	M.send[Restaurant,u,t]
 where
-	m.content not in m.to.reservations or m.content in Restaurant.outbox.content
+	t not in u.reservations or t in Restaurant.outbox.content
 then
     error
 
@@ -49,6 +53,6 @@ when
 where
     m.content in m.to.reservations
 then
-    error
+    error    
 ```
 * **formalizations**: [Alloy](Restaurant2.als), [TLA+](Restaurant2.tla)

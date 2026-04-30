@@ -65,7 +65,7 @@ reaction send_confirmation
 when
     R.reserve[c,t]
 then
-    some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t
+    M.send[Restaurant,c,t]
 */
 
 sig Send_Confirmation extends Reaction { client : Client, table : Table }
@@ -75,7 +75,7 @@ fact {
 fact {
     all c : Client, t : Table | always {
         (some r : Send_Confirmation & reactions_to_add | r.client = c and r.table = t) iff (R.reserve[c,t])
-        (some r : Send_Confirmation & reactions_to_remove | r.client = c and r.table = t) iff (some m : Message | M.send[Restaurant,m] and m.to = c and m.content = t)
+        (some r : Send_Confirmation & reactions_to_remove | r.client = c and r.table = t) iff (M.send[Restaurant,c,t])
     }
 }   
 
@@ -83,18 +83,20 @@ fact {
 reaction use_delete
 when
     R.use[c,t]
+where
+    m in M.outbox[Restaurant] and m.to = c and m.content = t
 then
-    some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
+    M.deleteFromOutbox[Restaurant,m]
 */
 
-sig Use_Delete extends Reaction { client : Client, table : Table }
+sig Use_Delete extends Reaction { message : Message }
 fact {
-    all x,y : Use_Delete | x.client = y.client and x.table = y.table implies x = y
+    all x,y : Use_Delete | x.message = y.message implies x = y
 }
 fact {
-    all c : Client, t : Table | always {
-        (some r : Use_Delete & reactions_to_add | r.client = c and r.table = t) iff (R.use[c,t])
-        (some r : Use_Delete & reactions_to_remove | r.client = c and r.table = t) iff (some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t)
+    all m : Message | always {
+        (some r : Use_Delete & reactions_to_add | r.message = m) iff (some c : Client, t : Table | R.use[c,t] and m in M.outbox[Restaurant] and m.to = c and m.content = t)
+        (some r : Use_Delete & reactions_to_remove | r.message = m) iff (M.deleteFromOutbox[Restaurant,m])
     }
 }
 
@@ -102,27 +104,29 @@ fact {
 reaction cancel_delete
 when
     R.cancel[c,t]
+where
+    m in M.outbox[Restaurant] and m.to = c and m.content = t
 then
-    some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t
+    M.deleteFromOutbox[Restaurant,m]
 */
 
-sig Cancel_Delete extends Reaction { client : Client, table : Table }
+sig Cancel_Delete extends Reaction { message : Message }
 fact {
-    all x,y : Cancel_Delete | x.client = y.client and x.table = y.table implies x = y
+    all x,y : Cancel_Delete | x.message = y.message implies x = y
 }
 fact {
-    all c : Client, t : Table | always {
-        (some r : Cancel_Delete & reactions_to_add | r.client = c and r.table = t) iff (R.cancel[c,t])
-        (some r : Cancel_Delete & reactions_to_remove | r.client = c and r.table = t) iff (some m : Message | M.deleteFromOutbox[Restaurant,m] and m.to = c and m.content = t)
+    all m : Message | always {
+        (some r : Cancel_Delete & reactions_to_add | r.message = m) iff (some c : Client, t : Table | R.cancel[c,t] and m in M.outbox[Restaurant] and m.to = c and m.content = t)
+        (some r : Cancel_Delete & reactions_to_remove | r.message = m) iff (M.deleteFromOutbox[Restaurant,m])
     }
 }
 
 /*
 reaction send_error
 when
-	M.send[Restaurant,m]
+	M.send[Restaurant,u,t]
 where
-	m.content not in m.to.reservations or m.content in Restaurant.outbox.content
+	t not in u.reservations or t in Restaurant.outbox.content
 then
     error
 */
@@ -133,7 +137,7 @@ fact {
 }
 fact {
     always {
-        (some Send_Error & reactions_to_add) iff (some m : Message | M.send[Restaurant,m] and (m.content not in m.to.reservations or m.content in Restaurant.outbox.content))
+        (some Send_Error & reactions_to_add) iff (some u : User, t : Table | M.send[Restaurant,u,t] and (t not in u.reservations or t in Restaurant.outbox.content))
         (some Send_Error & reactions_to_remove) iff error
     }
 }
