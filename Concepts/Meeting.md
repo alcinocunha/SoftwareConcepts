@@ -10,7 +10,7 @@
         * **requires**: `u` is not the host
         * **effects**: sets `u` as the host
     * `join(u:User)`
-        * **requires**: `u` is not a participant
+        * **requires**: the meeting has a host and `u` is not a participant
         * **effects**: adds `u` to the participants
     * `leave(u:User)`
         * **requires**: `u` is a participant
