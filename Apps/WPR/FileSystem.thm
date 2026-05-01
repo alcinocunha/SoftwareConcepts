@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="acquire_error"/>
+   <type name="create_dir"/>
+   <type name="create_error"/>
+   <type name="Dir"/>
+   <type name="empty_dir"/>
+   <type name="File"/>
+   <type name="Int"/>
+   <type name="Object"/>
+   <type name="Other"/>
+   <type name="release_error"/>
+   <type name="release_trash_delete_objects"/>
+   <type name="release_trash_empty"/>
+   <type name="Root"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="Action/Concept"/>
+   <type name="Owning/Acquire"/>
+   <type name="Owning/Owning"/>
+   <type name="Owning/OwningAction"/>
+   <type name="Owning/Release"/>
+   <type name="seq/Int"/>
+   <type name="Trash/Create"/>
+   <type name="Trash/Delete"/>
+   <type name="Trash/Empty"/>
+   <type name="Trash/Restore"/>
+   <type name="Trash/Trash"/>
+   <type name="Trash/TrashAction"/>
+</node>
+
+<node showlabel="no">
+   <set name="reactions_to_add" type="Reaction/Reaction"/>
+   <set name="reactions_to_remove" type="Reaction/Reaction"/>
+</node>
+
+<node visible="no">
+   <type name="O"/>
+</node>
+
+<node visible="no" numberatoms="no" color="Gray">
+   <type name="Action/Action"/>
+</node>
+
+<node visible="no" numberatoms="no" shape="Dbl Octagon" color="Red">
+   <type name="Reaction/Reaction"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="action" type="Action/Action"/>
+   <set name="reactions" type="Reaction/Reaction"/>
+</node>
+
+<edge label="content">
+   <relation name="$content"> <type name="Dir"/> <type name="Trash/Trash"/> </relation>
+</edge>
+
+<edge style="inherit">
+   <relation name="accessible"> <type name="Trash/Trash"/> <type name="Object"/> </relation>
+   <relation name="owns"> <type name="Owning/Owning"/> <type name="Dir"/> <type name="Trash/Trash"/> </relation>
+   <relation name="trashed"> <type name="Trash/Trash"/> <type name="Object"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="concept"> <type name="Action/Action"/> <type name="Action/Concept"/> </relation>
+   <relation name="item"> <type name="Trash/Create"/> <type name="Object"/> </relation>
+   <relation name="item"> <type name="Trash/Delete"/> <type name="Object"/> </relation>
+   <relation name="item"> <type name="Trash/Restore"/> <type name="Object"/> </relation>
+   <relation name="resource"> <type name="Owning/OwningAction"/> <type name="Trash/Trash"/> </relation>
+   <relation name="user"> <type name="Owning/OwningAction"/> <type name="Dir"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
