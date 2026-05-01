@@ -28,9 +28,9 @@ reaction empty_dir
 when
     t.empty()
 where
-    d in t.trashed
+    d in t.trashed and x in d.content
 then
-    O.release(d,d.content)
+    O.release(d,x)
 
 reaction release_trash_delete_objects
 when
@@ -54,7 +54,7 @@ when
 where
     t not in Root and no content.t and t.accessible in o
 then
-    t.empty[]
+    t.empty()
 
 reaction acquire_error
 when
@@ -80,4 +80,4 @@ where
 then
     error
 ```
-* **formalizations**: [Alloy](FileSystem.als)
+* **formalizations**: [Alloy](FileSystem.als), [TLA+](FileSystem.tla)

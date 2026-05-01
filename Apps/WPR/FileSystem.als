@@ -74,19 +74,19 @@ reaction empty_dir
 when
     t.empty()
 where
-    d in t.trashed
+    d in t.trashed and x in d.content
 then
-    O.release(d,d.content)
+    O.release(d,x)
 */
 
-sig empty_dir extends Reaction { dir : Dir }
+sig empty_dir extends Reaction { dir : Dir, trash : Trash }
 fact {
-    all x,y : empty_dir | x.dir = y.dir implies x = y
+    all x,y : empty_dir | x.dir = y.dir and x.trash = y.trash implies x = y
 }
 fact {
-    all d : Dir | always {
-        (some r : empty_dir & reactions_to_add | r.dir = d) iff (some t : Trash | t.empty[] and d in t.trashed)
-        (some r : empty_dir & reactions_to_remove | r.dir = d) iff (O.release[d,d.content])
+    all d : Dir, x : Trash | always {
+        (some r : empty_dir & reactions_to_add | r.dir = d) iff (some t : Trash | t.empty[] and d in t.trashed and x in d.content)
+        (some r : empty_dir & reactions_to_remove | r.dir = d) iff (O.release[d,x])
     }
 }
 
@@ -139,7 +139,7 @@ when
 where
     t not in Root and no content.t and t.accessible in o
 then
-    t.empty[]
+    t.empty()
 */
 
 sig delete_last_empty extends Reaction { trash : Trash }
