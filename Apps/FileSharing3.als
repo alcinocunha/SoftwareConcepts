@@ -1,4 +1,4 @@
-module Apps/WPR/FileSharing3
+module Apps/FileSharing3
 open Action
 open Reaction
 
@@ -25,12 +25,6 @@ fun shared : File -> Token { P.urls :> (Token - P.revoked) }
 
 pred upload[f : File] { T.create[f] }
 pred download[t : Token] { P.access[t] }
-
-// This app assumes reactions have priority over requests
-
-fact {
-	PriorityToReactions
-}
 
 // The design goal
 

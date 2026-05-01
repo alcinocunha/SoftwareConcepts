@@ -1,4 +1,4 @@
-module Apps/WPR/FileSharing1
+module Apps/FileSharing1
 open Action
 open Reaction
 
@@ -29,12 +29,6 @@ pred restore[f : File] { T.restore[f] }
 pred empty { T.empty }
 pred share[f : File, t : Token] { P.share[f,t] }
 pred download[t : Token] { P.access[t] }
-
-// This app assumes reactions have priority over requests
-
-fact {
-	PriorityToReactions
-}
 
 // The design goal
 

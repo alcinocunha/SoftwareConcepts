@@ -5,9 +5,8 @@
     * a set of `Secret` `File`s
 * **concepts**:
     * one `Trash[File]` named `T`
-* **design goal**:
+* **invariants**:
     * There are no `Secret` files in `trashed`
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction delete_empty

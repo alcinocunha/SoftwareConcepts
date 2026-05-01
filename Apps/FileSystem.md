@@ -13,7 +13,6 @@
     * A directory owns a trash iff it is in some trash
     * A directory can only be in one trash and can only contain one trash
     * No cycles
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction create_dir

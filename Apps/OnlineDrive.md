@@ -9,10 +9,9 @@
     * a set of `Trash[File]`
 * **views**:
     * `trash` = `O.owns`
-* **design goal**:
+* **invariants**:
     * every registered user owns exactly one trash and unregistered users do not own any trash
     * the content of a `Trash` is the one that results from actions of the owning `User`, unless it is acquired by another user, in which case it must be empty.
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction register_acquire

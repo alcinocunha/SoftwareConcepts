@@ -1,4 +1,4 @@
-module Apps/WPR/Restaurant1
+module Apps/Restaurant1
 open Action
 open Reaction
 
@@ -25,12 +25,6 @@ fun tables : set Table { R.available }
 // Active reservations are those that have been reserved but not yet used
 fun reservations : Client -> Table { R.reservations :> R.available }
 fun reserved : set Table { L.labels.Reserved }
-
-// This app assumes reactions have priority over requests
-
-fact {
-	PriorityToReactions
-}
 
 // The design goal
 

@@ -1,5 +1,4 @@
-module Apps/WPR/OnlineDrive
-
+module Apps/OnlineDrive
 open Action
 open Reaction
 
@@ -26,12 +25,6 @@ sig File {}
 fun registered : set User { A.registered }
 fun loggedin : set User { A.loggedin }
 fun trash : User -> Trash { O.owns }
-
-// This app assumes reactions have priority over requests
-
-fact {
-    PriorityToReactions
-}
 
 // The design goal
 

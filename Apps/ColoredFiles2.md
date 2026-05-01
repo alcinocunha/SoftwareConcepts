@@ -8,9 +8,8 @@
     * one `Label[File,Color]` named `L`
 * **views**:
     * `colors` = `L.labels`
-* **design goal**:
+* **invariants**:
     * Only `accessible` or `trashed` files can be labeled with colors.
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction empty_clear

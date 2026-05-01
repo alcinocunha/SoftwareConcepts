@@ -1,5 +1,4 @@
-module Apps/WPR/Zoomy
-
+module Apps/Zoomy
 open Action
 open Reaction
 
@@ -22,12 +21,6 @@ sig Content {}
 
 fun scheduled : User -> Meeting { OM.owns }
 fun chat : Meeting -> Chat { OC.owns }
-
-// This app assumes reactions have priority over requests
-
-fact {
-    PriorityToReactions
-}
 
 // The design goal
 

@@ -12,7 +12,7 @@ fact {
 	}
 }
 
-pred PriorityToReactions {
+fact PriorityToReactions {
     always {
         some reactions and some action implies some reactions & reactions_to_remove
     }

@@ -1,4 +1,4 @@
-module Apps/WPR/Restaurant2
+module Apps/Restaurant2
 open Action
 open Reaction
 
@@ -20,11 +20,6 @@ one sig Restaurant extends User {}
 
 sig Table {}
 
-// Only the restaurant can send messages
-fact {
-    Message.from = Restaurant
-}
-
 // Views of the state of the concepts to simplify the specification and visualization
 
 fun tables : set Table { R.available }
@@ -33,11 +28,6 @@ fun reservations : Client -> Table { R.reservations :> R.available }
 fun inbox : User -> set Message { M.inbox }
 fun read : User -> set Message { M.read }
 fun outbox : User -> set Message { M.outbox }
-
-// This app assumes reactions have priority over requests
-fact {
-    PriorityToReactions
-}
 
 // The design goal
 

@@ -6,9 +6,8 @@
 * **concepts**:
     * one `Trash[File]` named `T`
     * one `Permalink[File,Token]` named `P`
-* **design goal**:
+* **invariants**:
     * a `File` has a `Token` in its `urls` that can still be accessed iff that `Token` was shared when the `File` was `accessible`, and the `Token` has not been `accessed` in the meantime, nor the `File` has been deleted.
-* **priority to reactions**: yes
 * **views**:
     * `uploaded` = the set of `File`s that have been created
     * `shared` = the set of `Token`s that have been shared for each `File` and not yet revoked

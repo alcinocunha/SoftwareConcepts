@@ -11,11 +11,10 @@
 * **views**:
     * `scheduled` = `OM.owns`
     * `chat` = `OC.owns`
-* **design goal**:
+* **invariants**:
     * The `host` is the user that scheduled the meeting.
     * Each active meeting has exactly one chat, and the non-active meetings have no chat.
     * The participants of a meeting are exactly the same that are joined to the respective chat.
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction start_acquire

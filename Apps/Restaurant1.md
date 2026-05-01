@@ -11,9 +11,8 @@
     * `tables` = `R.available`
     * `reservations` = the subset of `R.reservations` where the reserved table was not used yet
     * `reserved` = the tables with the `Reserved` label
-* **design goal**:
+* **invariants**:
     * The tables with the `Reserved` label are exactly the reserved tables that have not been used yet.
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction reserve_affix

@@ -1,4 +1,4 @@
-module Apps/WPR/ColoredFiles3
+module Apps/ColoredFiles3
 open Action
 open Reaction
 
@@ -25,12 +25,6 @@ one sig Red extends Color {}
 fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }
 fun colors : File -> set Color { L.labels }
-
-// This app assumes reactions have priority over requests
-
-fact {
-	PriorityToReactions
-}
 
 // The design goal
 

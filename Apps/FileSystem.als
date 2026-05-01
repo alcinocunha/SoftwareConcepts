@@ -1,4 +1,4 @@
-module Apps/WPR/FileSystem
+module Apps/FileSystem
 open Action
 open Reaction
 
@@ -21,12 +21,6 @@ sig File, Dir extends Object {}
 // Projections
 
 fun content : Dir -> Other { O.owns }
-
-// This app assumes reactions have priority over requests
-
-fact {
-	PriorityToReactions
-}
 
 // The design goal
 

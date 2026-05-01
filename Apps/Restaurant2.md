@@ -11,10 +11,9 @@
 * **views**:
     * `tables` = `R.available`
     * `reservations` = the subset of `R.reservations` where the reserved table was not used yet
-* **design goal**:
+* **invariants**:
     * The active `reservations` are exactly those that are confirmed by messages in the restaurant's outbox.
     * There is at most one confirmation message per table in the restaurant's outbox.
-* **priority to reactions**: yes
 * **reactions**:
 ```
 reaction send_confirmation

@@ -1,4 +1,4 @@
-module Apps/WPR/NoSecretsInTrash1
+module Apps/NoSecretsInTrash1
 open Action
 open Reaction
 
@@ -18,12 +18,6 @@ sig Secret extends File {}
 
 fun accessible : set File { T.accessible }
 fun trashed : set File { T.trashed }
-
-// This app assumes reactions have priority over requests
-
-fact {
-	PriorityToReactions
-}
 
 // The design goal
 

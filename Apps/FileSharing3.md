@@ -6,11 +6,10 @@
 * **concepts**:
     * one `Trash[File]` named `T`
     * one `Permalink[File,Token]` named `P`
-* **design goal**:
+* **invariants**:
     * there are no `trashed` files
     * Each `accessible` `File` has exactly one non `revoked` `Token`
     * The set of `revoked` `Token`s is the same as the set of `accessed` `Token`s
-* **priority to reactions**: yes
 * **views**:
     * `uploaded` = the set of `File`s that have been created
     * `shared` = the set of `Token`s that have been shared for each `File` and not yet revoked
