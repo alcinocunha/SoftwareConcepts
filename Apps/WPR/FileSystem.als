@@ -44,7 +44,7 @@ check Design {
             all d : Dir | d not in d.^(content.(accessible+trashed))
 		}
 	}
-} for 4 but 10 Action, 10 Reaction expect 0
+} for 1 File, 2 Dir, 2 Other, 10 Action, 10 Reaction expect 0
 
 // Reactions
 
