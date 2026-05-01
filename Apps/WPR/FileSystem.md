@@ -9,7 +9,10 @@
 * **views**:
     * `content` = `O.owns`
 * **invariants**:
-    * O
+    * The non root trashes can only have objects if they are owned by some directory
+    * A directory owns a trash iff it is in some trash
+    * A directory can only be in one trash and can only contain one trash
+    * No cycles
 * **priority to reactions**: yes
 * **reactions**:
 ```
